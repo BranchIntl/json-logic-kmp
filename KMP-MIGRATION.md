@@ -103,7 +103,7 @@ Dependency order: A → {B, C, D} → E → {F1, F2, F3} → G → I1 → H → 
   (`!`/`!!`), `Log`, `Concatenate` (`cat`), `Substring` (`substr`). Depends: E.
 - [x] **WS-F3 array ops** (Opus 5, [PR #9](https://github.com/BranchIntl/json-logic-kmp/pull/9)) — `Map`, `Filter`, `Reduce`, `All`, `ArrayHas` (`some`/`none`),
   `Merge`, `In`. Depends: E.
-- [ ] **WS-G entry point** (Sonnet 5) — `JsonLogic` public API; default-operator registration table;
+- [x] **WS-G entry point** (Sonnet 5, [PR #10](https://github.com/BranchIntl/json-logic-kmp/pull/10)) — `JsonLogic` public API; default-operator registration table;
   custom-operation registration; enable the full fixture replay across all targets. Depends: F1–F3.
 - [ ] **WS-I1 parity gate** (Opus 5) — JVM diff runner in `:parity` (Java engine vs KMP engine over
   all 289 + 46 cases); fix every divergence; acceptance = zero disagreements. Depends: G.

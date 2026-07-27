@@ -23,5 +23,8 @@ tasks.test {
     testLogging {
         events("passed", "skipped", "failed")
         exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+        // The fixture suites print each failing case's rule, data, expected and actual value to
+        // stdout before asserting on a failure count, so the diagnostics are only visible here.
+        showStandardStreams = true
     }
 }

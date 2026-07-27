@@ -52,13 +52,14 @@ import kotlinx.serialization.json.JsonElement
  *
  * **Thread safety.** Finish configuring an instance — the default registrations plus any
  * [addOperation] calls — on a single thread before sharing it with others. Once configuration is
- * complete and the instance has been safely published to other threads (e.g. handed off through a
- * `val`, or however the caller's concurrency model already publishes shared objects), concurrent
- * `apply` calls share no mutable state and need no further synchronization. Calling [addOperation]
- * concurrently with another [addOperation] call, or with an in-flight `apply`, is not supported:
- * [addOperation] mutates a shared map and reassigns the evaluator field with no locking, so two
- * concurrent registrations can race and silently lose one operation, and neither write carries any
- * cross-thread visibility guarantee on its own.
+ * complete and the instance has been safely published to other threads (configure it before
+ * starting the threads or coroutines that use it, or hand it off through a mechanism that
+ * establishes a happens-before edge — a synchronized accessor, an atomic/volatile reference, a
+ * channel, thread start/join), concurrent `apply` calls share no mutable state and need no further
+ * synchronization. Calling [addOperation] concurrently with another [addOperation] call, or with
+ * an in-flight `apply`, is not supported: [addOperation] mutates a shared map and reassigns the
+ * evaluator field with no locking, so two concurrent registrations can race and silently lose one
+ * operation, and neither write carries any cross-thread visibility guarantee on its own.
  *
  * **The Infinity/NaN sharp edge.** A result of positive infinity, negative infinity, or NaN is
  * returned as a [JsonElement] holding the literal text `Infinity`, `-Infinity`, or `NaN` — JSON has
@@ -127,8 +128,9 @@ class JsonLogic {
 
     /**
      * Registers [expression] under its own [JsonLogicExpression.key], rebuilding the complete
-     * evaluator snapshot immediately so this instance is race-free to apply against as soon as
-     * this call returns.
+     * evaluator snapshot immediately: the rebuilt table is visible to further calls on this thread
+     * as soon as this method returns, but making it visible to other threads requires the safe
+     * publication described in this class's KDoc.
      *
      * Registering under a key that is already registered replaces the existing operation:
      * whichever registration happens last wins, matching the engine this library ports.

@@ -7,6 +7,14 @@ java {
     targetCompatibility = JavaVersion.VERSION_11
 }
 
+sourceSets {
+    // fixtures.json and error-fixtures.json live at the repo root (shared with the Kotlin
+    // fixture codegen) rather than under this module's own test resources.
+    named("test") {
+        resources.srcDir(rootProject.layout.projectDirectory.dir("fixtures"))
+    }
+}
+
 dependencies {
     api(libs.gson)
     testImplementation(libs.junit)

@@ -179,6 +179,14 @@ permanent record.
   `cancel-in-progress`, the tracking-doc push that followed each merge cancelled the merge commit's
   CI run, making the Actions tab look like CI never ran
   ([PR #4](https://github.com/BranchIntl/json-logic-kmp/pull/4) fixed this with `paths-ignore`).
+- **A public helper can resurface a domain decision made deep in the engine.** `JsonLogic.truthy`
+  accepts `Any?`, so it can be handed a Kotlin `Array` even though arrays were deliberately dropped
+  from the evaluator's value domain (only `List`/`Map`/`String`/`Number`/`Boolean`/`null` ever reach
+  an expression). `truthy` has no case for `Array`, so it falls through to the default `true` branch —
+  including for an empty array, where upstream's Java duck-typing returned false. Confirmed
+  empirically (`JsonLogic.truthy(arrayOf<Int>())` is `true`) rather than assumed; accepted as a
+  documented deviation rather than changed, since the engine itself can never produce or accept an
+  array (WS-K, final docs review).
 
 ## Done criteria
 

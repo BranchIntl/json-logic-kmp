@@ -6,11 +6,11 @@ and evaluate them the same way on every platform Kotlin runs on.
 
 This library is a fork of [jamsesso/json-logic-java](https://github.com/jamsesso/json-logic-java)
 (MIT, © 2018 Sam Jesso), rewritten as a pure Kotlin Multiplatform module. It is **bug-for-bug
-compatible** with the Java original: before the Java sources were removed from this repository, both
-engines were run side by side over the same 335-case fixture corpus (289 value cases, 46 error cases)
-and machine-verified to agree on every one. See [Known deviations & sharp
-edges](#known-deviations--sharp-edges) below for the one accepted exception and everything else worth
-knowing before you rely on this library.
+compatible** with the Java original, with a short list of documented deviations: before the Java
+sources were removed from this repository, both engines were run side by side over the same 335-case
+fixture corpus (289 value cases, 46 error cases) and machine-verified to agree on every one. See
+[Known deviations & sharp edges](#known-deviations--sharp-edges) below for what to watch for before
+you rely on this library.
 
 ## Supported targets
 
@@ -22,8 +22,9 @@ knowing before you rely on this library.
 | `iosSimulatorArm64`    |                   |
 | `wasmJs`               | Node.js runtime   |
 
-Values are modeled as `kotlinx.serialization.JsonElement` on every target: rules and data cross the
-API boundary as `JsonElement` or as JSON strings, with no platform-specific glue required.
+Values are modeled as `kotlinx.serialization.JsonElement` on every target. A rule crosses the API
+boundary as either a `JsonElement` or a JSON string, but data is always a `JsonElement?` — parse a
+serialized data string with `Json.parseToJsonElement` first (see [Usage](#usage) below).
 
 ## Supported operations
 
@@ -62,16 +63,30 @@ repositories {
 }
 ```
 
-Then declare the dependency:
+Then declare the dependency. In a Kotlin Multiplatform project, add it to `commonMain` so every
+target picks it up:
+
+```kotlin
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            implementation("co.branch:json-logic-kmp:0.1.0-SNAPSHOT")
+        }
+    }
+}
+```
+
+Gradle's Kotlin Multiplatform metadata resolves the correct platform artifact for each source set
+automatically; a single coordinate covers every target.
+
+For a JVM- or Android-only consumer (not a multiplatform module), the plain top-level form also
+works:
 
 ```kotlin
 dependencies {
     implementation("co.branch:json-logic-kmp:0.1.0-SNAPSHOT")
 }
 ```
-
-Gradle's Kotlin Multiplatform metadata resolves the correct platform artifact for each source set
-automatically; a single coordinate covers every target.
 
 ## Usage
 
@@ -89,6 +104,16 @@ val result = jsonLogic.apply(
     buildJsonObject { put("a", 1) },
 )
 // result.jsonPrimitive.content == "1.0"
+```
+
+The `data` parameter is always a `JsonElement?` — there is no overload that takes a data *string*.
+If your data arrives as serialized JSON rather than a `JsonElement`, parse it first:
+
+```kotlin
+import kotlinx.serialization.json.Json
+
+val data = Json.parseToJsonElement("""{"a": 1}""")
+jsonLogic.apply("""{"var": "a"}""", data)
 ```
 
 ### Parse once, apply many times
@@ -145,6 +170,10 @@ JsonLogic.truthy("")              // false
 JsonLogic.truthy("Hello world!")  // true
 ```
 
+`truthy` takes `Any?`, so it also accepts values the engine itself never produces, such as a Kotlin
+or Java array — see [Known deviations & sharp edges](#known-deviations--sharp-edges) below for how
+that case behaves.
+
 ## Known deviations & sharp edges
 
 - **Unchecked exceptions.** `JsonLogicException` extends `RuntimeException`; upstream's version is a
@@ -179,6 +208,11 @@ JsonLogic.truthy("Hello world!")  // true
   standard fixture corpus; accepted deliberately rather than reproduced.
 - **No recursion-depth limit**, matching upstream. Evaluating a deeply-nested rule can exhaust the
   stack; bound or validate rule depth before evaluating input from an untrusted source.
+- **`truthy` on a Kotlin/Java array differs from upstream.** Arrays aren't part of the engine's value
+  domain (only `List`, `Map`, `String`, `Number`, `Boolean`, and `null` ever reach an expression), so
+  `truthy` has no case for one and it falls through to the default branch, returning `true` — even for
+  an empty array — where upstream's Java duck-typing treated an empty array as falsy. Convert to a
+  `List` first if you need array truthiness.
 
 ## Contributing
 

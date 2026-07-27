@@ -6,7 +6,7 @@ on:
   push:
     branches: [ main ]
     paths-ignore:
-      - KMP-MIGRATION.md
+      - docs/KMP-MIGRATION.md
       - README.md
       - CHANGELOG.md
 

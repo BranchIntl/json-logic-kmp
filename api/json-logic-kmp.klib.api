@@ -1,0 +1,445 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64, wasmJs]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <co.branch:json-logic-kmp>
+abstract interface co.branch.jsonlogic.evaluator.expressions/PreEvaluatedArgumentsExpression : co.branch.jsonlogic.evaluator/JsonLogicExpression { // co.branch.jsonlogic.evaluator.expressions/PreEvaluatedArgumentsExpression|null[0]
+    abstract fun evaluate(kotlin.collections/List<kotlin/Any?>, kotlin/Any?, kotlin/String): kotlin/Any? // co.branch.jsonlogic.evaluator.expressions/PreEvaluatedArgumentsExpression.evaluate|evaluate(kotlin.collections.List<kotlin.Any?>;kotlin.Any?;kotlin.String){}[0]
+    open fun evaluate(co.branch.jsonlogic.evaluator/JsonLogicEvaluator, co.branch.jsonlogic.ast/JsonLogicArray, kotlin/Any?, kotlin/String): kotlin/Any? // co.branch.jsonlogic.evaluator.expressions/PreEvaluatedArgumentsExpression.evaluate|evaluate(co.branch.jsonlogic.evaluator.JsonLogicEvaluator;co.branch.jsonlogic.ast.JsonLogicArray;kotlin.Any?;kotlin.String){}[0]
+}
+
+abstract interface co.branch.jsonlogic.evaluator/JsonLogicExpression { // co.branch.jsonlogic.evaluator/JsonLogicExpression|null[0]
+    abstract val key // co.branch.jsonlogic.evaluator/JsonLogicExpression.key|{}key[0]
+        abstract fun <get-key>(): kotlin/String // co.branch.jsonlogic.evaluator/JsonLogicExpression.key.<get-key>|<get-key>(){}[0]
+
+    abstract fun evaluate(co.branch.jsonlogic.evaluator/JsonLogicEvaluator, co.branch.jsonlogic.ast/JsonLogicArray, kotlin/Any?, kotlin/String): kotlin/Any? // co.branch.jsonlogic.evaluator/JsonLogicExpression.evaluate|evaluate(co.branch.jsonlogic.evaluator.JsonLogicEvaluator;co.branch.jsonlogic.ast.JsonLogicArray;kotlin.Any?;kotlin.String){}[0]
+}
+
+sealed interface co.branch.jsonlogic.ast/JsonLogicNode // co.branch.jsonlogic.ast/JsonLogicNode|null[0]
+
+final class co.branch.jsonlogic.ast/JsonLogicArray : co.branch.jsonlogic.ast/JsonLogicNode { // co.branch.jsonlogic.ast/JsonLogicArray|null[0]
+    constructor <init>(kotlin.collections/List<co.branch.jsonlogic.ast/JsonLogicNode>) // co.branch.jsonlogic.ast/JsonLogicArray.<init>|<init>(kotlin.collections.List<co.branch.jsonlogic.ast.JsonLogicNode>){}[0]
+
+    final val elements // co.branch.jsonlogic.ast/JsonLogicArray.elements|{}elements[0]
+        final fun <get-elements>(): kotlin.collections/List<co.branch.jsonlogic.ast/JsonLogicNode> // co.branch.jsonlogic.ast/JsonLogicArray.elements.<get-elements>|<get-elements>(){}[0]
+
+    final fun component1(): kotlin.collections/List<co.branch.jsonlogic.ast/JsonLogicNode> // co.branch.jsonlogic.ast/JsonLogicArray.component1|component1(){}[0]
+    final fun copy(kotlin.collections/List<co.branch.jsonlogic.ast/JsonLogicNode> = ...): co.branch.jsonlogic.ast/JsonLogicArray // co.branch.jsonlogic.ast/JsonLogicArray.copy|copy(kotlin.collections.List<co.branch.jsonlogic.ast.JsonLogicNode>){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // co.branch.jsonlogic.ast/JsonLogicArray.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // co.branch.jsonlogic.ast/JsonLogicArray.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // co.branch.jsonlogic.ast/JsonLogicArray.toString|toString(){}[0]
+}
+
+final class co.branch.jsonlogic.ast/JsonLogicBoolean : co.branch.jsonlogic.ast/JsonLogicNode { // co.branch.jsonlogic.ast/JsonLogicBoolean|null[0]
+    constructor <init>(kotlin/Boolean) // co.branch.jsonlogic.ast/JsonLogicBoolean.<init>|<init>(kotlin.Boolean){}[0]
+
+    final val value // co.branch.jsonlogic.ast/JsonLogicBoolean.value|{}value[0]
+        final fun <get-value>(): kotlin/Boolean // co.branch.jsonlogic.ast/JsonLogicBoolean.value.<get-value>|<get-value>(){}[0]
+
+    final fun component1(): kotlin/Boolean // co.branch.jsonlogic.ast/JsonLogicBoolean.component1|component1(){}[0]
+    final fun copy(kotlin/Boolean = ...): co.branch.jsonlogic.ast/JsonLogicBoolean // co.branch.jsonlogic.ast/JsonLogicBoolean.copy|copy(kotlin.Boolean){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // co.branch.jsonlogic.ast/JsonLogicBoolean.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // co.branch.jsonlogic.ast/JsonLogicBoolean.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // co.branch.jsonlogic.ast/JsonLogicBoolean.toString|toString(){}[0]
+
+    final object Companion { // co.branch.jsonlogic.ast/JsonLogicBoolean.Companion|null[0]
+        final val FALSE // co.branch.jsonlogic.ast/JsonLogicBoolean.Companion.FALSE|{}FALSE[0]
+            final fun <get-FALSE>(): co.branch.jsonlogic.ast/JsonLogicBoolean // co.branch.jsonlogic.ast/JsonLogicBoolean.Companion.FALSE.<get-FALSE>|<get-FALSE>(){}[0]
+        final val TRUE // co.branch.jsonlogic.ast/JsonLogicBoolean.Companion.TRUE|{}TRUE[0]
+            final fun <get-TRUE>(): co.branch.jsonlogic.ast/JsonLogicBoolean // co.branch.jsonlogic.ast/JsonLogicBoolean.Companion.TRUE.<get-TRUE>|<get-TRUE>(){}[0]
+    }
+}
+
+final class co.branch.jsonlogic.ast/JsonLogicNumber : co.branch.jsonlogic.ast/JsonLogicNode { // co.branch.jsonlogic.ast/JsonLogicNumber|null[0]
+    constructor <init>(kotlin/Double) // co.branch.jsonlogic.ast/JsonLogicNumber.<init>|<init>(kotlin.Double){}[0]
+
+    final val value // co.branch.jsonlogic.ast/JsonLogicNumber.value|{}value[0]
+        final fun <get-value>(): kotlin/Double // co.branch.jsonlogic.ast/JsonLogicNumber.value.<get-value>|<get-value>(){}[0]
+
+    final fun component1(): kotlin/Double // co.branch.jsonlogic.ast/JsonLogicNumber.component1|component1(){}[0]
+    final fun copy(kotlin/Double = ...): co.branch.jsonlogic.ast/JsonLogicNumber // co.branch.jsonlogic.ast/JsonLogicNumber.copy|copy(kotlin.Double){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // co.branch.jsonlogic.ast/JsonLogicNumber.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // co.branch.jsonlogic.ast/JsonLogicNumber.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // co.branch.jsonlogic.ast/JsonLogicNumber.toString|toString(){}[0]
+}
+
+final class co.branch.jsonlogic.ast/JsonLogicOperation : co.branch.jsonlogic.ast/JsonLogicNode { // co.branch.jsonlogic.ast/JsonLogicOperation|null[0]
+    constructor <init>(kotlin/String, co.branch.jsonlogic.ast/JsonLogicArray) // co.branch.jsonlogic.ast/JsonLogicOperation.<init>|<init>(kotlin.String;co.branch.jsonlogic.ast.JsonLogicArray){}[0]
+
+    final val arguments // co.branch.jsonlogic.ast/JsonLogicOperation.arguments|{}arguments[0]
+        final fun <get-arguments>(): co.branch.jsonlogic.ast/JsonLogicArray // co.branch.jsonlogic.ast/JsonLogicOperation.arguments.<get-arguments>|<get-arguments>(){}[0]
+    final val operator // co.branch.jsonlogic.ast/JsonLogicOperation.operator|{}operator[0]
+        final fun <get-operator>(): kotlin/String // co.branch.jsonlogic.ast/JsonLogicOperation.operator.<get-operator>|<get-operator>(){}[0]
+
+    final fun component1(): kotlin/String // co.branch.jsonlogic.ast/JsonLogicOperation.component1|component1(){}[0]
+    final fun component2(): co.branch.jsonlogic.ast/JsonLogicArray // co.branch.jsonlogic.ast/JsonLogicOperation.component2|component2(){}[0]
+    final fun copy(kotlin/String = ..., co.branch.jsonlogic.ast/JsonLogicArray = ...): co.branch.jsonlogic.ast/JsonLogicOperation // co.branch.jsonlogic.ast/JsonLogicOperation.copy|copy(kotlin.String;co.branch.jsonlogic.ast.JsonLogicArray){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // co.branch.jsonlogic.ast/JsonLogicOperation.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // co.branch.jsonlogic.ast/JsonLogicOperation.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // co.branch.jsonlogic.ast/JsonLogicOperation.toString|toString(){}[0]
+}
+
+final class co.branch.jsonlogic.ast/JsonLogicParseException : co.branch.jsonlogic/JsonLogicException { // co.branch.jsonlogic.ast/JsonLogicParseException|null[0]
+    constructor <init>(kotlin/String, kotlin/String) // co.branch.jsonlogic.ast/JsonLogicParseException.<init>|<init>(kotlin.String;kotlin.String){}[0]
+    constructor <init>(kotlin/String, kotlin/Throwable, kotlin/String) // co.branch.jsonlogic.ast/JsonLogicParseException.<init>|<init>(kotlin.String;kotlin.Throwable;kotlin.String){}[0]
+    constructor <init>(kotlin/Throwable, kotlin/String) // co.branch.jsonlogic.ast/JsonLogicParseException.<init>|<init>(kotlin.Throwable;kotlin.String){}[0]
+}
+
+final class co.branch.jsonlogic.ast/JsonLogicString : co.branch.jsonlogic.ast/JsonLogicNode { // co.branch.jsonlogic.ast/JsonLogicString|null[0]
+    constructor <init>(kotlin/String) // co.branch.jsonlogic.ast/JsonLogicString.<init>|<init>(kotlin.String){}[0]
+
+    final val value // co.branch.jsonlogic.ast/JsonLogicString.value|{}value[0]
+        final fun <get-value>(): kotlin/String // co.branch.jsonlogic.ast/JsonLogicString.value.<get-value>|<get-value>(){}[0]
+
+    final fun component1(): kotlin/String // co.branch.jsonlogic.ast/JsonLogicString.component1|component1(){}[0]
+    final fun copy(kotlin/String = ...): co.branch.jsonlogic.ast/JsonLogicString // co.branch.jsonlogic.ast/JsonLogicString.copy|copy(kotlin.String){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // co.branch.jsonlogic.ast/JsonLogicString.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // co.branch.jsonlogic.ast/JsonLogicString.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // co.branch.jsonlogic.ast/JsonLogicString.toString|toString(){}[0]
+}
+
+final class co.branch.jsonlogic.ast/JsonLogicVariable : co.branch.jsonlogic.ast/JsonLogicNode { // co.branch.jsonlogic.ast/JsonLogicVariable|null[0]
+    constructor <init>(co.branch.jsonlogic.ast/JsonLogicNode, co.branch.jsonlogic.ast/JsonLogicNode) // co.branch.jsonlogic.ast/JsonLogicVariable.<init>|<init>(co.branch.jsonlogic.ast.JsonLogicNode;co.branch.jsonlogic.ast.JsonLogicNode){}[0]
+
+    final val defaultValue // co.branch.jsonlogic.ast/JsonLogicVariable.defaultValue|{}defaultValue[0]
+        final fun <get-defaultValue>(): co.branch.jsonlogic.ast/JsonLogicNode // co.branch.jsonlogic.ast/JsonLogicVariable.defaultValue.<get-defaultValue>|<get-defaultValue>(){}[0]
+    final val key // co.branch.jsonlogic.ast/JsonLogicVariable.key|{}key[0]
+        final fun <get-key>(): co.branch.jsonlogic.ast/JsonLogicNode // co.branch.jsonlogic.ast/JsonLogicVariable.key.<get-key>|<get-key>(){}[0]
+
+    final fun component1(): co.branch.jsonlogic.ast/JsonLogicNode // co.branch.jsonlogic.ast/JsonLogicVariable.component1|component1(){}[0]
+    final fun component2(): co.branch.jsonlogic.ast/JsonLogicNode // co.branch.jsonlogic.ast/JsonLogicVariable.component2|component2(){}[0]
+    final fun copy(co.branch.jsonlogic.ast/JsonLogicNode = ..., co.branch.jsonlogic.ast/JsonLogicNode = ...): co.branch.jsonlogic.ast/JsonLogicVariable // co.branch.jsonlogic.ast/JsonLogicVariable.copy|copy(co.branch.jsonlogic.ast.JsonLogicNode;co.branch.jsonlogic.ast.JsonLogicNode){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // co.branch.jsonlogic.ast/JsonLogicVariable.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // co.branch.jsonlogic.ast/JsonLogicVariable.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // co.branch.jsonlogic.ast/JsonLogicVariable.toString|toString(){}[0]
+}
+
+final class co.branch.jsonlogic.evaluator.expressions/AllExpression : co.branch.jsonlogic.evaluator/JsonLogicExpression { // co.branch.jsonlogic.evaluator.expressions/AllExpression|null[0]
+    final val key // co.branch.jsonlogic.evaluator.expressions/AllExpression.key|{}key[0]
+        final fun <get-key>(): kotlin/String // co.branch.jsonlogic.evaluator.expressions/AllExpression.key.<get-key>|<get-key>(){}[0]
+
+    final fun evaluate(co.branch.jsonlogic.evaluator/JsonLogicEvaluator, co.branch.jsonlogic.ast/JsonLogicArray, kotlin/Any?, kotlin/String): kotlin/Any? // co.branch.jsonlogic.evaluator.expressions/AllExpression.evaluate|evaluate(co.branch.jsonlogic.evaluator.JsonLogicEvaluator;co.branch.jsonlogic.ast.JsonLogicArray;kotlin.Any?;kotlin.String){}[0]
+
+    final object Companion { // co.branch.jsonlogic.evaluator.expressions/AllExpression.Companion|null[0]
+        final val INSTANCE // co.branch.jsonlogic.evaluator.expressions/AllExpression.Companion.INSTANCE|{}INSTANCE[0]
+            final fun <get-INSTANCE>(): co.branch.jsonlogic.evaluator.expressions/AllExpression // co.branch.jsonlogic.evaluator.expressions/AllExpression.Companion.INSTANCE.<get-INSTANCE>|<get-INSTANCE>(){}[0]
+    }
+}
+
+final class co.branch.jsonlogic.evaluator.expressions/ArrayHasExpression : co.branch.jsonlogic.evaluator/JsonLogicExpression { // co.branch.jsonlogic.evaluator.expressions/ArrayHasExpression|null[0]
+    final val key // co.branch.jsonlogic.evaluator.expressions/ArrayHasExpression.key|{}key[0]
+        final fun <get-key>(): kotlin/String // co.branch.jsonlogic.evaluator.expressions/ArrayHasExpression.key.<get-key>|<get-key>(){}[0]
+
+    final fun evaluate(co.branch.jsonlogic.evaluator/JsonLogicEvaluator, co.branch.jsonlogic.ast/JsonLogicArray, kotlin/Any?, kotlin/String): kotlin/Any? // co.branch.jsonlogic.evaluator.expressions/ArrayHasExpression.evaluate|evaluate(co.branch.jsonlogic.evaluator.JsonLogicEvaluator;co.branch.jsonlogic.ast.JsonLogicArray;kotlin.Any?;kotlin.String){}[0]
+
+    final object Companion { // co.branch.jsonlogic.evaluator.expressions/ArrayHasExpression.Companion|null[0]
+        final val NONE // co.branch.jsonlogic.evaluator.expressions/ArrayHasExpression.Companion.NONE|{}NONE[0]
+            final fun <get-NONE>(): co.branch.jsonlogic.evaluator.expressions/ArrayHasExpression // co.branch.jsonlogic.evaluator.expressions/ArrayHasExpression.Companion.NONE.<get-NONE>|<get-NONE>(){}[0]
+        final val SOME // co.branch.jsonlogic.evaluator.expressions/ArrayHasExpression.Companion.SOME|{}SOME[0]
+            final fun <get-SOME>(): co.branch.jsonlogic.evaluator.expressions/ArrayHasExpression // co.branch.jsonlogic.evaluator.expressions/ArrayHasExpression.Companion.SOME.<get-SOME>|<get-SOME>(){}[0]
+    }
+}
+
+final class co.branch.jsonlogic.evaluator.expressions/ConcatenateExpression : co.branch.jsonlogic.evaluator.expressions/PreEvaluatedArgumentsExpression { // co.branch.jsonlogic.evaluator.expressions/ConcatenateExpression|null[0]
+    final val key // co.branch.jsonlogic.evaluator.expressions/ConcatenateExpression.key|{}key[0]
+        final fun <get-key>(): kotlin/String // co.branch.jsonlogic.evaluator.expressions/ConcatenateExpression.key.<get-key>|<get-key>(){}[0]
+
+    final fun evaluate(kotlin.collections/List<kotlin/Any?>, kotlin/Any?, kotlin/String): kotlin/Any? // co.branch.jsonlogic.evaluator.expressions/ConcatenateExpression.evaluate|evaluate(kotlin.collections.List<kotlin.Any?>;kotlin.Any?;kotlin.String){}[0]
+
+    final object Companion { // co.branch.jsonlogic.evaluator.expressions/ConcatenateExpression.Companion|null[0]
+        final val INSTANCE // co.branch.jsonlogic.evaluator.expressions/ConcatenateExpression.Companion.INSTANCE|{}INSTANCE[0]
+            final fun <get-INSTANCE>(): co.branch.jsonlogic.evaluator.expressions/ConcatenateExpression // co.branch.jsonlogic.evaluator.expressions/ConcatenateExpression.Companion.INSTANCE.<get-INSTANCE>|<get-INSTANCE>(){}[0]
+    }
+}
+
+final class co.branch.jsonlogic.evaluator.expressions/EqualityExpression : co.branch.jsonlogic.evaluator.expressions/PreEvaluatedArgumentsExpression { // co.branch.jsonlogic.evaluator.expressions/EqualityExpression|null[0]
+    final val key // co.branch.jsonlogic.evaluator.expressions/EqualityExpression.key|{}key[0]
+        final fun <get-key>(): kotlin/String // co.branch.jsonlogic.evaluator.expressions/EqualityExpression.key.<get-key>|<get-key>(){}[0]
+
+    final fun evaluate(kotlin.collections/List<kotlin/Any?>, kotlin/Any?, kotlin/String): kotlin/Any? // co.branch.jsonlogic.evaluator.expressions/EqualityExpression.evaluate|evaluate(kotlin.collections.List<kotlin.Any?>;kotlin.Any?;kotlin.String){}[0]
+
+    final object Companion { // co.branch.jsonlogic.evaluator.expressions/EqualityExpression.Companion|null[0]
+        final val INSTANCE // co.branch.jsonlogic.evaluator.expressions/EqualityExpression.Companion.INSTANCE|{}INSTANCE[0]
+            final fun <get-INSTANCE>(): co.branch.jsonlogic.evaluator.expressions/EqualityExpression // co.branch.jsonlogic.evaluator.expressions/EqualityExpression.Companion.INSTANCE.<get-INSTANCE>|<get-INSTANCE>(){}[0]
+    }
+}
+
+final class co.branch.jsonlogic.evaluator.expressions/FilterExpression : co.branch.jsonlogic.evaluator/JsonLogicExpression { // co.branch.jsonlogic.evaluator.expressions/FilterExpression|null[0]
+    final val key // co.branch.jsonlogic.evaluator.expressions/FilterExpression.key|{}key[0]
+        final fun <get-key>(): kotlin/String // co.branch.jsonlogic.evaluator.expressions/FilterExpression.key.<get-key>|<get-key>(){}[0]
+
+    final fun evaluate(co.branch.jsonlogic.evaluator/JsonLogicEvaluator, co.branch.jsonlogic.ast/JsonLogicArray, kotlin/Any?, kotlin/String): kotlin/Any? // co.branch.jsonlogic.evaluator.expressions/FilterExpression.evaluate|evaluate(co.branch.jsonlogic.evaluator.JsonLogicEvaluator;co.branch.jsonlogic.ast.JsonLogicArray;kotlin.Any?;kotlin.String){}[0]
+
+    final object Companion { // co.branch.jsonlogic.evaluator.expressions/FilterExpression.Companion|null[0]
+        final val INSTANCE // co.branch.jsonlogic.evaluator.expressions/FilterExpression.Companion.INSTANCE|{}INSTANCE[0]
+            final fun <get-INSTANCE>(): co.branch.jsonlogic.evaluator.expressions/FilterExpression // co.branch.jsonlogic.evaluator.expressions/FilterExpression.Companion.INSTANCE.<get-INSTANCE>|<get-INSTANCE>(){}[0]
+    }
+}
+
+final class co.branch.jsonlogic.evaluator.expressions/IfExpression : co.branch.jsonlogic.evaluator/JsonLogicExpression { // co.branch.jsonlogic.evaluator.expressions/IfExpression|null[0]
+    final val key // co.branch.jsonlogic.evaluator.expressions/IfExpression.key|{}key[0]
+        final fun <get-key>(): kotlin/String // co.branch.jsonlogic.evaluator.expressions/IfExpression.key.<get-key>|<get-key>(){}[0]
+
+    final fun evaluate(co.branch.jsonlogic.evaluator/JsonLogicEvaluator, co.branch.jsonlogic.ast/JsonLogicArray, kotlin/Any?, kotlin/String): kotlin/Any? // co.branch.jsonlogic.evaluator.expressions/IfExpression.evaluate|evaluate(co.branch.jsonlogic.evaluator.JsonLogicEvaluator;co.branch.jsonlogic.ast.JsonLogicArray;kotlin.Any?;kotlin.String){}[0]
+
+    final object Companion { // co.branch.jsonlogic.evaluator.expressions/IfExpression.Companion|null[0]
+        final val IF // co.branch.jsonlogic.evaluator.expressions/IfExpression.Companion.IF|{}IF[0]
+            final fun <get-IF>(): co.branch.jsonlogic.evaluator.expressions/IfExpression // co.branch.jsonlogic.evaluator.expressions/IfExpression.Companion.IF.<get-IF>|<get-IF>(){}[0]
+        final val TERNARY // co.branch.jsonlogic.evaluator.expressions/IfExpression.Companion.TERNARY|{}TERNARY[0]
+            final fun <get-TERNARY>(): co.branch.jsonlogic.evaluator.expressions/IfExpression // co.branch.jsonlogic.evaluator.expressions/IfExpression.Companion.TERNARY.<get-TERNARY>|<get-TERNARY>(){}[0]
+    }
+}
+
+final class co.branch.jsonlogic.evaluator.expressions/InExpression : co.branch.jsonlogic.evaluator.expressions/PreEvaluatedArgumentsExpression { // co.branch.jsonlogic.evaluator.expressions/InExpression|null[0]
+    final val key // co.branch.jsonlogic.evaluator.expressions/InExpression.key|{}key[0]
+        final fun <get-key>(): kotlin/String // co.branch.jsonlogic.evaluator.expressions/InExpression.key.<get-key>|<get-key>(){}[0]
+
+    final fun evaluate(kotlin.collections/List<kotlin/Any?>, kotlin/Any?, kotlin/String): kotlin/Any? // co.branch.jsonlogic.evaluator.expressions/InExpression.evaluate|evaluate(kotlin.collections.List<kotlin.Any?>;kotlin.Any?;kotlin.String){}[0]
+
+    final object Companion { // co.branch.jsonlogic.evaluator.expressions/InExpression.Companion|null[0]
+        final val INSTANCE // co.branch.jsonlogic.evaluator.expressions/InExpression.Companion.INSTANCE|{}INSTANCE[0]
+            final fun <get-INSTANCE>(): co.branch.jsonlogic.evaluator.expressions/InExpression // co.branch.jsonlogic.evaluator.expressions/InExpression.Companion.INSTANCE.<get-INSTANCE>|<get-INSTANCE>(){}[0]
+    }
+}
+
+final class co.branch.jsonlogic.evaluator.expressions/InequalityExpression : co.branch.jsonlogic.evaluator/JsonLogicExpression { // co.branch.jsonlogic.evaluator.expressions/InequalityExpression|null[0]
+    final val key // co.branch.jsonlogic.evaluator.expressions/InequalityExpression.key|{}key[0]
+        final fun <get-key>(): kotlin/String // co.branch.jsonlogic.evaluator.expressions/InequalityExpression.key.<get-key>|<get-key>(){}[0]
+
+    final fun evaluate(co.branch.jsonlogic.evaluator/JsonLogicEvaluator, co.branch.jsonlogic.ast/JsonLogicArray, kotlin/Any?, kotlin/String): kotlin/Any? // co.branch.jsonlogic.evaluator.expressions/InequalityExpression.evaluate|evaluate(co.branch.jsonlogic.evaluator.JsonLogicEvaluator;co.branch.jsonlogic.ast.JsonLogicArray;kotlin.Any?;kotlin.String){}[0]
+
+    final object Companion { // co.branch.jsonlogic.evaluator.expressions/InequalityExpression.Companion|null[0]
+        final val INSTANCE // co.branch.jsonlogic.evaluator.expressions/InequalityExpression.Companion.INSTANCE|{}INSTANCE[0]
+            final fun <get-INSTANCE>(): co.branch.jsonlogic.evaluator.expressions/InequalityExpression // co.branch.jsonlogic.evaluator.expressions/InequalityExpression.Companion.INSTANCE.<get-INSTANCE>|<get-INSTANCE>(){}[0]
+    }
+}
+
+final class co.branch.jsonlogic.evaluator.expressions/LogExpression : co.branch.jsonlogic.evaluator.expressions/PreEvaluatedArgumentsExpression { // co.branch.jsonlogic.evaluator.expressions/LogExpression|null[0]
+    constructor <init>(kotlin/Function1<kotlin/String, kotlin/Unit> = ...) // co.branch.jsonlogic.evaluator.expressions/LogExpression.<init>|<init>(kotlin.Function1<kotlin.String,kotlin.Unit>){}[0]
+
+    final val key // co.branch.jsonlogic.evaluator.expressions/LogExpression.key|{}key[0]
+        final fun <get-key>(): kotlin/String // co.branch.jsonlogic.evaluator.expressions/LogExpression.key.<get-key>|<get-key>(){}[0]
+
+    final fun evaluate(kotlin.collections/List<kotlin/Any?>, kotlin/Any?, kotlin/String): kotlin/Any? // co.branch.jsonlogic.evaluator.expressions/LogExpression.evaluate|evaluate(kotlin.collections.List<kotlin.Any?>;kotlin.Any?;kotlin.String){}[0]
+
+    final object Companion { // co.branch.jsonlogic.evaluator.expressions/LogExpression.Companion|null[0]
+        final val STDOUT // co.branch.jsonlogic.evaluator.expressions/LogExpression.Companion.STDOUT|{}STDOUT[0]
+            final fun <get-STDOUT>(): co.branch.jsonlogic.evaluator.expressions/LogExpression // co.branch.jsonlogic.evaluator.expressions/LogExpression.Companion.STDOUT.<get-STDOUT>|<get-STDOUT>(){}[0]
+    }
+}
+
+final class co.branch.jsonlogic.evaluator.expressions/LogicExpression : co.branch.jsonlogic.evaluator/JsonLogicExpression { // co.branch.jsonlogic.evaluator.expressions/LogicExpression|null[0]
+    final val key // co.branch.jsonlogic.evaluator.expressions/LogicExpression.key|{}key[0]
+        final fun <get-key>(): kotlin/String // co.branch.jsonlogic.evaluator.expressions/LogicExpression.key.<get-key>|<get-key>(){}[0]
+
+    final fun evaluate(co.branch.jsonlogic.evaluator/JsonLogicEvaluator, co.branch.jsonlogic.ast/JsonLogicArray, kotlin/Any?, kotlin/String): kotlin/Any? // co.branch.jsonlogic.evaluator.expressions/LogicExpression.evaluate|evaluate(co.branch.jsonlogic.evaluator.JsonLogicEvaluator;co.branch.jsonlogic.ast.JsonLogicArray;kotlin.Any?;kotlin.String){}[0]
+
+    final object Companion { // co.branch.jsonlogic.evaluator.expressions/LogicExpression.Companion|null[0]
+        final val AND // co.branch.jsonlogic.evaluator.expressions/LogicExpression.Companion.AND|{}AND[0]
+            final fun <get-AND>(): co.branch.jsonlogic.evaluator.expressions/LogicExpression // co.branch.jsonlogic.evaluator.expressions/LogicExpression.Companion.AND.<get-AND>|<get-AND>(){}[0]
+        final val OR // co.branch.jsonlogic.evaluator.expressions/LogicExpression.Companion.OR|{}OR[0]
+            final fun <get-OR>(): co.branch.jsonlogic.evaluator.expressions/LogicExpression // co.branch.jsonlogic.evaluator.expressions/LogicExpression.Companion.OR.<get-OR>|<get-OR>(){}[0]
+    }
+}
+
+final class co.branch.jsonlogic.evaluator.expressions/MapExpression : co.branch.jsonlogic.evaluator/JsonLogicExpression { // co.branch.jsonlogic.evaluator.expressions/MapExpression|null[0]
+    final val key // co.branch.jsonlogic.evaluator.expressions/MapExpression.key|{}key[0]
+        final fun <get-key>(): kotlin/String // co.branch.jsonlogic.evaluator.expressions/MapExpression.key.<get-key>|<get-key>(){}[0]
+
+    final fun evaluate(co.branch.jsonlogic.evaluator/JsonLogicEvaluator, co.branch.jsonlogic.ast/JsonLogicArray, kotlin/Any?, kotlin/String): kotlin/Any? // co.branch.jsonlogic.evaluator.expressions/MapExpression.evaluate|evaluate(co.branch.jsonlogic.evaluator.JsonLogicEvaluator;co.branch.jsonlogic.ast.JsonLogicArray;kotlin.Any?;kotlin.String){}[0]
+
+    final object Companion { // co.branch.jsonlogic.evaluator.expressions/MapExpression.Companion|null[0]
+        final val INSTANCE // co.branch.jsonlogic.evaluator.expressions/MapExpression.Companion.INSTANCE|{}INSTANCE[0]
+            final fun <get-INSTANCE>(): co.branch.jsonlogic.evaluator.expressions/MapExpression // co.branch.jsonlogic.evaluator.expressions/MapExpression.Companion.INSTANCE.<get-INSTANCE>|<get-INSTANCE>(){}[0]
+    }
+}
+
+final class co.branch.jsonlogic.evaluator.expressions/MathExpression : co.branch.jsonlogic.evaluator.expressions/PreEvaluatedArgumentsExpression { // co.branch.jsonlogic.evaluator.expressions/MathExpression|null[0]
+    constructor <init>(kotlin/String, kotlin/Function2<kotlin/Double, kotlin/Double, kotlin/Double>, kotlin/Int = ...) // co.branch.jsonlogic.evaluator.expressions/MathExpression.<init>|<init>(kotlin.String;kotlin.Function2<kotlin.Double,kotlin.Double,kotlin.Double>;kotlin.Int){}[0]
+
+    final val key // co.branch.jsonlogic.evaluator.expressions/MathExpression.key|{}key[0]
+        final fun <get-key>(): kotlin/String // co.branch.jsonlogic.evaluator.expressions/MathExpression.key.<get-key>|<get-key>(){}[0]
+
+    final fun evaluate(kotlin.collections/List<kotlin/Any?>, kotlin/Any?, kotlin/String): kotlin/Any? // co.branch.jsonlogic.evaluator.expressions/MathExpression.evaluate|evaluate(kotlin.collections.List<kotlin.Any?>;kotlin.Any?;kotlin.String){}[0]
+
+    final object Companion { // co.branch.jsonlogic.evaluator.expressions/MathExpression.Companion|null[0]
+        final val ADD // co.branch.jsonlogic.evaluator.expressions/MathExpression.Companion.ADD|{}ADD[0]
+            final fun <get-ADD>(): co.branch.jsonlogic.evaluator.expressions/MathExpression // co.branch.jsonlogic.evaluator.expressions/MathExpression.Companion.ADD.<get-ADD>|<get-ADD>(){}[0]
+        final val DIVIDE // co.branch.jsonlogic.evaluator.expressions/MathExpression.Companion.DIVIDE|{}DIVIDE[0]
+            final fun <get-DIVIDE>(): co.branch.jsonlogic.evaluator.expressions/MathExpression // co.branch.jsonlogic.evaluator.expressions/MathExpression.Companion.DIVIDE.<get-DIVIDE>|<get-DIVIDE>(){}[0]
+        final val MAX // co.branch.jsonlogic.evaluator.expressions/MathExpression.Companion.MAX|{}MAX[0]
+            final fun <get-MAX>(): co.branch.jsonlogic.evaluator.expressions/MathExpression // co.branch.jsonlogic.evaluator.expressions/MathExpression.Companion.MAX.<get-MAX>|<get-MAX>(){}[0]
+        final val MIN // co.branch.jsonlogic.evaluator.expressions/MathExpression.Companion.MIN|{}MIN[0]
+            final fun <get-MIN>(): co.branch.jsonlogic.evaluator.expressions/MathExpression // co.branch.jsonlogic.evaluator.expressions/MathExpression.Companion.MIN.<get-MIN>|<get-MIN>(){}[0]
+        final val MODULO // co.branch.jsonlogic.evaluator.expressions/MathExpression.Companion.MODULO|{}MODULO[0]
+            final fun <get-MODULO>(): co.branch.jsonlogic.evaluator.expressions/MathExpression // co.branch.jsonlogic.evaluator.expressions/MathExpression.Companion.MODULO.<get-MODULO>|<get-MODULO>(){}[0]
+        final val MULTIPLY // co.branch.jsonlogic.evaluator.expressions/MathExpression.Companion.MULTIPLY|{}MULTIPLY[0]
+            final fun <get-MULTIPLY>(): co.branch.jsonlogic.evaluator.expressions/MathExpression // co.branch.jsonlogic.evaluator.expressions/MathExpression.Companion.MULTIPLY.<get-MULTIPLY>|<get-MULTIPLY>(){}[0]
+        final val SUBTRACT // co.branch.jsonlogic.evaluator.expressions/MathExpression.Companion.SUBTRACT|{}SUBTRACT[0]
+            final fun <get-SUBTRACT>(): co.branch.jsonlogic.evaluator.expressions/MathExpression // co.branch.jsonlogic.evaluator.expressions/MathExpression.Companion.SUBTRACT.<get-SUBTRACT>|<get-SUBTRACT>(){}[0]
+    }
+}
+
+final class co.branch.jsonlogic.evaluator.expressions/MergeExpression : co.branch.jsonlogic.evaluator.expressions/PreEvaluatedArgumentsExpression { // co.branch.jsonlogic.evaluator.expressions/MergeExpression|null[0]
+    final val key // co.branch.jsonlogic.evaluator.expressions/MergeExpression.key|{}key[0]
+        final fun <get-key>(): kotlin/String // co.branch.jsonlogic.evaluator.expressions/MergeExpression.key.<get-key>|<get-key>(){}[0]
+
+    final fun evaluate(kotlin.collections/List<kotlin/Any?>, kotlin/Any?, kotlin/String): kotlin/Any? // co.branch.jsonlogic.evaluator.expressions/MergeExpression.evaluate|evaluate(kotlin.collections.List<kotlin.Any?>;kotlin.Any?;kotlin.String){}[0]
+
+    final object Companion { // co.branch.jsonlogic.evaluator.expressions/MergeExpression.Companion|null[0]
+        final val INSTANCE // co.branch.jsonlogic.evaluator.expressions/MergeExpression.Companion.INSTANCE|{}INSTANCE[0]
+            final fun <get-INSTANCE>(): co.branch.jsonlogic.evaluator.expressions/MergeExpression // co.branch.jsonlogic.evaluator.expressions/MergeExpression.Companion.INSTANCE.<get-INSTANCE>|<get-INSTANCE>(){}[0]
+    }
+}
+
+final class co.branch.jsonlogic.evaluator.expressions/MissingExpression : co.branch.jsonlogic.evaluator.expressions/PreEvaluatedArgumentsExpression { // co.branch.jsonlogic.evaluator.expressions/MissingExpression|null[0]
+    final val key // co.branch.jsonlogic.evaluator.expressions/MissingExpression.key|{}key[0]
+        final fun <get-key>(): kotlin/String // co.branch.jsonlogic.evaluator.expressions/MissingExpression.key.<get-key>|<get-key>(){}[0]
+
+    final fun evaluate(kotlin.collections/List<kotlin/Any?>, kotlin/Any?, kotlin/String): kotlin/Any? // co.branch.jsonlogic.evaluator.expressions/MissingExpression.evaluate|evaluate(kotlin.collections.List<kotlin.Any?>;kotlin.Any?;kotlin.String){}[0]
+
+    final object Companion { // co.branch.jsonlogic.evaluator.expressions/MissingExpression.Companion|null[0]
+        final val ALL // co.branch.jsonlogic.evaluator.expressions/MissingExpression.Companion.ALL|{}ALL[0]
+            final fun <get-ALL>(): co.branch.jsonlogic.evaluator.expressions/MissingExpression // co.branch.jsonlogic.evaluator.expressions/MissingExpression.Companion.ALL.<get-ALL>|<get-ALL>(){}[0]
+        final val SOME // co.branch.jsonlogic.evaluator.expressions/MissingExpression.Companion.SOME|{}SOME[0]
+            final fun <get-SOME>(): co.branch.jsonlogic.evaluator.expressions/MissingExpression // co.branch.jsonlogic.evaluator.expressions/MissingExpression.Companion.SOME.<get-SOME>|<get-SOME>(){}[0]
+    }
+}
+
+final class co.branch.jsonlogic.evaluator.expressions/NotExpression : co.branch.jsonlogic.evaluator.expressions/PreEvaluatedArgumentsExpression { // co.branch.jsonlogic.evaluator.expressions/NotExpression|null[0]
+    final val key // co.branch.jsonlogic.evaluator.expressions/NotExpression.key|{}key[0]
+        final fun <get-key>(): kotlin/String // co.branch.jsonlogic.evaluator.expressions/NotExpression.key.<get-key>|<get-key>(){}[0]
+
+    final fun evaluate(kotlin.collections/List<kotlin/Any?>, kotlin/Any?, kotlin/String): kotlin/Any? // co.branch.jsonlogic.evaluator.expressions/NotExpression.evaluate|evaluate(kotlin.collections.List<kotlin.Any?>;kotlin.Any?;kotlin.String){}[0]
+
+    final object Companion { // co.branch.jsonlogic.evaluator.expressions/NotExpression.Companion|null[0]
+        final val DOUBLE // co.branch.jsonlogic.evaluator.expressions/NotExpression.Companion.DOUBLE|{}DOUBLE[0]
+            final fun <get-DOUBLE>(): co.branch.jsonlogic.evaluator.expressions/NotExpression // co.branch.jsonlogic.evaluator.expressions/NotExpression.Companion.DOUBLE.<get-DOUBLE>|<get-DOUBLE>(){}[0]
+        final val SINGLE // co.branch.jsonlogic.evaluator.expressions/NotExpression.Companion.SINGLE|{}SINGLE[0]
+            final fun <get-SINGLE>(): co.branch.jsonlogic.evaluator.expressions/NotExpression // co.branch.jsonlogic.evaluator.expressions/NotExpression.Companion.SINGLE.<get-SINGLE>|<get-SINGLE>(){}[0]
+    }
+}
+
+final class co.branch.jsonlogic.evaluator.expressions/NumericComparisonExpression : co.branch.jsonlogic.evaluator.expressions/PreEvaluatedArgumentsExpression { // co.branch.jsonlogic.evaluator.expressions/NumericComparisonExpression|null[0]
+    final val key // co.branch.jsonlogic.evaluator.expressions/NumericComparisonExpression.key|{}key[0]
+        final fun <get-key>(): kotlin/String // co.branch.jsonlogic.evaluator.expressions/NumericComparisonExpression.key.<get-key>|<get-key>(){}[0]
+
+    final fun evaluate(kotlin.collections/List<kotlin/Any?>, kotlin/Any?, kotlin/String): kotlin/Any? // co.branch.jsonlogic.evaluator.expressions/NumericComparisonExpression.evaluate|evaluate(kotlin.collections.List<kotlin.Any?>;kotlin.Any?;kotlin.String){}[0]
+
+    final object Companion { // co.branch.jsonlogic.evaluator.expressions/NumericComparisonExpression.Companion|null[0]
+        final val GT // co.branch.jsonlogic.evaluator.expressions/NumericComparisonExpression.Companion.GT|{}GT[0]
+            final fun <get-GT>(): co.branch.jsonlogic.evaluator.expressions/NumericComparisonExpression // co.branch.jsonlogic.evaluator.expressions/NumericComparisonExpression.Companion.GT.<get-GT>|<get-GT>(){}[0]
+        final val GTE // co.branch.jsonlogic.evaluator.expressions/NumericComparisonExpression.Companion.GTE|{}GTE[0]
+            final fun <get-GTE>(): co.branch.jsonlogic.evaluator.expressions/NumericComparisonExpression // co.branch.jsonlogic.evaluator.expressions/NumericComparisonExpression.Companion.GTE.<get-GTE>|<get-GTE>(){}[0]
+        final val LT // co.branch.jsonlogic.evaluator.expressions/NumericComparisonExpression.Companion.LT|{}LT[0]
+            final fun <get-LT>(): co.branch.jsonlogic.evaluator.expressions/NumericComparisonExpression // co.branch.jsonlogic.evaluator.expressions/NumericComparisonExpression.Companion.LT.<get-LT>|<get-LT>(){}[0]
+        final val LTE // co.branch.jsonlogic.evaluator.expressions/NumericComparisonExpression.Companion.LTE|{}LTE[0]
+            final fun <get-LTE>(): co.branch.jsonlogic.evaluator.expressions/NumericComparisonExpression // co.branch.jsonlogic.evaluator.expressions/NumericComparisonExpression.Companion.LTE.<get-LTE>|<get-LTE>(){}[0]
+    }
+}
+
+final class co.branch.jsonlogic.evaluator.expressions/ReduceExpression : co.branch.jsonlogic.evaluator/JsonLogicExpression { // co.branch.jsonlogic.evaluator.expressions/ReduceExpression|null[0]
+    final val key // co.branch.jsonlogic.evaluator.expressions/ReduceExpression.key|{}key[0]
+        final fun <get-key>(): kotlin/String // co.branch.jsonlogic.evaluator.expressions/ReduceExpression.key.<get-key>|<get-key>(){}[0]
+
+    final fun evaluate(co.branch.jsonlogic.evaluator/JsonLogicEvaluator, co.branch.jsonlogic.ast/JsonLogicArray, kotlin/Any?, kotlin/String): kotlin/Any? // co.branch.jsonlogic.evaluator.expressions/ReduceExpression.evaluate|evaluate(co.branch.jsonlogic.evaluator.JsonLogicEvaluator;co.branch.jsonlogic.ast.JsonLogicArray;kotlin.Any?;kotlin.String){}[0]
+
+    final object Companion { // co.branch.jsonlogic.evaluator.expressions/ReduceExpression.Companion|null[0]
+        final val INSTANCE // co.branch.jsonlogic.evaluator.expressions/ReduceExpression.Companion.INSTANCE|{}INSTANCE[0]
+            final fun <get-INSTANCE>(): co.branch.jsonlogic.evaluator.expressions/ReduceExpression // co.branch.jsonlogic.evaluator.expressions/ReduceExpression.Companion.INSTANCE.<get-INSTANCE>|<get-INSTANCE>(){}[0]
+    }
+}
+
+final class co.branch.jsonlogic.evaluator.expressions/StrictEqualityExpression : co.branch.jsonlogic.evaluator.expressions/PreEvaluatedArgumentsExpression { // co.branch.jsonlogic.evaluator.expressions/StrictEqualityExpression|null[0]
+    final val key // co.branch.jsonlogic.evaluator.expressions/StrictEqualityExpression.key|{}key[0]
+        final fun <get-key>(): kotlin/String // co.branch.jsonlogic.evaluator.expressions/StrictEqualityExpression.key.<get-key>|<get-key>(){}[0]
+
+    final fun evaluate(kotlin.collections/List<kotlin/Any?>, kotlin/Any?, kotlin/String): kotlin/Any? // co.branch.jsonlogic.evaluator.expressions/StrictEqualityExpression.evaluate|evaluate(kotlin.collections.List<kotlin.Any?>;kotlin.Any?;kotlin.String){}[0]
+
+    final object Companion { // co.branch.jsonlogic.evaluator.expressions/StrictEqualityExpression.Companion|null[0]
+        final val INSTANCE // co.branch.jsonlogic.evaluator.expressions/StrictEqualityExpression.Companion.INSTANCE|{}INSTANCE[0]
+            final fun <get-INSTANCE>(): co.branch.jsonlogic.evaluator.expressions/StrictEqualityExpression // co.branch.jsonlogic.evaluator.expressions/StrictEqualityExpression.Companion.INSTANCE.<get-INSTANCE>|<get-INSTANCE>(){}[0]
+    }
+}
+
+final class co.branch.jsonlogic.evaluator.expressions/StrictInequalityExpression : co.branch.jsonlogic.evaluator/JsonLogicExpression { // co.branch.jsonlogic.evaluator.expressions/StrictInequalityExpression|null[0]
+    final val key // co.branch.jsonlogic.evaluator.expressions/StrictInequalityExpression.key|{}key[0]
+        final fun <get-key>(): kotlin/String // co.branch.jsonlogic.evaluator.expressions/StrictInequalityExpression.key.<get-key>|<get-key>(){}[0]
+
+    final fun evaluate(co.branch.jsonlogic.evaluator/JsonLogicEvaluator, co.branch.jsonlogic.ast/JsonLogicArray, kotlin/Any?, kotlin/String): kotlin/Any? // co.branch.jsonlogic.evaluator.expressions/StrictInequalityExpression.evaluate|evaluate(co.branch.jsonlogic.evaluator.JsonLogicEvaluator;co.branch.jsonlogic.ast.JsonLogicArray;kotlin.Any?;kotlin.String){}[0]
+
+    final object Companion { // co.branch.jsonlogic.evaluator.expressions/StrictInequalityExpression.Companion|null[0]
+        final val INSTANCE // co.branch.jsonlogic.evaluator.expressions/StrictInequalityExpression.Companion.INSTANCE|{}INSTANCE[0]
+            final fun <get-INSTANCE>(): co.branch.jsonlogic.evaluator.expressions/StrictInequalityExpression // co.branch.jsonlogic.evaluator.expressions/StrictInequalityExpression.Companion.INSTANCE.<get-INSTANCE>|<get-INSTANCE>(){}[0]
+    }
+}
+
+final class co.branch.jsonlogic.evaluator.expressions/SubstringExpression : co.branch.jsonlogic.evaluator.expressions/PreEvaluatedArgumentsExpression { // co.branch.jsonlogic.evaluator.expressions/SubstringExpression|null[0]
+    final val key // co.branch.jsonlogic.evaluator.expressions/SubstringExpression.key|{}key[0]
+        final fun <get-key>(): kotlin/String // co.branch.jsonlogic.evaluator.expressions/SubstringExpression.key.<get-key>|<get-key>(){}[0]
+
+    final fun evaluate(kotlin.collections/List<kotlin/Any?>, kotlin/Any?, kotlin/String): kotlin/Any? // co.branch.jsonlogic.evaluator.expressions/SubstringExpression.evaluate|evaluate(kotlin.collections.List<kotlin.Any?>;kotlin.Any?;kotlin.String){}[0]
+
+    final object Companion { // co.branch.jsonlogic.evaluator.expressions/SubstringExpression.Companion|null[0]
+        final val INSTANCE // co.branch.jsonlogic.evaluator.expressions/SubstringExpression.Companion.INSTANCE|{}INSTANCE[0]
+            final fun <get-INSTANCE>(): co.branch.jsonlogic.evaluator.expressions/SubstringExpression // co.branch.jsonlogic.evaluator.expressions/SubstringExpression.Companion.INSTANCE.<get-INSTANCE>|<get-INSTANCE>(){}[0]
+    }
+}
+
+final class co.branch.jsonlogic.evaluator/JsonLogicEvaluationException : co.branch.jsonlogic/JsonLogicException { // co.branch.jsonlogic.evaluator/JsonLogicEvaluationException|null[0]
+    constructor <init>(kotlin/String, kotlin/String) // co.branch.jsonlogic.evaluator/JsonLogicEvaluationException.<init>|<init>(kotlin.String;kotlin.String){}[0]
+    constructor <init>(kotlin/String, kotlin/Throwable, kotlin/String) // co.branch.jsonlogic.evaluator/JsonLogicEvaluationException.<init>|<init>(kotlin.String;kotlin.Throwable;kotlin.String){}[0]
+    constructor <init>(kotlin/Throwable, kotlin/String) // co.branch.jsonlogic.evaluator/JsonLogicEvaluationException.<init>|<init>(kotlin.Throwable;kotlin.String){}[0]
+}
+
+final class co.branch.jsonlogic.evaluator/JsonLogicEvaluator { // co.branch.jsonlogic.evaluator/JsonLogicEvaluator|null[0]
+    constructor <init>(kotlin.collections/Collection<co.branch.jsonlogic.evaluator/JsonLogicExpression>) // co.branch.jsonlogic.evaluator/JsonLogicEvaluator.<init>|<init>(kotlin.collections.Collection<co.branch.jsonlogic.evaluator.JsonLogicExpression>){}[0]
+    constructor <init>(kotlin.collections/Map<kotlin/String, co.branch.jsonlogic.evaluator/JsonLogicExpression>) // co.branch.jsonlogic.evaluator/JsonLogicEvaluator.<init>|<init>(kotlin.collections.Map<kotlin.String,co.branch.jsonlogic.evaluator.JsonLogicExpression>){}[0]
+
+    final fun evaluate(co.branch.jsonlogic.ast/JsonLogicArray, kotlin/Any?, kotlin/String): kotlin.collections/List<kotlin/Any?> // co.branch.jsonlogic.evaluator/JsonLogicEvaluator.evaluate|evaluate(co.branch.jsonlogic.ast.JsonLogicArray;kotlin.Any?;kotlin.String){}[0]
+    final fun evaluate(co.branch.jsonlogic.ast/JsonLogicNode, kotlin/Any?, kotlin/String): kotlin/Any? // co.branch.jsonlogic.evaluator/JsonLogicEvaluator.evaluate|evaluate(co.branch.jsonlogic.ast.JsonLogicNode;kotlin.Any?;kotlin.String){}[0]
+    final fun evaluate(co.branch.jsonlogic.ast/JsonLogicOperation, kotlin/Any?, kotlin/String): kotlin/Any? // co.branch.jsonlogic.evaluator/JsonLogicEvaluator.evaluate|evaluate(co.branch.jsonlogic.ast.JsonLogicOperation;kotlin.Any?;kotlin.String){}[0]
+    final fun evaluate(co.branch.jsonlogic.ast/JsonLogicVariable, kotlin/Any?, kotlin/String): kotlin/Any? // co.branch.jsonlogic.evaluator/JsonLogicEvaluator.evaluate|evaluate(co.branch.jsonlogic.ast.JsonLogicVariable;kotlin.Any?;kotlin.String){}[0]
+
+    final object Companion { // co.branch.jsonlogic.evaluator/JsonLogicEvaluator.Companion|null[0]
+        final fun transform(kotlin/Any?): kotlin/Any? // co.branch.jsonlogic.evaluator/JsonLogicEvaluator.Companion.transform|transform(kotlin.Any?){}[0]
+    }
+}
+
+final class co.branch.jsonlogic/JsonLogic { // co.branch.jsonlogic/JsonLogic|null[0]
+    constructor <init>() // co.branch.jsonlogic/JsonLogic.<init>|<init>(){}[0]
+
+    final fun addOperation(co.branch.jsonlogic.evaluator/JsonLogicExpression): co.branch.jsonlogic/JsonLogic // co.branch.jsonlogic/JsonLogic.addOperation|addOperation(co.branch.jsonlogic.evaluator.JsonLogicExpression){}[0]
+    final fun addOperation(kotlin/String, kotlin/Function1<kotlin.collections/List<kotlin/Any?>, kotlin/Any?>): co.branch.jsonlogic/JsonLogic // co.branch.jsonlogic/JsonLogic.addOperation|addOperation(kotlin.String;kotlin.Function1<kotlin.collections.List<kotlin.Any?>,kotlin.Any?>){}[0]
+    final fun apply(co.branch.jsonlogic.ast/JsonLogicNode, kotlinx.serialization.json/JsonElement?): kotlinx.serialization.json/JsonElement // co.branch.jsonlogic/JsonLogic.apply|apply(co.branch.jsonlogic.ast.JsonLogicNode;kotlinx.serialization.json.JsonElement?){}[0]
+    final fun apply(kotlin/String, kotlinx.serialization.json/JsonElement? = ...): kotlinx.serialization.json/JsonElement // co.branch.jsonlogic/JsonLogic.apply|apply(kotlin.String;kotlinx.serialization.json.JsonElement?){}[0]
+    final fun apply(kotlinx.serialization.json/JsonElement, kotlinx.serialization.json/JsonElement?): kotlinx.serialization.json/JsonElement // co.branch.jsonlogic/JsonLogic.apply|apply(kotlinx.serialization.json.JsonElement;kotlinx.serialization.json.JsonElement?){}[0]
+    final fun parse(kotlin/String): co.branch.jsonlogic.ast/JsonLogicNode // co.branch.jsonlogic/JsonLogic.parse|parse(kotlin.String){}[0]
+
+    final object Companion { // co.branch.jsonlogic/JsonLogic.Companion|null[0]
+        final fun truthy(kotlin/Any?): kotlin/Boolean // co.branch.jsonlogic/JsonLogic.Companion.truthy|truthy(kotlin.Any?){}[0]
+    }
+}
+
+open class co.branch.jsonlogic/JsonLogicException : kotlin/RuntimeException { // co.branch.jsonlogic/JsonLogicException|null[0]
+    constructor <init>(kotlin/String, kotlin/String) // co.branch.jsonlogic/JsonLogicException.<init>|<init>(kotlin.String;kotlin.String){}[0]
+    constructor <init>(kotlin/String, kotlin/Throwable, kotlin/String) // co.branch.jsonlogic/JsonLogicException.<init>|<init>(kotlin.String;kotlin.Throwable;kotlin.String){}[0]
+    constructor <init>(kotlin/Throwable, kotlin/String) // co.branch.jsonlogic/JsonLogicException.<init>|<init>(kotlin.Throwable;kotlin.String){}[0]
+
+    final val jsonPath // co.branch.jsonlogic/JsonLogicException.jsonPath|{}jsonPath[0]
+        final fun <get-jsonPath>(): kotlin/String // co.branch.jsonlogic/JsonLogicException.jsonPath.<get-jsonPath>|<get-jsonPath>(){}[0]
+}
+
+final object co.branch.jsonlogic.ast/JsonLogicNull : co.branch.jsonlogic.ast/JsonLogicNode { // co.branch.jsonlogic.ast/JsonLogicNull|null[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // co.branch.jsonlogic.ast/JsonLogicNull.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // co.branch.jsonlogic.ast/JsonLogicNull.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // co.branch.jsonlogic.ast/JsonLogicNull.toString|toString(){}[0]
+}
+
+final object co.branch.jsonlogic.ast/JsonLogicParser { // co.branch.jsonlogic.ast/JsonLogicParser|null[0]
+    final fun parse(kotlin/String): co.branch.jsonlogic.ast/JsonLogicNode // co.branch.jsonlogic.ast/JsonLogicParser.parse|parse(kotlin.String){}[0]
+    final fun parse(kotlinx.serialization.json/JsonElement): co.branch.jsonlogic.ast/JsonLogicNode // co.branch.jsonlogic.ast/JsonLogicParser.parse|parse(kotlinx.serialization.json.JsonElement){}[0]
+}

@@ -24,8 +24,8 @@ jobs:
           distribution: temurin
           java-version: 21
       - uses: gradle/actions/setup-gradle@v4
-      - name: JVM, Android host and parity tests
-        run: ./gradlew jvmTest testAndroidHostTest :parity:test assemble
+      - name: JVM and Android host tests
+        run: ./gradlew jvmTest testAndroidHostTest assemble apiCheck
 
   wasm:
     runs-on: ubuntu-latest

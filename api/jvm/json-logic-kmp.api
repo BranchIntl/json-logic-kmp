@@ -1,0 +1,385 @@
+public final class co/branch/jsonlogic/JsonLogic {
+	public static final field Companion Lco/branch/jsonlogic/JsonLogic$Companion;
+	public fun <init> ()V
+	public final fun addOperation (Lco/branch/jsonlogic/evaluator/JsonLogicExpression;)Lco/branch/jsonlogic/JsonLogic;
+	public final fun addOperation (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lco/branch/jsonlogic/JsonLogic;
+	public final fun apply (Lco/branch/jsonlogic/ast/JsonLogicNode;Lkotlinx/serialization/json/JsonElement;)Lkotlinx/serialization/json/JsonElement;
+	public final fun apply (Ljava/lang/String;Lkotlinx/serialization/json/JsonElement;)Lkotlinx/serialization/json/JsonElement;
+	public final fun apply (Lkotlinx/serialization/json/JsonElement;Lkotlinx/serialization/json/JsonElement;)Lkotlinx/serialization/json/JsonElement;
+	public static synthetic fun apply$default (Lco/branch/jsonlogic/JsonLogic;Ljava/lang/String;Lkotlinx/serialization/json/JsonElement;ILjava/lang/Object;)Lkotlinx/serialization/json/JsonElement;
+	public final fun parse (Ljava/lang/String;)Lco/branch/jsonlogic/ast/JsonLogicNode;
+}
+
+public final class co/branch/jsonlogic/JsonLogic$Companion {
+	public final fun truthy (Ljava/lang/Object;)Z
+}
+
+public class co/branch/jsonlogic/JsonLogicException : java/lang/RuntimeException {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/Throwable;Ljava/lang/String;)V
+	public fun <init> (Ljava/lang/Throwable;Ljava/lang/String;)V
+	public final fun getJsonPath ()Ljava/lang/String;
+}
+
+public final class co/branch/jsonlogic/ast/JsonLogicArray : co/branch/jsonlogic/ast/JsonLogicNode {
+	public fun <init> (Ljava/util/List;)V
+	public final fun component1 ()Ljava/util/List;
+	public final fun copy (Ljava/util/List;)Lco/branch/jsonlogic/ast/JsonLogicArray;
+	public static synthetic fun copy$default (Lco/branch/jsonlogic/ast/JsonLogicArray;Ljava/util/List;ILjava/lang/Object;)Lco/branch/jsonlogic/ast/JsonLogicArray;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getElements ()Ljava/util/List;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class co/branch/jsonlogic/ast/JsonLogicBoolean : co/branch/jsonlogic/ast/JsonLogicNode {
+	public static final field Companion Lco/branch/jsonlogic/ast/JsonLogicBoolean$Companion;
+	public fun <init> (Z)V
+	public final fun component1 ()Z
+	public final fun copy (Z)Lco/branch/jsonlogic/ast/JsonLogicBoolean;
+	public static synthetic fun copy$default (Lco/branch/jsonlogic/ast/JsonLogicBoolean;ZILjava/lang/Object;)Lco/branch/jsonlogic/ast/JsonLogicBoolean;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getValue ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class co/branch/jsonlogic/ast/JsonLogicBoolean$Companion {
+	public final fun getFALSE ()Lco/branch/jsonlogic/ast/JsonLogicBoolean;
+	public final fun getTRUE ()Lco/branch/jsonlogic/ast/JsonLogicBoolean;
+}
+
+public abstract interface class co/branch/jsonlogic/ast/JsonLogicNode {
+}
+
+public final class co/branch/jsonlogic/ast/JsonLogicNull : co/branch/jsonlogic/ast/JsonLogicNode {
+	public static final field INSTANCE Lco/branch/jsonlogic/ast/JsonLogicNull;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class co/branch/jsonlogic/ast/JsonLogicNumber : co/branch/jsonlogic/ast/JsonLogicNode {
+	public fun <init> (D)V
+	public final fun component1 ()D
+	public final fun copy (D)Lco/branch/jsonlogic/ast/JsonLogicNumber;
+	public static synthetic fun copy$default (Lco/branch/jsonlogic/ast/JsonLogicNumber;DILjava/lang/Object;)Lco/branch/jsonlogic/ast/JsonLogicNumber;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getValue ()D
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class co/branch/jsonlogic/ast/JsonLogicOperation : co/branch/jsonlogic/ast/JsonLogicNode {
+	public fun <init> (Ljava/lang/String;Lco/branch/jsonlogic/ast/JsonLogicArray;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Lco/branch/jsonlogic/ast/JsonLogicArray;
+	public final fun copy (Ljava/lang/String;Lco/branch/jsonlogic/ast/JsonLogicArray;)Lco/branch/jsonlogic/ast/JsonLogicOperation;
+	public static synthetic fun copy$default (Lco/branch/jsonlogic/ast/JsonLogicOperation;Ljava/lang/String;Lco/branch/jsonlogic/ast/JsonLogicArray;ILjava/lang/Object;)Lco/branch/jsonlogic/ast/JsonLogicOperation;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getArguments ()Lco/branch/jsonlogic/ast/JsonLogicArray;
+	public final fun getOperator ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class co/branch/jsonlogic/ast/JsonLogicParseException : co/branch/jsonlogic/JsonLogicException {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/Throwable;Ljava/lang/String;)V
+	public fun <init> (Ljava/lang/Throwable;Ljava/lang/String;)V
+}
+
+public final class co/branch/jsonlogic/ast/JsonLogicParser {
+	public static final field INSTANCE Lco/branch/jsonlogic/ast/JsonLogicParser;
+	public final fun parse (Ljava/lang/String;)Lco/branch/jsonlogic/ast/JsonLogicNode;
+	public final fun parse (Lkotlinx/serialization/json/JsonElement;)Lco/branch/jsonlogic/ast/JsonLogicNode;
+}
+
+public final class co/branch/jsonlogic/ast/JsonLogicString : co/branch/jsonlogic/ast/JsonLogicNode {
+	public fun <init> (Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;)Lco/branch/jsonlogic/ast/JsonLogicString;
+	public static synthetic fun copy$default (Lco/branch/jsonlogic/ast/JsonLogicString;Ljava/lang/String;ILjava/lang/Object;)Lco/branch/jsonlogic/ast/JsonLogicString;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class co/branch/jsonlogic/ast/JsonLogicVariable : co/branch/jsonlogic/ast/JsonLogicNode {
+	public fun <init> (Lco/branch/jsonlogic/ast/JsonLogicNode;Lco/branch/jsonlogic/ast/JsonLogicNode;)V
+	public final fun component1 ()Lco/branch/jsonlogic/ast/JsonLogicNode;
+	public final fun component2 ()Lco/branch/jsonlogic/ast/JsonLogicNode;
+	public final fun copy (Lco/branch/jsonlogic/ast/JsonLogicNode;Lco/branch/jsonlogic/ast/JsonLogicNode;)Lco/branch/jsonlogic/ast/JsonLogicVariable;
+	public static synthetic fun copy$default (Lco/branch/jsonlogic/ast/JsonLogicVariable;Lco/branch/jsonlogic/ast/JsonLogicNode;Lco/branch/jsonlogic/ast/JsonLogicNode;ILjava/lang/Object;)Lco/branch/jsonlogic/ast/JsonLogicVariable;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDefaultValue ()Lco/branch/jsonlogic/ast/JsonLogicNode;
+	public final fun getKey ()Lco/branch/jsonlogic/ast/JsonLogicNode;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class co/branch/jsonlogic/evaluator/JsonLogicEvaluationException : co/branch/jsonlogic/JsonLogicException {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/Throwable;Ljava/lang/String;)V
+	public fun <init> (Ljava/lang/Throwable;Ljava/lang/String;)V
+}
+
+public final class co/branch/jsonlogic/evaluator/JsonLogicEvaluator {
+	public static final field Companion Lco/branch/jsonlogic/evaluator/JsonLogicEvaluator$Companion;
+	public fun <init> (Ljava/util/Collection;)V
+	public fun <init> (Ljava/util/Map;)V
+	public final fun evaluate (Lco/branch/jsonlogic/ast/JsonLogicArray;Ljava/lang/Object;Ljava/lang/String;)Ljava/util/List;
+	public final fun evaluate (Lco/branch/jsonlogic/ast/JsonLogicNode;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+	public final fun evaluate (Lco/branch/jsonlogic/ast/JsonLogicOperation;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+	public final fun evaluate (Lco/branch/jsonlogic/ast/JsonLogicVariable;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+}
+
+public final class co/branch/jsonlogic/evaluator/JsonLogicEvaluator$Companion {
+	public final fun transform (Ljava/lang/Object;)Ljava/lang/Object;
+}
+
+public abstract interface class co/branch/jsonlogic/evaluator/JsonLogicExpression {
+	public abstract fun evaluate (Lco/branch/jsonlogic/evaluator/JsonLogicEvaluator;Lco/branch/jsonlogic/ast/JsonLogicArray;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+	public abstract fun getKey ()Ljava/lang/String;
+}
+
+public final class co/branch/jsonlogic/evaluator/expressions/AllExpression : co/branch/jsonlogic/evaluator/JsonLogicExpression {
+	public static final field Companion Lco/branch/jsonlogic/evaluator/expressions/AllExpression$Companion;
+	public fun evaluate (Lco/branch/jsonlogic/evaluator/JsonLogicEvaluator;Lco/branch/jsonlogic/ast/JsonLogicArray;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+	public fun getKey ()Ljava/lang/String;
+}
+
+public final class co/branch/jsonlogic/evaluator/expressions/AllExpression$Companion {
+	public final fun getINSTANCE ()Lco/branch/jsonlogic/evaluator/expressions/AllExpression;
+}
+
+public final class co/branch/jsonlogic/evaluator/expressions/ArrayHasExpression : co/branch/jsonlogic/evaluator/JsonLogicExpression {
+	public static final field Companion Lco/branch/jsonlogic/evaluator/expressions/ArrayHasExpression$Companion;
+	public fun evaluate (Lco/branch/jsonlogic/evaluator/JsonLogicEvaluator;Lco/branch/jsonlogic/ast/JsonLogicArray;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+	public fun getKey ()Ljava/lang/String;
+}
+
+public final class co/branch/jsonlogic/evaluator/expressions/ArrayHasExpression$Companion {
+	public final fun getNONE ()Lco/branch/jsonlogic/evaluator/expressions/ArrayHasExpression;
+	public final fun getSOME ()Lco/branch/jsonlogic/evaluator/expressions/ArrayHasExpression;
+}
+
+public final class co/branch/jsonlogic/evaluator/expressions/ConcatenateExpression : co/branch/jsonlogic/evaluator/expressions/PreEvaluatedArgumentsExpression {
+	public static final field Companion Lco/branch/jsonlogic/evaluator/expressions/ConcatenateExpression$Companion;
+	public fun evaluate (Lco/branch/jsonlogic/evaluator/JsonLogicEvaluator;Lco/branch/jsonlogic/ast/JsonLogicArray;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+	public fun evaluate (Ljava/util/List;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+	public fun getKey ()Ljava/lang/String;
+}
+
+public final class co/branch/jsonlogic/evaluator/expressions/ConcatenateExpression$Companion {
+	public final fun getINSTANCE ()Lco/branch/jsonlogic/evaluator/expressions/ConcatenateExpression;
+}
+
+public final class co/branch/jsonlogic/evaluator/expressions/EqualityExpression : co/branch/jsonlogic/evaluator/expressions/PreEvaluatedArgumentsExpression {
+	public static final field Companion Lco/branch/jsonlogic/evaluator/expressions/EqualityExpression$Companion;
+	public fun evaluate (Lco/branch/jsonlogic/evaluator/JsonLogicEvaluator;Lco/branch/jsonlogic/ast/JsonLogicArray;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+	public fun evaluate (Ljava/util/List;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+	public fun getKey ()Ljava/lang/String;
+}
+
+public final class co/branch/jsonlogic/evaluator/expressions/EqualityExpression$Companion {
+	public final fun getINSTANCE ()Lco/branch/jsonlogic/evaluator/expressions/EqualityExpression;
+}
+
+public final class co/branch/jsonlogic/evaluator/expressions/FilterExpression : co/branch/jsonlogic/evaluator/JsonLogicExpression {
+	public static final field Companion Lco/branch/jsonlogic/evaluator/expressions/FilterExpression$Companion;
+	public fun evaluate (Lco/branch/jsonlogic/evaluator/JsonLogicEvaluator;Lco/branch/jsonlogic/ast/JsonLogicArray;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+	public fun getKey ()Ljava/lang/String;
+}
+
+public final class co/branch/jsonlogic/evaluator/expressions/FilterExpression$Companion {
+	public final fun getINSTANCE ()Lco/branch/jsonlogic/evaluator/expressions/FilterExpression;
+}
+
+public final class co/branch/jsonlogic/evaluator/expressions/IfExpression : co/branch/jsonlogic/evaluator/JsonLogicExpression {
+	public static final field Companion Lco/branch/jsonlogic/evaluator/expressions/IfExpression$Companion;
+	public fun evaluate (Lco/branch/jsonlogic/evaluator/JsonLogicEvaluator;Lco/branch/jsonlogic/ast/JsonLogicArray;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+	public fun getKey ()Ljava/lang/String;
+}
+
+public final class co/branch/jsonlogic/evaluator/expressions/IfExpression$Companion {
+	public final fun getIF ()Lco/branch/jsonlogic/evaluator/expressions/IfExpression;
+	public final fun getTERNARY ()Lco/branch/jsonlogic/evaluator/expressions/IfExpression;
+}
+
+public final class co/branch/jsonlogic/evaluator/expressions/InExpression : co/branch/jsonlogic/evaluator/expressions/PreEvaluatedArgumentsExpression {
+	public static final field Companion Lco/branch/jsonlogic/evaluator/expressions/InExpression$Companion;
+	public fun evaluate (Lco/branch/jsonlogic/evaluator/JsonLogicEvaluator;Lco/branch/jsonlogic/ast/JsonLogicArray;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+	public fun evaluate (Ljava/util/List;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+	public fun getKey ()Ljava/lang/String;
+}
+
+public final class co/branch/jsonlogic/evaluator/expressions/InExpression$Companion {
+	public final fun getINSTANCE ()Lco/branch/jsonlogic/evaluator/expressions/InExpression;
+}
+
+public final class co/branch/jsonlogic/evaluator/expressions/InequalityExpression : co/branch/jsonlogic/evaluator/JsonLogicExpression {
+	public static final field Companion Lco/branch/jsonlogic/evaluator/expressions/InequalityExpression$Companion;
+	public fun evaluate (Lco/branch/jsonlogic/evaluator/JsonLogicEvaluator;Lco/branch/jsonlogic/ast/JsonLogicArray;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+	public fun getKey ()Ljava/lang/String;
+}
+
+public final class co/branch/jsonlogic/evaluator/expressions/InequalityExpression$Companion {
+	public final fun getINSTANCE ()Lco/branch/jsonlogic/evaluator/expressions/InequalityExpression;
+}
+
+public final class co/branch/jsonlogic/evaluator/expressions/LogExpression : co/branch/jsonlogic/evaluator/expressions/PreEvaluatedArgumentsExpression {
+	public static final field Companion Lco/branch/jsonlogic/evaluator/expressions/LogExpression$Companion;
+	public fun <init> ()V
+	public fun <init> (Lkotlin/jvm/functions/Function1;)V
+	public synthetic fun <init> (Lkotlin/jvm/functions/Function1;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun evaluate (Lco/branch/jsonlogic/evaluator/JsonLogicEvaluator;Lco/branch/jsonlogic/ast/JsonLogicArray;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+	public fun evaluate (Ljava/util/List;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+	public fun getKey ()Ljava/lang/String;
+}
+
+public final class co/branch/jsonlogic/evaluator/expressions/LogExpression$Companion {
+	public final fun getSTDOUT ()Lco/branch/jsonlogic/evaluator/expressions/LogExpression;
+}
+
+public final class co/branch/jsonlogic/evaluator/expressions/LogicExpression : co/branch/jsonlogic/evaluator/JsonLogicExpression {
+	public static final field Companion Lco/branch/jsonlogic/evaluator/expressions/LogicExpression$Companion;
+	public fun evaluate (Lco/branch/jsonlogic/evaluator/JsonLogicEvaluator;Lco/branch/jsonlogic/ast/JsonLogicArray;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+	public fun getKey ()Ljava/lang/String;
+}
+
+public final class co/branch/jsonlogic/evaluator/expressions/LogicExpression$Companion {
+	public final fun getAND ()Lco/branch/jsonlogic/evaluator/expressions/LogicExpression;
+	public final fun getOR ()Lco/branch/jsonlogic/evaluator/expressions/LogicExpression;
+}
+
+public final class co/branch/jsonlogic/evaluator/expressions/MapExpression : co/branch/jsonlogic/evaluator/JsonLogicExpression {
+	public static final field Companion Lco/branch/jsonlogic/evaluator/expressions/MapExpression$Companion;
+	public fun evaluate (Lco/branch/jsonlogic/evaluator/JsonLogicEvaluator;Lco/branch/jsonlogic/ast/JsonLogicArray;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+	public fun getKey ()Ljava/lang/String;
+}
+
+public final class co/branch/jsonlogic/evaluator/expressions/MapExpression$Companion {
+	public final fun getINSTANCE ()Lco/branch/jsonlogic/evaluator/expressions/MapExpression;
+}
+
+public final class co/branch/jsonlogic/evaluator/expressions/MathExpression : co/branch/jsonlogic/evaluator/expressions/PreEvaluatedArgumentsExpression {
+	public static final field Companion Lco/branch/jsonlogic/evaluator/expressions/MathExpression$Companion;
+	public fun <init> (Ljava/lang/String;Lkotlin/jvm/functions/Function2;I)V
+	public synthetic fun <init> (Ljava/lang/String;Lkotlin/jvm/functions/Function2;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun evaluate (Lco/branch/jsonlogic/evaluator/JsonLogicEvaluator;Lco/branch/jsonlogic/ast/JsonLogicArray;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+	public fun evaluate (Ljava/util/List;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+	public fun getKey ()Ljava/lang/String;
+}
+
+public final class co/branch/jsonlogic/evaluator/expressions/MathExpression$Companion {
+	public final fun getADD ()Lco/branch/jsonlogic/evaluator/expressions/MathExpression;
+	public final fun getDIVIDE ()Lco/branch/jsonlogic/evaluator/expressions/MathExpression;
+	public final fun getMAX ()Lco/branch/jsonlogic/evaluator/expressions/MathExpression;
+	public final fun getMIN ()Lco/branch/jsonlogic/evaluator/expressions/MathExpression;
+	public final fun getMODULO ()Lco/branch/jsonlogic/evaluator/expressions/MathExpression;
+	public final fun getMULTIPLY ()Lco/branch/jsonlogic/evaluator/expressions/MathExpression;
+	public final fun getSUBTRACT ()Lco/branch/jsonlogic/evaluator/expressions/MathExpression;
+}
+
+public final class co/branch/jsonlogic/evaluator/expressions/MergeExpression : co/branch/jsonlogic/evaluator/expressions/PreEvaluatedArgumentsExpression {
+	public static final field Companion Lco/branch/jsonlogic/evaluator/expressions/MergeExpression$Companion;
+	public fun evaluate (Lco/branch/jsonlogic/evaluator/JsonLogicEvaluator;Lco/branch/jsonlogic/ast/JsonLogicArray;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+	public fun evaluate (Ljava/util/List;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+	public fun getKey ()Ljava/lang/String;
+}
+
+public final class co/branch/jsonlogic/evaluator/expressions/MergeExpression$Companion {
+	public final fun getINSTANCE ()Lco/branch/jsonlogic/evaluator/expressions/MergeExpression;
+}
+
+public final class co/branch/jsonlogic/evaluator/expressions/MissingExpression : co/branch/jsonlogic/evaluator/expressions/PreEvaluatedArgumentsExpression {
+	public static final field Companion Lco/branch/jsonlogic/evaluator/expressions/MissingExpression$Companion;
+	public fun evaluate (Lco/branch/jsonlogic/evaluator/JsonLogicEvaluator;Lco/branch/jsonlogic/ast/JsonLogicArray;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+	public fun evaluate (Ljava/util/List;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+	public fun getKey ()Ljava/lang/String;
+}
+
+public final class co/branch/jsonlogic/evaluator/expressions/MissingExpression$Companion {
+	public final fun getALL ()Lco/branch/jsonlogic/evaluator/expressions/MissingExpression;
+	public final fun getSOME ()Lco/branch/jsonlogic/evaluator/expressions/MissingExpression;
+}
+
+public final class co/branch/jsonlogic/evaluator/expressions/NotExpression : co/branch/jsonlogic/evaluator/expressions/PreEvaluatedArgumentsExpression {
+	public static final field Companion Lco/branch/jsonlogic/evaluator/expressions/NotExpression$Companion;
+	public fun evaluate (Lco/branch/jsonlogic/evaluator/JsonLogicEvaluator;Lco/branch/jsonlogic/ast/JsonLogicArray;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+	public fun evaluate (Ljava/util/List;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+	public fun getKey ()Ljava/lang/String;
+}
+
+public final class co/branch/jsonlogic/evaluator/expressions/NotExpression$Companion {
+	public final fun getDOUBLE ()Lco/branch/jsonlogic/evaluator/expressions/NotExpression;
+	public final fun getSINGLE ()Lco/branch/jsonlogic/evaluator/expressions/NotExpression;
+}
+
+public final class co/branch/jsonlogic/evaluator/expressions/NumericComparisonExpression : co/branch/jsonlogic/evaluator/expressions/PreEvaluatedArgumentsExpression {
+	public static final field Companion Lco/branch/jsonlogic/evaluator/expressions/NumericComparisonExpression$Companion;
+	public fun evaluate (Lco/branch/jsonlogic/evaluator/JsonLogicEvaluator;Lco/branch/jsonlogic/ast/JsonLogicArray;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+	public fun evaluate (Ljava/util/List;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+	public fun getKey ()Ljava/lang/String;
+}
+
+public final class co/branch/jsonlogic/evaluator/expressions/NumericComparisonExpression$Companion {
+	public final fun getGT ()Lco/branch/jsonlogic/evaluator/expressions/NumericComparisonExpression;
+	public final fun getGTE ()Lco/branch/jsonlogic/evaluator/expressions/NumericComparisonExpression;
+	public final fun getLT ()Lco/branch/jsonlogic/evaluator/expressions/NumericComparisonExpression;
+	public final fun getLTE ()Lco/branch/jsonlogic/evaluator/expressions/NumericComparisonExpression;
+}
+
+public abstract interface class co/branch/jsonlogic/evaluator/expressions/PreEvaluatedArgumentsExpression : co/branch/jsonlogic/evaluator/JsonLogicExpression {
+	public fun evaluate (Lco/branch/jsonlogic/evaluator/JsonLogicEvaluator;Lco/branch/jsonlogic/ast/JsonLogicArray;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+	public abstract fun evaluate (Ljava/util/List;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+}
+
+public final class co/branch/jsonlogic/evaluator/expressions/PreEvaluatedArgumentsExpression$DefaultImpls {
+	public static fun evaluate (Lco/branch/jsonlogic/evaluator/expressions/PreEvaluatedArgumentsExpression;Lco/branch/jsonlogic/evaluator/JsonLogicEvaluator;Lco/branch/jsonlogic/ast/JsonLogicArray;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+}
+
+public final class co/branch/jsonlogic/evaluator/expressions/ReduceExpression : co/branch/jsonlogic/evaluator/JsonLogicExpression {
+	public static final field Companion Lco/branch/jsonlogic/evaluator/expressions/ReduceExpression$Companion;
+	public fun evaluate (Lco/branch/jsonlogic/evaluator/JsonLogicEvaluator;Lco/branch/jsonlogic/ast/JsonLogicArray;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+	public fun getKey ()Ljava/lang/String;
+}
+
+public final class co/branch/jsonlogic/evaluator/expressions/ReduceExpression$Companion {
+	public final fun getINSTANCE ()Lco/branch/jsonlogic/evaluator/expressions/ReduceExpression;
+}
+
+public final class co/branch/jsonlogic/evaluator/expressions/StrictEqualityExpression : co/branch/jsonlogic/evaluator/expressions/PreEvaluatedArgumentsExpression {
+	public static final field Companion Lco/branch/jsonlogic/evaluator/expressions/StrictEqualityExpression$Companion;
+	public fun evaluate (Lco/branch/jsonlogic/evaluator/JsonLogicEvaluator;Lco/branch/jsonlogic/ast/JsonLogicArray;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+	public fun evaluate (Ljava/util/List;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+	public fun getKey ()Ljava/lang/String;
+}
+
+public final class co/branch/jsonlogic/evaluator/expressions/StrictEqualityExpression$Companion {
+	public final fun getINSTANCE ()Lco/branch/jsonlogic/evaluator/expressions/StrictEqualityExpression;
+}
+
+public final class co/branch/jsonlogic/evaluator/expressions/StrictInequalityExpression : co/branch/jsonlogic/evaluator/JsonLogicExpression {
+	public static final field Companion Lco/branch/jsonlogic/evaluator/expressions/StrictInequalityExpression$Companion;
+	public fun evaluate (Lco/branch/jsonlogic/evaluator/JsonLogicEvaluator;Lco/branch/jsonlogic/ast/JsonLogicArray;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+	public fun getKey ()Ljava/lang/String;
+}
+
+public final class co/branch/jsonlogic/evaluator/expressions/StrictInequalityExpression$Companion {
+	public final fun getINSTANCE ()Lco/branch/jsonlogic/evaluator/expressions/StrictInequalityExpression;
+}
+
+public final class co/branch/jsonlogic/evaluator/expressions/SubstringExpression : co/branch/jsonlogic/evaluator/expressions/PreEvaluatedArgumentsExpression {
+	public static final field Companion Lco/branch/jsonlogic/evaluator/expressions/SubstringExpression$Companion;
+	public fun evaluate (Lco/branch/jsonlogic/evaluator/JsonLogicEvaluator;Lco/branch/jsonlogic/ast/JsonLogicArray;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+	public fun evaluate (Ljava/util/List;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+	public fun getKey ()Ljava/lang/String;
+}
+
+public final class co/branch/jsonlogic/evaluator/expressions/SubstringExpression$Companion {
+	public final fun getINSTANCE ()Lco/branch/jsonlogic/evaluator/expressions/SubstringExpression;
+}
+

@@ -18,11 +18,24 @@ import kotlin.io.encoding.ExperimentalEncodingApi
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.android.kotlin.multiplatform.library)
+    alias(libs.plugins.binary.compatibility.validator)
     `maven-publish`
 }
 
 group = "co.branch"
 version = "0.1.0-SNAPSHOT"
+
+// KLib ABI validation is experimental in BCV 0.17.0, but deterministic here: iosArm64 and
+// iosSimulatorArm64 main klibs compile without a full Xcode install (only linking a test
+// binary needs the Xcode toolchain), and wasmJs needs nothing platform-specific. Without this,
+// BCV only validates the jvm dump; it does not support this project's androidLibrary target
+// either way, so klib is the only route to covering the native and wasmJs public surface.
+apiValidation {
+    @OptIn(kotlinx.validation.ExperimentalBCVApi::class)
+    klib {
+        enabled = true
+    }
+}
 
 /**
  * Embeds every JSON fixture file under fixtures/ as base64 into a single generated Kotlin file,

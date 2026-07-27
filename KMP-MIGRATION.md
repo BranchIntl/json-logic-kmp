@@ -96,7 +96,7 @@ Dependency order: A → {B, C, D} → E → {F1, F2, F3} → G → I1 → H → 
   error-message/jsonPath formatting helpers; numeric result construction via `CanonicalNumber`;
   `var` resolution incl. the `MISSING` sentinel; `MissingExpression` (`missing`/`missing_some`).
   Depends: C, D.
-- [ ] **WS-F1 numeric + equality** (Opus 5) — `Math` (`+ - * / % min max`), `NumericComparison`
+- [x] **WS-F1 numeric + equality** (Opus 5, [PR #7](https://github.com/BranchIntl/json-logic-kmp/pull/7)) — `Math` (`+ - * / % min max`), `NumericComparison`
   (`> >= < <=`), `Equality`/`Inequality` (loose-coercion matrix), `StrictEquality`/`StrictInequality`.
   Depends: E.
 - [ ] **WS-F2 control + string ops** (Sonnet 5) — `If` (`if`/`?:`), `Logic` (`and`/`or`), `Not`
@@ -141,6 +141,19 @@ Collected as workstreams land; finalized when the doc moves to `docs/` at the en
 - **Upstream's `publish.yml` was a live trap for fork workflows.** It triggered on every push to
   `main`, attempting a Sonatype upload and a version-bump commit pushed back to `main`. Deleted at
   kickoff, before the first merge could fire it.
+- **The spec said one thing, the Java source said the opposite — source wins.** The WS-F1 brief
+  asserted `===` uses `Objects.equals` (bitwise on boxed doubles). The actual oracle is reversed:
+  loose `==` compares numbers via `Double.equals` (bitwise: `NaN==NaN` true, `-0.0==0.0` false)
+  while `===` uses IEEE `==` (`NaN===NaN` false, `-0.0===0.0` true). The implementer ported from
+  the source and proved it with a ~180-rule probe against the real engine; every workstream since
+  WS-E runs such a probe rather than trusting anyone's reading.
+- **One accepted behavioral deviation: upstream's always-false `ArrayLike.equals`.** `missing`
+  returns its argument-spread wrapper, whose `equals` unconditionally returns false — so in Java,
+  `{"===":[{"missing":[["a","b"]]},["a","b"]]}` is false (yet true with operands swapped), and the
+  same wrapper makes some `in` lookups asymmetric. The KMP domain has no wrapper type, so the port
+  answers structurally (true). Unreachable by any fixture; reproducing it would mean adding a marker
+  list type to the value domain to preserve a pathological asymmetry. Accepted; to be listed in the
+  README known-deviations (WS-K).
 - **Squash-merge + follow-up push cancels the merge run.** With a shared concurrency group and
   `cancel-in-progress`, the tracking-doc push that followed each merge cancelled the merge commit's
   CI run, making the Actions tab look like CI never ran

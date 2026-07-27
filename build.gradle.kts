@@ -1,6 +1,7 @@
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.PathSensitive
@@ -16,6 +17,7 @@ import kotlin.io.encoding.ExperimentalEncodingApi
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.android.kotlin.multiplatform.library)
+    `maven-publish`
 }
 
 group = "co.branch"
@@ -162,4 +164,31 @@ tasks.named<Test>("jvmTest") {
 // Guarantee codegen runs before every Kotlin compilation, so no compile races the generated source.
 tasks.withType<KotlinCompilationTask<*>>().configureEach {
     dependsOn(generateFixtures)
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/BranchIntl/json-logic-kmp")
+            credentials {
+                username = providers.environmentVariable("GITHUB_ACTOR").orNull
+                password = providers.environmentVariable("GITHUB_TOKEN").orNull
+            }
+        }
+    }
+
+    publications.withType<MavenPublication>().configureEach {
+        pom {
+            name = "json-logic-kmp"
+            description = "Kotlin Multiplatform port of jamsesso/json-logic-java"
+            url = "https://github.com/BranchIntl/json-logic-kmp"
+            licenses {
+                license {
+                    name = "MIT License"
+                    url = "https://github.com/BranchIntl/json-logic-kmp/blob/main/LICENSE"
+                }
+            }
+        }
+    }
 }

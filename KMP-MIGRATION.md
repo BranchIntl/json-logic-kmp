@@ -9,8 +9,10 @@ mechanically by a temporary `:parity` subproject that runs both engines over the
 46 error fixtures on the JVM and diffs the results. The Java sources stay in the tree (as `:parity`)
 until the diff reports zero disagreements, then they are deleted.
 
-This file is the single tracking document for the migration and is deleted in the final workstream.
-Checkbox states: `[ ]` not started · `[~]` in progress · `[x]` merged to `main`.
+This file is the single tracking document for the migration. Each completed workstream links to the
+PR that landed it, and a Learnings section collects what the migration taught us as we go. When the
+migration completes, the doc is finalized and moved to `docs/KMP-MIGRATION.md` as the permanent
+record. Checkbox states: `[ ]` not started · `[~]` in progress · `[x]` merged to `main`.
 
 ## Execution model
 
@@ -23,6 +25,14 @@ Checkbox states: `[ ]` not started · `[~]` in progress · `[x]` merged to `main
   lanes pass and the Codex review converges; they merge only after CI is green. **Squash-merge only.**
 - Merge queue of one: before opening the PR, the branch is rebased onto current `origin/main` and the
   lanes re-run on the rebased head; that SHA is recorded in the PR body.
+
+Process amendments since kickoff:
+
+- `main` is branch-protected: the three CI lanes are required checks (strict up-to-date mode,
+  admins included), so nothing merges without green CI and no direct pushes are possible.
+- Docs-only pushes no longer trigger the build workflow
+  ([PR #4](https://github.com/BranchIntl/json-logic-kmp/pull/4)) — merge-commit runs previously got
+  cancelled by the tracking-doc push that followed them.
 
 ### Standing rules for workstream branches
 
@@ -60,7 +70,7 @@ Checkbox states: `[ ]` not started · `[~]` in progress · `[x]` merged to `main
 
 Dependency order: A → {B, C, D} → E → {F1, F2, F3} → G → I1 → H → I2 → J → K. One PR each.
 
-- [x] **WS-A build-modernization** (Opus 5) — Gradle wrapper 6.5.1→9.3.1; `settings.gradle.kts`; root
+- [x] **WS-A build-modernization** (Opus 5, [PR #1](https://github.com/BranchIntl/json-logic-kmp/pull/1)) — Gradle wrapper 6.5.1→9.3.1; `settings.gradle.kts`; root
   project becomes the KMP module (all 5 targets, complete build) + `:parity` subproject (Java + Gson +
   JUnit moved **verbatim**, all 110 tests green); complete `gradle/libs.versions.toml` pre-declaring
   every downstream dependency; `.gitignore`; drop `.tool-versions`; strip the dead `maven`/
@@ -68,18 +78,18 @@ Dependency order: A → {B, C, D} → E → {F1, F2, F3} → G → I1 → H → 
   JDK 21, wasm on ubuntu, iOS simulator on macOS) triggered on PRs to `main` and pushes to `main`.
   Note: binary-compatibility-validator is deliberately **not** applied until WS-I2, so `api/` dumps
   never become a cross-branch conflict while the API surface grows.
-- [x] **WS-B fixtures** (Sonnet 5) — move fixtures to `fixtures/`; Gradle codegen task base64-embeds
+- [x] **WS-B fixtures** (Sonnet 5, [PR #3](https://github.com/BranchIntl/json-logic-kmp/pull/3)) — move fixtures to `fixtures/`; Gradle codegen task base64-embeds
   them into generated `commonTest` sources (chunked literals — JVM 65 535-byte constant cap); fixture
   model that skips the 17 string section-header entries; semantic comparator (numbers by double value,
   deep for arrays/objects); engine-agnostic replay harness (engine passed as a function) with an
   operator filter for partial fixture subsets; `:parity` test resources re-pointed at `fixtures/`.
   Depends: A.
-- [x] **WS-C canonical helpers** (Opus 5) — `internal/CanonicalNumber.kt` (`Double`→`String`
+- [x] **WS-C canonical helpers** (Opus 5, [PR #5](https://github.com/BranchIntl/json-logic-kmp/pull/5)) — `internal/CanonicalNumber.kt` (`Double`→`String`
   reproducing `java.lang.Double.toString` per the JDK 19+ shortest-decimal spec — the parity
   oracle is the JAVA engine, so Java formatting semantics, not ECMAScript's — plus a
   `Double.parseDouble`-faithful `String`→`Double`) and `internal/JavaSplit.kt`, with cross-target
   determinism tests (jvm, wasmJsNode, iosSimulatorArm64). Depends: A.
-- [x] **WS-D AST + parser** (Sonnet 5) — sealed `ast/JsonLogicNode.kt` hierarchy; `JsonLogicParser.kt`
+- [x] **WS-D AST + parser** (Sonnet 5, [PR #2](https://github.com/BranchIntl/json-logic-kmp/pull/2)) — sealed `ast/JsonLogicNode.kt` hierarchy; `JsonLogicParser.kt`
   (`JsonElement` → node tree); parse exception. Depends: A.
 - [ ] **WS-E evaluator core** (Opus 5) — `JsonLogicEvaluator`; `JsonLogicExpression` +
   `PreEvaluatedArgumentsExpression` interfaces; evaluation exception; shared `truthy`; shared
@@ -104,7 +114,37 @@ Dependency order: A → {B, C, D} → E → {F1, F2, F3} → G → I1 → H → 
 - [ ] **WS-J publishing** (Sonnet 5) — `maven-publish` to GitHub Packages under `BranchIntl`; new
   `publish.yml` on `workflow_dispatch`. Depends: I2.
 - [ ] **WS-K docs** (Sonnet 5) — README rewrite (KMP usage, fork/MIT attribution, known quirks incl.
-  Infinity/NaN and 2^53 precision notes, build prerequisites); CHANGELOG; delete this file. Depends: I2.
+  Infinity/NaN and 2^53 precision notes, build prerequisites); CHANGELOG; finalize this doc's
+  Learnings section and move it to `docs/KMP-MIGRATION.md` as the migration's permanent record.
+  Depends: I2.
+
+## Learnings
+
+Collected as workstreams land; finalized when the doc moves to `docs/` at the end of the migration.
+
+- **Kotlin block comments nest.** A KDoc containing a glob like `fixtures/*.json` opens a second
+  comment level at the inner `/*` and silently swallows all code after it — no compile error, just
+  bewildering downstream symptoms (phantom AGP config errors, unresolved references). Found in WS-B
+  after significant debugging; KDocs here now avoid `/*` sequences (write "every JSON file under
+  fixtures/").
+- **JDK 17 and JDK 19+ genuinely disagree on `Double.toString`.** 714 of a 117,341-value corpus
+  format differently (e.g. 1e23: `9.999999999999999E22` on 17 vs `1.0E23` on 19+). WS-C implements
+  the JDK 19+ spec and mapped the divergence set precisely: zero divergences for magnitudes in
+  `[1e-3, 1e7)`, where the entire fixture corpus lives — so local JDK 17 runs and CI's JDK 21 agree
+  on everything the migration exercises.
+- **`repositoriesMode = PREFER_SETTINGS` breaks the wasm target.** The Kotlin plugin injects the
+  nodejs.org Ivy repository as a *project* repository for the Node runtime; settings-preferred mode
+  blocks it and `:kotlinWasmNodeJsSetup` fails resolution (WS-A). Left at Gradle's default.
+- **An "empty" KMP module isn't empty with a placeholder file.** Even an `internal val` compiles to
+  a Java-visible `static` accessor in the JVM jar. Every target builds fine with literally zero
+  Kotlin sources (all compilations NO-SOURCE), so the placeholder was deleted (WS-A Codex review).
+- **Upstream's `publish.yml` was a live trap for fork workflows.** It triggered on every push to
+  `main`, attempting a Sonatype upload and a version-bump commit pushed back to `main`. Deleted at
+  kickoff, before the first merge could fire it.
+- **Squash-merge + follow-up push cancels the merge run.** With a shared concurrency group and
+  `cancel-in-progress`, the tracking-doc push that followed each merge cancelled the merge commit's
+  CI run, making the Actions tab look like CI never ran
+  ([PR #4](https://github.com/BranchIntl/json-logic-kmp/pull/4) fixed this with `paths-ignore`).
 
 ## Done criteria
 

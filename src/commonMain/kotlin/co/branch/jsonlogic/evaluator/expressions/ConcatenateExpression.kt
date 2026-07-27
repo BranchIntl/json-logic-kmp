@@ -10,7 +10,10 @@ import co.branch.jsonlogic.internal.javaStringify
  * `-2`) rather than the full decimal — matching upstream, which special-cases any `Double` whose own
  * `toString` ends in `.0` and prints its `intValue()` instead. Only whole-number magnitudes below
  * `1e7` take this path: past that, [canonicalDoubleToString] switches to scientific notation (e.g.
- * `1.0E7`), which does not end in `.0`. Every other value renders through [javaStringify].
+ * `1.0E7`), which does not end in `.0`. A null argument throws rather than rendering as the string
+ * `"null"`: upstream renders every argument through a direct `toString()` call, not the null-safe
+ * `String.valueOf` that `log`'s string concatenation uses. Every other value renders through
+ * [javaStringify].
  */
 class ConcatenateExpression private constructor() : PreEvaluatedArgumentsExpression {
 
@@ -25,7 +28,7 @@ class ConcatenateExpression private constructor() : PreEvaluatedArgumentsExpress
             return if (rendered.endsWith(".0")) value.toInt().toString() else rendered
         }
 
-        return javaStringify(value)
+        return javaStringify(value!!)
     }
 
     companion object {

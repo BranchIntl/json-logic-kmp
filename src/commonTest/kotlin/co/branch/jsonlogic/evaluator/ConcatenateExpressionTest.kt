@@ -3,6 +3,7 @@ package co.branch.jsonlogic.evaluator
 import co.branch.jsonlogic.evaluator.expressions.ConcatenateExpression
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 /**
  * Pins `cat`'s number rendering (the whole-number-Double-to-integer quirk and its `1e7` boundary),
@@ -70,9 +71,21 @@ class ConcatenateExpressionTest {
     }
 
     @Test
-    fun booleansAndNullRenderTheWayStringValueOfWould() {
+    fun booleansRenderAsTrueAndFalse() {
         assertEquals("truefalse", ConcatenateExpression.INSTANCE.evaluate(listOf(true, false), null, "$"))
-        assertEquals("null", ConcatenateExpression.INSTANCE.evaluate(listOf<Any?>(null), null, "$"))
+    }
+
+    @Test
+    fun aNullArgumentThrowsRatherThanRenderingAsTheStringNull() {
+        // Upstream renders every cat argument through a direct toString() call, not the null-safe
+        // String.valueOf that log's string concatenation uses, so a null argument crashes here —
+        // whether it is a literal null or a var lookup that resolves to null.
+        assertFailsWith<NullPointerException> {
+            ConcatenateExpression.INSTANCE.evaluate(listOf<Any?>(null), null, "$")
+        }
+        assertFailsWith<NullPointerException> {
+            evaluate("""{"cat": [{"var": "x"}]}""", mapOf("x" to null), controlStringExpressions)
+        }
     }
 
     @Test

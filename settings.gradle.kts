@@ -14,5 +14,3 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "json-logic-kmp"
-
-include(":parity")

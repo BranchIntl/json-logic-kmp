@@ -91,7 +91,7 @@ Dependency order: A → {B, C, D} → E → {F1, F2, F3} → G → I1 → H → 
   determinism tests (jvm, wasmJsNode, iosSimulatorArm64). Depends: A.
 - [x] **WS-D AST + parser** (Sonnet 5, [PR #2](https://github.com/BranchIntl/json-logic-kmp/pull/2)) — sealed `ast/JsonLogicNode.kt` hierarchy; `JsonLogicParser.kt`
   (`JsonElement` → node tree); parse exception. Depends: A.
-- [ ] **WS-E evaluator core** (Opus 5) — `JsonLogicEvaluator`; `JsonLogicExpression` +
+- [x] **WS-E evaluator core** (Opus 5, [PR #6](https://github.com/BranchIntl/json-logic-kmp/pull/6)) — `JsonLogicEvaluator`; `JsonLogicExpression` +
   `PreEvaluatedArgumentsExpression` interfaces; evaluation exception; shared `truthy`; shared
   error-message/jsonPath formatting helpers; numeric result construction via `CanonicalNumber`;
   `var` resolution incl. the `MISSING` sentinel; `MissingExpression` (`missing`/`missing_some`).

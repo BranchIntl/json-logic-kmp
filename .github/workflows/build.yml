@@ -49,4 +49,4 @@ jobs:
           java-version: 21
       - uses: gradle/actions/setup-gradle@v4
       - name: iOS simulator tests
-        run: ./gradlew iosSimulatorArm64Test
+        run: ./gradlew iosSimulatorArm64Test klibApiCheck

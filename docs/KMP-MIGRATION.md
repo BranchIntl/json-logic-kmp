@@ -10,9 +10,9 @@ mechanically by a temporary `:parity` subproject that runs both engines over the
 until the diff reports zero disagreements, then they are deleted.
 
 This file is the single tracking document for the migration. Each completed workstream links to the
-PR that landed it, and a Learnings section collects what the migration taught us as we go. When the
-migration completes, the doc is finalized and moved to `docs/KMP-MIGRATION.md` as the permanent
-record. Checkbox states: `[ ]` not started · `[~]` in progress · `[x]` merged to `main`.
+PR that landed it, and a Learnings section collects what the migration taught us as we go. Now that
+the migration is complete, this doc has been finalized and moved to `docs/KMP-MIGRATION.md` as its
+permanent record. Checkbox states: `[ ]` not started · `[~]` in progress · `[x]` merged to `main`.
 
 ## Execution model
 
@@ -113,14 +113,15 @@ Dependency order: A → {B, C, D} → E → {F1, F2, F3} → G → I1 → H → 
   binary-compatibility-validator; `apiDump`; commit `api/`; add `apiCheck` to CI. Depends: H.
 - [x] **WS-J publishing** (Sonnet 5, [PR #13](https://github.com/BranchIntl/json-logic-kmp/pull/13)) — `maven-publish` to GitHub Packages under `BranchIntl`; new
   `publish.yml` on `workflow_dispatch`. Depends: I2.
-- [ ] **WS-K docs** (Sonnet 5) — README rewrite (KMP usage, fork/MIT attribution, known quirks incl.
+- [x] **WS-K docs** (Sonnet 5, [PR #15](https://github.com/BranchIntl/json-logic-kmp/pull/15)) — README rewrite (KMP usage, fork/MIT attribution, known quirks incl.
   Infinity/NaN and 2^53 precision notes, build prerequisites); CHANGELOG; finalize this doc's
   Learnings section and move it to `docs/KMP-MIGRATION.md` as the migration's permanent record.
   Depends: I2.
 
 ## Learnings
 
-Collected as workstreams land; finalized when the doc moves to `docs/` at the end of the migration.
+Collected as workstreams landed; finalized now that the doc has moved to `docs/` as the migration's
+permanent record.
 
 - **Kotlin block comments nest.** A KDoc containing a glob like `fixtures/*.json` opens a second
   comment level at the inner `/*` and silently swallows all code after it — no compile error, just
@@ -162,6 +163,18 @@ Collected as workstreams land; finalized when the doc moves to `docs/` at the en
   `-XX:-OmitStackTraceInFastThrow` so every throwable keeps its own trace. Getting this sound took
   a two-round review: the first fix's waiver was site-blind, and its bypass hid in the pipeline's
   early agreement return, not in the predicate the tests exercised.
+- **`substr`/`cat`'s null-operand NPE message is JVM-synthesized, not engine-authored.** Both engines
+  render their first argument without a null check, so both throw `NullPointerException` on a null
+  operand — but the message text comes from the JVM's own bytecode-derived diagnostics (JEP 358
+  "helpful NullPointerExceptions"), not from either engine's source, and the JVM stops attaching it
+  once the throw site goes hot. The parity fuzzer's waiver for this case had to be tightened to verify
+  provenance (which engine's frame is topmost) rather than trust message or even stack-trace equality,
+  since neither is stable across runs (WS-I1).
+- **BCV's non-strict klib validation silently strips targets it can't compile on the current host.**
+  Running `apiCheck` on ubuntu only ever validated the jvm and wasmJs surfaces: iosArm64 and
+  iosSimulatorArm64 were dropped from the comparison with no failure and no warning, so their
+  committed ABI baseline went unenforced until `klibApiCheck` was added to the macOS-only `ios` CI
+  lane, the one host that can compile every klib target (WS-I2).
 - **Squash-merge + follow-up push cancels the merge run.** With a shared concurrency group and
   `cancel-in-progress`, the tracking-doc push that followed each merge cancelled the merge commit's
   CI run, making the Actions tab look like CI never ran

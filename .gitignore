@@ -1,7 +1,9 @@
 .gradle/
+.kotlin/
 .idea/
 out/
 build/
+local.properties
 .DS_Store
 secring.gpg
 .vscode

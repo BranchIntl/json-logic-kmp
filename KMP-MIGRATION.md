@@ -101,7 +101,7 @@ Dependency order: A → {B, C, D} → E → {F1, F2, F3} → G → I1 → H → 
   Depends: E.
 - [x] **WS-F2 control + string ops** (Sonnet 5, [PR #8](https://github.com/BranchIntl/json-logic-kmp/pull/8)) — `If` (`if`/`?:`), `Logic` (`and`/`or`), `Not`
   (`!`/`!!`), `Log`, `Concatenate` (`cat`), `Substring` (`substr`). Depends: E.
-- [ ] **WS-F3 array ops** (Opus 5) — `Map`, `Filter`, `Reduce`, `All`, `ArrayHas` (`some`/`none`),
+- [x] **WS-F3 array ops** (Opus 5, [PR #9](https://github.com/BranchIntl/json-logic-kmp/pull/9)) — `Map`, `Filter`, `Reduce`, `All`, `ArrayHas` (`some`/`none`),
   `Merge`, `In`. Depends: E.
 - [ ] **WS-G entry point** (Sonnet 5) — `JsonLogic` public API; default-operator registration table;
   custom-operation registration; enable the full fixture replay across all targets. Depends: F1–F3.

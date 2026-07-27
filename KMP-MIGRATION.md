@@ -74,7 +74,7 @@ Dependency order: A → {B, C, D} → E → {F1, F2, F3} → G → I1 → H → 
   deep for arrays/objects); engine-agnostic replay harness (engine passed as a function) with an
   operator filter for partial fixture subsets; `:parity` test resources re-pointed at `fixtures/`.
   Depends: A.
-- [~] **WS-C canonical helpers** (Opus 5) — `internal/CanonicalNumber.kt` (`Double`→`String`
+- [x] **WS-C canonical helpers** (Opus 5) — `internal/CanonicalNumber.kt` (`Double`→`String`
   reproducing `java.lang.Double.toString` per the JDK 19+ shortest-decimal spec — the parity
   oracle is the JAVA engine, so Java formatting semantics, not ECMAScript's — plus a
   `Double.parseDouble`-faithful `String`→`Double`) and `internal/JavaSplit.kt`, with cross-target

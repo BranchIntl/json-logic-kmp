@@ -2,24 +2,47 @@ name: Build
 
 on:
   pull_request:
-    branches: [ main, master ]
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+concurrency:
+  group: build-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build:
+  jvm-android:
     runs-on: ubuntu-latest
-    environment: snapshot
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up JDK 8
-      uses: actions/setup-java@v3
-      with:
-        java-version: '8'
-        distribution: 'temurin'
-        cache: 'gradle'
-    - name: Setup Gradle
-      uses: gradle/gradle-build-action@v2
-      with:
-        cache-read-only: false
-        gradle-home-cache-cleanup: true
-    - name: Build
-      run: ./gradlew build
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+      - name: JVM, Android host and parity tests
+        run: ./gradlew jvmTest testAndroidHostTest :parity:test assemble
+
+  wasm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Wasm tests
+        run: ./gradlew wasmJsNodeTest
+
+  ios:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+      - name: iOS simulator tests
+        run: ./gradlew iosSimulatorArm64Test

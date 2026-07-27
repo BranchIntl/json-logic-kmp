@@ -1,11 +1,13 @@
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.bundling.Jar
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
@@ -16,6 +18,7 @@ import kotlin.io.encoding.ExperimentalEncodingApi
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.android.kotlin.multiplatform.library)
+    `maven-publish`
 }
 
 group = "co.branch"
@@ -162,4 +165,45 @@ tasks.named<Test>("jvmTest") {
 // Guarantee codegen runs before every Kotlin compilation, so no compile races the generated source.
 tasks.withType<KotlinCompilationTask<*>>().configureEach {
     dependsOn(generateFixtures)
+}
+
+// Embeds the repository's MIT license text (upstream jamsesso/json-logic-java's copyright
+// notice) into the jvm jar's META-INF, its conventional slot on the JVM classpath.
+//
+// The android target's AAR has no equivalent slot: its BundleAar task extends Gradle's plain
+// Zip, not Jar, so it exposes no metaInf CopySpec (or documented alternative) to hook into.
+// Likewise, klib archives (iosArm64/iosSimulatorArm64/wasmJs) have no license-embedding
+// convention in the Kotlin/Native ecosystem. Those artifacts carry the license only through
+// each publication's POM <licenses> block and the repository's top-level LICENSE file.
+tasks.named<Jar>("jvmJar") {
+    metaInf {
+        from(layout.projectDirectory.file("LICENSE"))
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/BranchIntl/json-logic-kmp")
+            credentials {
+                username = providers.environmentVariable("GITHUB_ACTOR").orNull
+                password = providers.environmentVariable("GITHUB_TOKEN").orNull
+            }
+        }
+    }
+
+    publications.withType<MavenPublication>().configureEach {
+        pom {
+            name = "json-logic-kmp"
+            description = "Kotlin Multiplatform port of jamsesso/json-logic-java"
+            url = "https://github.com/BranchIntl/json-logic-kmp"
+            licenses {
+                license {
+                    name = "MIT License"
+                    url = "https://github.com/BranchIntl/json-logic-kmp/blob/main/LICENSE"
+                }
+            }
+        }
+    }
 }

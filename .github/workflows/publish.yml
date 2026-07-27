@@ -1,0 +1,30 @@
+name: Publish
+
+on:
+  workflow_dispatch:
+
+permissions:
+  packages: write
+  contents: read
+
+jobs:
+  publish:
+    # macos-15 so the iOS klib and wasmJs publications (which cannot be built on ubuntu) are
+    # published alongside jvm/android in the same run; free for public GitHub repos.
+    runs-on: macos-15
+    # This workflow only ever fires via workflow_dispatch, but a dispatch can be run against any
+    # ref. Restricting to main keeps a dispatch from a feature branch a no-op instead of a publish.
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4.8.0
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4.4.3
+      - name: Build and test every macOS-buildable lane
+        run: ./gradlew build
+      - name: Publish all publications to GitHub Packages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew publishAllPublicationsToGitHubPackagesRepository

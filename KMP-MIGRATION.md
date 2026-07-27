@@ -111,7 +111,7 @@ Dependency order: A → {B, C, D} → E → {F1, F2, F3} → G → I1 → H → 
   `commonTest`; test-only, no `commonMain` edits. Depends: I1.
 - [ ] **WS-I2 teardown + API surface** (Sonnet 5) — delete `:parity` + the Java tree; apply
   binary-compatibility-validator; `apiDump`; commit `api/`; add `apiCheck` to CI. Depends: H.
-- [ ] **WS-J publishing** (Sonnet 5) — `maven-publish` to GitHub Packages under `BranchIntl`; new
+- [x] **WS-J publishing** (Sonnet 5, [PR #13](https://github.com/BranchIntl/json-logic-kmp/pull/13)) — `maven-publish` to GitHub Packages under `BranchIntl`; new
   `publish.yml` on `workflow_dispatch`. Depends: I2.
 - [ ] **WS-K docs** (Sonnet 5) — README rewrite (KMP usage, fork/MIT attribution, known quirks incl.
   Infinity/NaN and 2^53 precision notes, build prerequisites); CHANGELOG; finalize this doc's

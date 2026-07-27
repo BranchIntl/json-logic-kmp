@@ -74,7 +74,7 @@ Dependency order: A → {B, C, D} → E → {F1, F2, F3} → G → I1 → H → 
 - [~] **WS-C canonical helpers** (Opus 5) — `internal/CanonicalNumber.kt` (ECMAScript-style
   `Double`→`String`, Java-compatible strict `String`→`Double`) and `internal/JavaSplit.kt`, with
   cross-target determinism tests (jvm, wasmJsNode, iosSimulatorArm64). Depends: A.
-- [~] **WS-D AST + parser** (Sonnet 5) — sealed `ast/JsonLogicNode.kt` hierarchy; `JsonLogicParser.kt`
+- [x] **WS-D AST + parser** (Sonnet 5) — sealed `ast/JsonLogicNode.kt` hierarchy; `JsonLogicParser.kt`
   (`JsonElement` → node tree); parse exception. Depends: A.
 - [ ] **WS-E evaluator core** (Opus 5) — `JsonLogicEvaluator`; `JsonLogicExpression` +
   `PreEvaluatedArgumentsExpression` interfaces; evaluation exception; shared `truthy`; shared

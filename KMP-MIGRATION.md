@@ -65,7 +65,7 @@ Dependency order: A → {B, C, D} → E → {F1, F2, F3} → G → I1 → H → 
   JDK 21, wasm on ubuntu, iOS simulator on macOS) triggered on PRs to `main` and pushes to `main`.
   Note: binary-compatibility-validator is deliberately **not** applied until WS-I2, so `api/` dumps
   never become a cross-branch conflict while the API surface grows.
-- [~] **WS-B fixtures** (Sonnet 5) — move fixtures to `fixtures/`; Gradle codegen task base64-embeds
+- [x] **WS-B fixtures** (Sonnet 5) — move fixtures to `fixtures/`; Gradle codegen task base64-embeds
   them into generated `commonTest` sources (chunked literals — JVM 65 535-byte constant cap); fixture
   model that skips the 17 string section-header entries; semantic comparator (numbers by double value,
   deep for arrays/objects); engine-agnostic replay harness (engine passed as a function) with an

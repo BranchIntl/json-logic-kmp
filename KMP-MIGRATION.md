@@ -99,7 +99,7 @@ Dependency order: A → {B, C, D} → E → {F1, F2, F3} → G → I1 → H → 
 - [x] **WS-F1 numeric + equality** (Opus 5, [PR #7](https://github.com/BranchIntl/json-logic-kmp/pull/7)) — `Math` (`+ - * / % min max`), `NumericComparison`
   (`> >= < <=`), `Equality`/`Inequality` (loose-coercion matrix), `StrictEquality`/`StrictInequality`.
   Depends: E.
-- [ ] **WS-F2 control + string ops** (Sonnet 5) — `If` (`if`/`?:`), `Logic` (`and`/`or`), `Not`
+- [x] **WS-F2 control + string ops** (Sonnet 5, [PR #8](https://github.com/BranchIntl/json-logic-kmp/pull/8)) — `If` (`if`/`?:`), `Logic` (`and`/`or`), `Not`
   (`!`/`!!`), `Log`, `Concatenate` (`cat`), `Substring` (`substr`). Depends: E.
 - [ ] **WS-F3 array ops** (Opus 5) — `Map`, `Filter`, `Reduce`, `All`, `ArrayHas` (`some`/`none`),
   `Merge`, `In`. Depends: E.

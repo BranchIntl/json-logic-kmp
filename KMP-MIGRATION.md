@@ -49,14 +49,15 @@ Checkbox states: `[ ]` not started · `[~]` in progress · `[x]` merged to `main
 - [x] **K2** — commit this tracking doc; delete upstream `publish.yml` (its push-to-`main` trigger
   would fire on every squash-merge and attempt a Sonatype upload + version-bump push-back; the
   `workflow_dispatch` GitHub Packages replacement arrives in WS-J).
-- [ ] **K3** — after WS-A merges: one serial full 5-target build to prime the Kotlin/Native and wasm
-  toolchain caches before parallel worktrees spawn.
+- [x] **K3** — after WS-A merges: one serial full 5-target build to prime the Kotlin/Native and wasm
+  toolchain caches before parallel worktrees spawn. (Satisfied by the full `./gradlew build` run on
+  WS-A's rebased head during validation — konan, Node and Android SDK caches are warm and shared.)
 
 ## Workstreams
 
 Dependency order: A → {B, C, D} → E → {F1, F2, F3} → G → I1 → H → I2 → J → K. One PR each.
 
-- [~] **WS-A build-modernization** (Opus 5) — Gradle wrapper 6.5.1→9.3.1; `settings.gradle.kts`; root
+- [x] **WS-A build-modernization** (Opus 5) — Gradle wrapper 6.5.1→9.3.1; `settings.gradle.kts`; root
   project becomes the KMP module (all 5 targets, complete build) + `:parity` subproject (Java + Gson +
   JUnit moved **verbatim**, all 110 tests green); complete `gradle/libs.versions.toml` pre-declaring
   every downstream dependency; `.gitignore`; drop `.tool-versions`; strip the dead `maven`/
@@ -64,16 +65,16 @@ Dependency order: A → {B, C, D} → E → {F1, F2, F3} → G → I1 → H → 
   JDK 21, wasm on ubuntu, iOS simulator on macOS) triggered on PRs to `main` and pushes to `main`.
   Note: binary-compatibility-validator is deliberately **not** applied until WS-I2, so `api/` dumps
   never become a cross-branch conflict while the API surface grows.
-- [ ] **WS-B fixtures** (Sonnet 5) — move fixtures to `fixtures/`; Gradle codegen task base64-embeds
+- [~] **WS-B fixtures** (Sonnet 5) — move fixtures to `fixtures/`; Gradle codegen task base64-embeds
   them into generated `commonTest` sources (chunked literals — JVM 65 535-byte constant cap); fixture
   model that skips the 17 string section-header entries; semantic comparator (numbers by double value,
   deep for arrays/objects); engine-agnostic replay harness (engine passed as a function) with an
   operator filter for partial fixture subsets; `:parity` test resources re-pointed at `fixtures/`.
   Depends: A.
-- [ ] **WS-C canonical helpers** (Opus 5) — `internal/CanonicalNumber.kt` (ECMAScript-style
+- [~] **WS-C canonical helpers** (Opus 5) — `internal/CanonicalNumber.kt` (ECMAScript-style
   `Double`→`String`, Java-compatible strict `String`→`Double`) and `internal/JavaSplit.kt`, with
   cross-target determinism tests (jvm, wasmJsNode, iosSimulatorArm64). Depends: A.
-- [ ] **WS-D AST + parser** (Sonnet 5) — sealed `ast/JsonLogicNode.kt` hierarchy; `JsonLogicParser.kt`
+- [~] **WS-D AST + parser** (Sonnet 5) — sealed `ast/JsonLogicNode.kt` hierarchy; `JsonLogicParser.kt`
   (`JsonElement` → node tree); parse exception. Depends: A.
 - [ ] **WS-E evaluator core** (Opus 5) — `JsonLogicEvaluator`; `JsonLogicExpression` +
   `PreEvaluatedArgumentsExpression` interfaces; evaluation exception; shared `truthy`; shared

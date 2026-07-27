@@ -1,54 +1,138 @@
 package co.branch.jsonlogic.parity
 
+import kotlinx.serialization.json.JsonElement
+
 /**
- * The one difference the differential fuzzer tolerates, and only because it is not a property of
- * either engine: `substr` renders its first argument without a null check — deliberately, in both —
- * so a null subject makes both throw `java.lang.NullPointerException` from that one statement, and
- * the Java engine's exception sometimes carries a message the JVM synthesizes from *its* bytecode
- * ([SYNTHESIZED_SUBSTR_NPE_TEXT]), which the port's null check cannot produce.
+ * How a pair of plain `java.lang.NullPointerException`s relate.
  *
- * Nothing in either engine authors that text, and the JVM does not attach it consistently: it stops
- * appearing once the throw site is hot, so the identical case reports it at the start of a run and
- * reports no message at all later in the same run — a sweep of eight generator seeds produced around
- * 100 of these per 20 000 cases for whichever seeds ran first and none for the rest, following the
- * position in the run rather than the seed. Running the JVM with
- * `-XX:-ShowCodeDetailsInExceptionMessages` removes the text entirely, leaving both engines reporting
- * null.
- *
- * What the engines do author — the type, message and jsonPath of a JsonLogicException — is compared in
- * full, as is every other exception both raise out of the same JVM call, such as the
- * `StringIndexOutOfBoundsException` from `substr`'s range arithmetic. No fixture case reaches this
- * path, so the acceptance gate is unaffected.
+ * Neither engine ever constructs one — there is no `NullPointerException` anywhere in either source
+ * tree — so each is the JVM's report of a null dereference, and its message is either nothing or the
+ * text the JVM synthesizes from the bytecode that failed. Over half a million generated cases, the
+ * Java engine produced exactly one distinct message and the port none at all, which leaves the message
+ * unable to tell two such failures apart: a pair raised by entirely different operators carries the
+ * same exception type, no message and no jsonPath, and would compare as identical. Which expression
+ * raised each failure is therefore established before anything else about it is compared.
  */
-internal fun isKnownSubstrNullPointerPair(oracleError: Throwable, portedError: Throwable): Boolean {
-    if (oracleError.javaClass != NullPointerException::class.java) return false
-    if (portedError.javaClass != NullPointerException::class.java) return false
+internal sealed interface NullPointerPairing {
 
-    // The port's null check never produces a message; the Java engine's either carries the JVM's
-    // synthesized text or, once the site is hot, nothing.
-    if (portedError.message != null) return false
-    if (oracleError.message != null && oracleError.message != SYNTHESIZED_SUBSTR_NPE_TEXT) return false
+    /** Raised by the same expression, neither carrying a message: nothing distinguishes them. */
+    data class Identical(val origin: String) : NullPointerPairing
 
-    return oracleError.originatesIn(ORACLE_SUBSTR_FRAME) && portedError.originatesIn(PORTED_SUBSTR_FRAME)
+    /**
+     * Raised by the same expression, with the JVM's synthesized text on the Java engine's side only.
+     *
+     * Nothing in either engine authors that text and the port cannot produce it at all, so this is the
+     * JVM describing one engine's bytecode and not the other's. It is not even a stable property of the
+     * Java engine: running without `-XX:-OmitStackTraceInFastThrow`, the JVM answers a hot throw site
+     * with a shared traceless instance carrying no message, and the same case reports the text early in
+     * a run and nothing later in it. The differential fuzzer tolerates this pairing and counts it; the
+     * acceptance gate does not have to, since no fixture case reaches a null dereference.
+     */
+    data class SynthesizedTextOnly(val origin: String) : NullPointerPairing
+
+    /**
+     * Raised by different expressions, or by something these cannot place, or carrying a message
+     * neither the JVM's synthesis nor either engine explains.
+     */
+    data object Different : NullPointerPairing
+}
+
+internal fun isPlainNullPointerException(error: Throwable): Boolean =
+    error.javaClass == NullPointerException::class.java
+
+internal fun pairNullPointers(oracleError: Throwable, portedError: Throwable): NullPointerPairing {
+    val oracleOrigin = oracleOriginOf(oracleError)
+    val portedOrigin = portedOriginOf(portedError)
+
+    // An unplaceable origin is not a match: a throwable carrying no frames of its own engine cannot be
+    // shown to share an origin with anything, and taking that on trust is what this exists to stop.
+    if (oracleOrigin == null || portedOrigin == null || oracleOrigin != portedOrigin) {
+        return NullPointerPairing.Different
+    }
+
+    // The port's null checks never carry a message, at any site.
+    if (portedError.message != null) return NullPointerPairing.Different
+
+    val oracleMessage = oracleError.message ?: return NullPointerPairing.Identical(oracleOrigin)
+
+    return if (isJvmSynthesizedNullPointerText(oracleMessage)) {
+        NullPointerPairing.SynthesizedTextOnly(oracleOrigin)
+    } else {
+        NullPointerPairing.Different
+    }
 }
 
 /**
- * Whether the exception was raised by [frame] itself, rather than merely somewhere beneath it: an
- * operator's frame is still on the stack while its arguments are being evaluated, so a failure inside
- * a nested operator would also carry it. Only the top frame identifies where a failure came from.
+ * The simple name of the expression class a failure came out of: the topmost frame belonging to the
+ * engine that raised it, which is not the topmost frame overall — the Java engine's `cat` fails inside
+ * a stream pipeline several JDK frames deep, and the port's inside its own rendering helper.
  *
- * A throwable with no stack trace at all — which is how the JVM reports an implicit exception from a
- * hot site, and which is also the state in which the Java engine's message goes missing — originates
- * nowhere as far as this can tell, and is therefore never tolerated.
+ * The two engines' classes carry the same simple names under different packages, which is what makes
+ * their origins comparable at all. A synthetic suffix (`ConcatenateExpression$$Lambda$42`) is dropped,
+ * so a failure inside an operator's lambda is placed at the operator.
  */
-private fun Throwable.originatesIn(frame: String): Boolean =
-    stackTrace.firstOrNull()?.let { "${it.className}.${it.methodName}" } == frame
+internal fun oracleOriginOf(error: Throwable): String? = originOf(error, ORACLE_PACKAGE)
 
-internal const val ORACLE_SUBSTR_FRAME =
-    "io.github.jamsesso.jsonlogic.evaluator.expressions.SubstringExpression.evaluate"
+internal fun portedOriginOf(error: Throwable): String? = originOf(error, PORTED_PACKAGE)
 
-internal const val PORTED_SUBSTR_FRAME =
-    "co.branch.jsonlogic.evaluator.expressions.SubstringExpression.evaluate"
+private fun originOf(error: Throwable, enginePackage: String): String? = error.stackTrace
+    .firstOrNull { it.className.startsWith(enginePackage) && !it.className.startsWith(HARNESS_PACKAGE) }
+    ?.className
+    ?.substringAfterLast('.')
+    ?.substringBefore('$')
 
-internal const val SYNTHESIZED_SUBSTR_NPE_TEXT =
-    "Cannot invoke \"Object.toString()\" because the return value of \"java.util.List.get(int)\" is null"
+/**
+ * Whether [message] has the shape the JVM gives a null dereference it can describe: what it could not
+ * do, and which expression was null — `Cannot invoke "Object.toString()" because the return value of
+ * "java.util.List.get(int)" is null`. Since neither engine writes `NullPointerException` messages, this
+ * confirms the text really is the JVM's rather than guarding against an engine-authored one.
+ */
+internal fun isJvmSynthesizedNullPointerText(message: String): Boolean =
+    message.startsWith("Cannot ") && " because " in message && message.endsWith("is null")
+
+/** The differential fuzzer's decision about one case. */
+internal sealed interface FuzzVerdict {
+
+    /** The two engines did the same thing. */
+    data object Agreed : FuzzVerdict
+
+    /** They differed only in the JVM's account of a null dereference both made at [origin]. */
+    data class Tolerated(val origin: String) : FuzzVerdict
+
+    /** A difference to report. */
+    data class Diverged(val kind: DisagreementKind) : FuzzVerdict
+}
+
+/**
+ * The whole of the fuzzer's decision for one case: the shared diff first, then the single tolerance the
+ * fuzzer applies and the acceptance gate does not.
+ *
+ * The tolerance can only ever downgrade something [disagreementBetween] already called a disagreement,
+ * and it re-establishes the pairing itself, so no case reaches agreement here that the diff would not
+ * have agreed on for a reason of its own.
+ */
+internal fun fuzzVerdict(oracle: Outcome<Any?>, ported: Outcome<JsonElement>): FuzzVerdict {
+    val kind = disagreementBetween(oracle, ported) ?: return FuzzVerdict.Agreed
+    val pairing = nullPointerPairingOf(oracle, ported)
+
+    return if (pairing is NullPointerPairing.SynthesizedTextOnly) {
+        FuzzVerdict.Tolerated(pairing.origin)
+    } else {
+        FuzzVerdict.Diverged(kind)
+    }
+}
+
+/** The pairing of two outcomes that are both plain [NullPointerException]s, and null otherwise. */
+internal fun nullPointerPairingOf(oracle: Outcome<*>, ported: Outcome<*>): NullPointerPairing? {
+    val oracleError = (oracle as? Outcome.Threw)?.error ?: return null
+    val portedError = (ported as? Outcome.Threw)?.error ?: return null
+    if (!isPlainNullPointerException(oracleError) || !isPlainNullPointerException(portedError)) return null
+
+    return pairNullPointers(oracleError, portedError)
+}
+
+private const val ORACLE_PACKAGE = "io.github.jamsesso.jsonlogic."
+private const val PORTED_PACKAGE = "co.branch.jsonlogic."
+
+/** This harness shares the port's package root, and its own frames never place an engine's failure. */
+private const val HARNESS_PACKAGE = "co.branch.jsonlogic.parity."

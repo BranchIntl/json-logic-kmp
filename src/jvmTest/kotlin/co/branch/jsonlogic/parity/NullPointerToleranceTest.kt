@@ -1,7 +1,6 @@
 package co.branch.jsonlogic.parity
 
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonElement
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -11,173 +10,191 @@ import co.branch.jsonlogic.JsonLogic as PortedJsonLogic
 import io.github.jamsesso.jsonlogic.JsonLogic as OracleJsonLogic
 
 /**
- * Pins what [isKnownSubstrNullPointerPair] will and will not wave through, since anything it waves
- * through is a difference between the two engines that the fuzzer will never report.
+ * Pins what the fuzzer will and will not pass over, through [fuzzVerdict] — the same decision the
+ * fuzzer makes, diff included, rather than the tolerance in isolation. Testing the tolerance alone
+ * misses the case that matters most: two null dereferences carrying no message have identical
+ * signatures whichever expression raised them, so the diff has to be the one that tells them apart.
  *
- * The real `substr` failure is run through both engines to keep the frame names and messages the
- * waiver matches on tied to what the engines actually do; the rest of the cases are built by hand,
- * because the JVM attaches its synthesized message only while the throw site is cold and a test may
- * not assume it runs first.
+ * The pairs are built by hand because the JVM's account of a null dereference is not something a test
+ * can arrange, and two real cases anchor the hand-built ones to what the engines actually produce.
  */
 class NullPointerToleranceTest {
 
     @Test
-    fun theRealSubstrFailureOriginatesInTheFramesTheWaiverRequires() {
-        val (oracleError, portedError) = runBothEngines("""{"substr": [null, 0]}""")
-
-        assertEquals<Class<*>>(NullPointerException::class.java, oracleError.javaClass)
-        assertEquals<Class<*>>(NullPointerException::class.java, portedError.javaClass)
-        assertEquals(null, portedError.message, "the port's null check is not expected to carry a message")
-        assertEquals(PORTED_SUBSTR_FRAME, topFrameOf(portedError))
-        // The Java engine's implicit null check reports no frames at all once the site is hot, which is
-        // also when its message goes missing; while it does report them, they have to be substr's.
-        if (oracleError.stackTrace.isNotEmpty()) {
-            assertEquals(ORACLE_SUBSTR_FRAME, topFrameOf(oracleError))
-        }
-        assertTrue(
-            oracleError.message == null || oracleError.message == SYNTHESIZED_SUBSTR_NPE_TEXT,
-            "unrecognized message on the Java engine's substr failure: ${oracleError.message}",
+    fun theSameExpressionFailingWithNoMessagesAgrees() {
+        assertEquals(
+            FuzzVerdict.Agreed,
+            fuzzVerdict(threw(npe(null, ORACLE_CAT)), threw(npe(null, PORTED_CAT))),
+        )
+        assertEquals(
+            FuzzVerdict.Agreed,
+            fuzzVerdict(threw(npe(null, ORACLE_SUBSTR)), threw(npe(null, PORTED_SUBSTR))),
         )
     }
 
     @Test
-    fun theRealSubstrFailureIsNeverReportedAsADivergence() {
-        val rule = """{"substr": [null, 0]}"""
+    fun theSameExpressionFailingWithTheSynthesizedTextIsTolerated() {
+        assertEquals(
+            FuzzVerdict.Tolerated("SubstringExpression"),
+            fuzzVerdict(threw(npe(SYNTHESIZED_TEXT, ORACLE_SUBSTR)), threw(npe(null, PORTED_SUBSTR))),
+        )
+        // The JVM describes whichever dereference it can, not just substr's.
+        assertEquals(
+            FuzzVerdict.Tolerated("ConcatenateExpression"),
+            fuzzVerdict(threw(npe(SYNTHESIZED_TEXT, ORACLE_CAT)), threw(npe(null, PORTED_CAT))),
+        )
+    }
+
+    @Test
+    fun differentExpressionsFailingWithNoMessagesDiverge() {
+        // Both carry the same type, no message and no jsonPath: only the origin separates them.
+        assertEquals(
+            FuzzVerdict.Diverged(DisagreementKind.ERRORS_DIFFER),
+            fuzzVerdict(threw(npe(null, ORACLE_CAT)), threw(npe(null, PORTED_SUBSTR))),
+        )
+        assertEquals(
+            FuzzVerdict.Diverged(DisagreementKind.ERRORS_DIFFER),
+            fuzzVerdict(threw(npe(null, ORACLE_SUBSTR)), threw(npe(null, PORTED_CAT))),
+        )
+    }
+
+    @Test
+    fun differentExpressionsFailingWithTheSynthesizedTextDiverge() {
+        assertEquals(
+            FuzzVerdict.Diverged(DisagreementKind.ERRORS_DIFFER),
+            fuzzVerdict(threw(npe(SYNTHESIZED_TEXT, ORACLE_CAT)), threw(npe(null, PORTED_SUBSTR))),
+        )
+    }
+
+    @Test
+    fun anUnplaceableFailureDiverges() {
+        assertEquals(
+            FuzzVerdict.Diverged(DisagreementKind.ERRORS_DIFFER),
+            fuzzVerdict(threw(npe(SYNTHESIZED_TEXT)), threw(npe(null, PORTED_SUBSTR))),
+            "a Java-engine failure with no frames of its own was placed at the port's expression",
+        )
+        assertEquals(
+            FuzzVerdict.Diverged(DisagreementKind.ERRORS_DIFFER),
+            fuzzVerdict(threw(npe(SYNTHESIZED_TEXT, ORACLE_SUBSTR)), threw(npe(null))),
+        )
+        // Frames, but none of the engine's own.
+        assertEquals(
+            FuzzVerdict.Diverged(DisagreementKind.ERRORS_DIFFER),
+            fuzzVerdict(threw(npe(null, JDK_STREAM_FRAME)), threw(npe(null, PORTED_SUBSTR))),
+        )
+    }
+
+    @Test
+    fun anUnrecognizedMessageDiverges() {
+        assertEquals(
+            FuzzVerdict.Diverged(DisagreementKind.ERRORS_DIFFER),
+            fuzzVerdict(threw(npe("boom", ORACLE_SUBSTR)), threw(npe(null, PORTED_SUBSTR))),
+        )
+        assertEquals(
+            FuzzVerdict.Diverged(DisagreementKind.ERRORS_DIFFER),
+            fuzzVerdict(threw(npe(SYNTHESIZED_TEXT, ORACLE_SUBSTR)), threw(npe("boom", PORTED_SUBSTR))),
+        )
+    }
+
+    @Test
+    fun aNullPointerSubclassIsComparedOnItsSignature() {
+        class Subclass : NullPointerException()
+
+        val subclass = Subclass().apply { stackTrace = framesOf(PORTED_SUBSTR) }
+        assertEquals(
+            FuzzVerdict.Diverged(DisagreementKind.ERRORS_DIFFER),
+            fuzzVerdict(threw(npe(null, ORACLE_SUBSTR)), threw(subclass)),
+        )
+    }
+
+    @Test
+    fun theTopmostEngineFrameDecidesTheOrigin() {
+        // The Java engine's cat fails inside a stream pipeline, in a lambda of its own class; neither
+        // the JDK frames above it nor the lambda's synthetic name should hide where it came from.
+        val oracleError = npe(null, JDK_STREAM_FRAME, "$ORACLE_CAT\$\$Lambda\$42", ORACLE_SUBSTR)
+        assertEquals("ConcatenateExpression", oracleOriginOf(oracleError))
+        assertEquals(
+            FuzzVerdict.Agreed,
+            fuzzVerdict(threw(oracleError), threw(npe(null, PORTED_CAT))),
+        )
+    }
+
+    @Test
+    fun theSynthesizedShapeAcceptsOnlyTheJvmsOwnAccount() {
+        assertTrue(isJvmSynthesizedNullPointerText(SYNTHESIZED_TEXT))
+        assertTrue(isJvmSynthesizedNullPointerText("""Cannot read field "x" because "y" is null"""))
+        assertFalse(isJvmSynthesizedNullPointerText(""))
+        assertFalse(isJvmSynthesizedNullPointerText("boom"))
+        assertFalse(isJvmSynthesizedNullPointerText("substr expects 2 or 3 arguments"))
+        assertFalse(isJvmSynthesizedNullPointerText("Cannot invoke something"))
+    }
+
+    @Test
+    fun theRealSubstrFailureIsTolerated() {
+        val verdict = verdictFor("""{"substr": [null, 0]}""", "null")
+
+        assertEquals(FuzzVerdict.Tolerated("SubstringExpression"), verdict, flagAdvice())
+    }
+
+    @Test
+    fun theRealCatFailureAgrees() {
+        val verdict = verdictFor("""{"cat": [{"var": "z"}]}""", "{}")
+
+        assertEquals(FuzzVerdict.Agreed, verdict, flagAdvice())
+    }
+
+    @Test
+    fun bothEnginesStillNameTheExpressionClassesThesePairsAreBuiltFrom() {
+        // A rename would otherwise leave the hand-built pairs describing origins that cannot occur.
+        for (className in listOf(ORACLE_CAT, PORTED_CAT, ORACLE_SUBSTR, PORTED_SUBSTR)) {
+            assertEquals(className, Class.forName(className).name)
+        }
+    }
+
+    private fun verdictFor(rule: String, data: String): FuzzVerdict {
         val ruleElement = Json.parseToJsonElement(rule)
-        val dataElement = Json.parseToJsonElement("null")
-        val oracleCase = oracleCaseOf(ruleElement, dataElement)
-        val oracleOutcome = outcomeOf { OracleJsonLogic().apply(oracleCase.rule, oracleCase.data) }
-        val portedOutcome = outcomeOf { PortedJsonLogic().apply(ruleElement, dataElement) }
-        val oracleError = assertIs<Outcome.Threw>(oracleOutcome).error
-        val portedError = assertIs<Outcome.Threw>(portedOutcome).error
-
-        // Either the two failures already agree — which they do once the JVM stops synthesizing its
-        // message — or the waiver recognizes the pair. The fuzzer must never have to report it.
-        val agreed = disagreementBetween(oracleOutcome, portedOutcome) == null
-        assertTrue(
-            agreed || isKnownSubstrNullPointerPair(oracleError, portedError),
-            "the known substr failure was reported as a divergence: " +
-                "java=${oracleError.message} at ${topFrameOf(oracleError)}, " +
-                "kotlin=${portedError.message} at ${topFrameOf(portedError)}",
-        )
-    }
-
-    @Test
-    fun aSubstrPairCarryingEitherKnownMessageIsTolerated() {
-        assertTrue(
-            isKnownSubstrNullPointerPair(
-                nullPointerException(SYNTHESIZED_SUBSTR_NPE_TEXT, ORACLE_SUBSTR_FRAME),
-                nullPointerException(null, PORTED_SUBSTR_FRAME),
-            ),
-        )
-        assertTrue(
-            isKnownSubstrNullPointerPair(
-                nullPointerException(null, ORACLE_SUBSTR_FRAME),
-                nullPointerException(null, PORTED_SUBSTR_FRAME),
-            ),
-        )
-    }
-
-    @Test
-    fun aCrossSiteNullPointerPairIsNotTolerated() {
-        // Each failure came out of a different operator. substr's frame is still on the stack beneath
-        // the one that failed, because an operator's own frame stays there while its arguments are
-        // evaluated — which is why only the top frame counts.
-        assertFalse(
-            isKnownSubstrNullPointerPair(
-                nullPointerException(SYNTHESIZED_SUBSTR_NPE_TEXT, ORACLE_CAT_FRAME, ORACLE_SUBSTR_FRAME),
-                nullPointerException(null, PORTED_SUBSTR_FRAME),
-            ),
-            "a failure inside cat was tolerated as substr's",
-        )
-        assertFalse(
-            isKnownSubstrNullPointerPair(
-                nullPointerException(SYNTHESIZED_SUBSTR_NPE_TEXT, ORACLE_SUBSTR_FRAME),
-                nullPointerException(null, PORTED_CAT_FRAME, PORTED_SUBSTR_FRAME),
-            ),
-            "the two engines failing at different operators was tolerated",
-        )
-    }
-
-    @Test
-    fun anUnrecognizedNullPointerMessageIsNotTolerated() {
-        assertFalse(
-            isKnownSubstrNullPointerPair(
-                nullPointerException("boom", ORACLE_SUBSTR_FRAME),
-                nullPointerException(null, PORTED_SUBSTR_FRAME),
-            ),
-            "an arbitrary message on the Java engine's failure was tolerated",
-        )
-        assertFalse(
-            isKnownSubstrNullPointerPair(
-                nullPointerException(SYNTHESIZED_SUBSTR_NPE_TEXT, ORACLE_SUBSTR_FRAME),
-                nullPointerException("boom", PORTED_SUBSTR_FRAME),
-            ),
-            "a message on the port's failure was tolerated",
-        )
-    }
-
-    @Test
-    fun aNullPointerExceptionWithoutFramesIsNotTolerated() {
-        assertFalse(
-            isKnownSubstrNullPointerPair(
-                nullPointerException(SYNTHESIZED_SUBSTR_NPE_TEXT),
-                nullPointerException(null, PORTED_SUBSTR_FRAME),
-            ),
-        )
-    }
-
-    @Test
-    fun onlyPlainNullPointerExceptionsAreTolerated() {
-        class Subclass(message: String?) : NullPointerException(message)
-
-        val subclass = Subclass(null).apply { stackTrace = framesOf(PORTED_SUBSTR_FRAME) }
-        assertFalse(
-            isKnownSubstrNullPointerPair(
-                nullPointerException(SYNTHESIZED_SUBSTR_NPE_TEXT, ORACLE_SUBSTR_FRAME),
-                subclass,
-            ),
-        )
-    }
-
-    @Test
-    fun theWaiverNamesMethodsBothEnginesStillHave() {
-        // A rename in either engine would otherwise leave the waiver quietly matching nothing, or —
-        // worse, if a class were renamed into another's place — the wrong thing.
-        for (frame in listOf(ORACLE_SUBSTR_FRAME, PORTED_SUBSTR_FRAME, ORACLE_CAT_FRAME, PORTED_CAT_FRAME)) {
-            val type = Class.forName(frame.substringBeforeLast('.'))
-            val method = frame.substringAfterLast('.')
-            assertTrue(
-                type.declaredMethods.any { it.name == method },
-                "$frame no longer names a method that exists",
-            )
-        }
-    }
-
-    private fun runBothEngines(rule: String): Pair<Throwable, Throwable> {
-        val ruleElement: JsonElement = Json.parseToJsonElement(rule)
-        val dataElement = Json.parseToJsonElement("null")
+        val dataElement = Json.parseToJsonElement(data)
         val oracleCase = oracleCaseOf(ruleElement, dataElement)
         val oracle = outcomeOf { OracleJsonLogic().apply(oracleCase.rule, oracleCase.data) }
         val ported = outcomeOf { PortedJsonLogic().apply(ruleElement, dataElement) }
+        assertIs<Outcome.Threw>(oracle, "the Java engine was expected to fail on $rule")
+        assertIs<Outcome.Threw>(ported, "the port was expected to fail on $rule")
 
-        return assertIs<Outcome.Threw>(oracle).error to assertIs<Outcome.Threw>(ported).error
+        return fuzzVerdict(oracle, ported)
     }
 
-    private fun nullPointerException(message: String?, vararg frames: String): NullPointerException =
-        NullPointerException(message).apply { stackTrace = framesOf(*frames) }
+    /**
+     * Both real cases depend on every throwable carrying its own stack trace, which the JVM only
+     * guarantees with the flag the `jvmTest` task sets.
+     */
+    private fun flagAdvice(): String {
+        val flag = "-XX:-OmitStackTraceInFastThrow"
+        val arguments = java.lang.management.ManagementFactory.getRuntimeMXBean().inputArguments
 
-    private fun framesOf(vararg frames: String): Array<StackTraceElement> = frames
-        .map { StackTraceElement(it.substringBeforeLast('.'), it.substringAfterLast('.'), null, -1) }
+        return if (arguments.any { flag in it }) {
+            "running with $flag, so every failure should have been placeable"
+        } else {
+            "this JVM was started without $flag, so the JVM may have answered a hot throw site with a " +
+                "traceless shared instance; run this through the jvmTest task"
+        }
+    }
+
+    private fun threw(error: Throwable): Outcome<Nothing> = Outcome.Threw(error)
+
+    private fun npe(message: String?, vararg classNames: String): NullPointerException =
+        NullPointerException(message).apply { stackTrace = framesOf(*classNames) }
+
+    private fun framesOf(vararg classNames: String): Array<StackTraceElement> = classNames
+        .map { StackTraceElement(it, "evaluate", null, -1) }
         .toTypedArray()
 
-    private fun topFrameOf(error: Throwable): String? =
-        error.stackTrace.firstOrNull()?.let { "${it.className}.${it.methodName}" }
-
     private companion object {
-        const val ORACLE_CAT_FRAME =
-            "io.github.jamsesso.jsonlogic.evaluator.expressions.ConcatenateExpression.evaluate"
-        const val PORTED_CAT_FRAME =
-            "co.branch.jsonlogic.evaluator.expressions.ConcatenateExpression.evaluate"
+        const val ORACLE_CAT = "io.github.jamsesso.jsonlogic.evaluator.expressions.ConcatenateExpression"
+        const val PORTED_CAT = "co.branch.jsonlogic.evaluator.expressions.ConcatenateExpression"
+        const val ORACLE_SUBSTR = "io.github.jamsesso.jsonlogic.evaluator.expressions.SubstringExpression"
+        const val PORTED_SUBSTR = "co.branch.jsonlogic.evaluator.expressions.SubstringExpression"
+        const val JDK_STREAM_FRAME = "java.util.stream.ReferencePipeline\$3\$1"
+        const val SYNTHESIZED_TEXT =
+            "Cannot invoke \"Object.toString()\" because the return value of \"java.util.List.get(int)\" is null"
     }
 }

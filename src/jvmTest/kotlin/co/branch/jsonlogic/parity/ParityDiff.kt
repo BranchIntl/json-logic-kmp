@@ -66,14 +66,27 @@ internal fun disagreementBetween(
     oracle is Outcome.Returned && ported is Outcome.Returned ->
         DisagreementKind.VALUES_DIFFER.takeIf { !ParityComparator.matches(oracle.value, ported.value) }
 
-    oracle is Outcome.Threw && ported is Outcome.Threw ->
-        DisagreementKind.ERRORS_DIFFER.takeIf {
-            oracleErrorSignature(oracle.error) != portedErrorSignature(ported.error)
-        }
+    oracle is Outcome.Threw && ported is Outcome.Threw -> errorDisagreement(oracle.error, ported.error)
 
     oracle is Outcome.Threw -> DisagreementKind.ORACLE_THREW_ONLY
 
     else -> DisagreementKind.PORT_THREW_ONLY
+}
+
+/**
+ * A pair of plain [NullPointerException]s is judged on where it came from, before any signature is
+ * looked at: both sides carry no jsonPath and, most of the time, no message either, so two of them
+ * raised by different operators have identical signatures and would otherwise pass as agreement.
+ * Everything else is compared on its full signature.
+ */
+private fun errorDisagreement(oracleError: Throwable, portedError: Throwable): DisagreementKind? {
+    if (isPlainNullPointerException(oracleError) && isPlainNullPointerException(portedError)) {
+        return DisagreementKind.ERRORS_DIFFER
+            .takeIf { pairNullPointers(oracleError, portedError) !is NullPointerPairing.Identical }
+    }
+
+    return DisagreementKind.ERRORS_DIFFER
+        .takeIf { oracleErrorSignature(oracleError) != portedErrorSignature(portedError) }
 }
 
 /**
@@ -98,10 +111,22 @@ internal fun disagreementReport(
 
 private fun describeOracleOutcome(outcome: Outcome<Any?>): String = when (outcome) {
     is Outcome.Returned -> "returned ${describeJavaValue(outcome.value)}"
-    is Outcome.Threw -> "threw ${oracleErrorSignature(outcome.error)}"
+    is Outcome.Threw ->
+        "threw ${oracleErrorSignature(outcome.error)}${raisedBy(outcome.error, oracleOriginOf(outcome.error))}"
 }
 
 private fun describePortedOutcome(outcome: Outcome<JsonElement>): String = when (outcome) {
     is Outcome.Returned -> "returned ${outcome.value}"
-    is Outcome.Threw -> "threw ${portedErrorSignature(outcome.error)}"
+    is Outcome.Threw ->
+        "threw ${portedErrorSignature(outcome.error)}${raisedBy(outcome.error, portedOriginOf(outcome.error))}"
+}
+
+/**
+ * Names the expression a [NullPointerException] came out of, whose signature alone says nothing about
+ * where it happened. Every other failure carries a message and a jsonPath that already locate it.
+ */
+private fun raisedBy(error: Throwable, origin: String?): String = when {
+    !isPlainNullPointerException(error) -> ""
+    origin == null -> " raised by an unplaceable frame"
+    else -> " raised by $origin"
 }

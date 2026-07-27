@@ -151,6 +151,14 @@ tasks.withType<JavaCompile>().configureEach {
     options.release = 11
 }
 
+tasks.named<Test>("jvmTest") {
+    // The parity gate tells the two engines' failures apart by the frame that raised them. Once a
+    // throw site is hot, the JVM reports an implicit exception — a null dereference, an out-of-range
+    // index — as a shared instance carrying no stack trace and no message, leaving nothing to tell one
+    // operator's failure from another's. This keeps every throwable's own trace. Goes with :parity.
+    jvmArgs("-XX:-OmitStackTraceInFastThrow")
+}
+
 // Guarantee codegen runs before every Kotlin compilation, so no compile races the generated source.
 tasks.withType<KotlinCompilationTask<*>>().configureEach {
     dependsOn(generateFixtures)

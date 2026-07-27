@@ -20,9 +20,10 @@ import io.github.jamsesso.jsonlogic.JsonLogic as OracleJsonLogic
  * The seed is fixed so a failure is reproducible: the reported case number is the number of
  * [FuzzGenerator.nextCase] calls that preceded it, so re-running reproduces the same case.
  *
- * Exactly one difference is not reported, [isKnownSubstrNullPointerPair], and only when it is that
- * one difference: the pair has to be two plain `NullPointerException`s raised by `substr` itself in
- * both engines, carrying the two messages the JVM is known to give them there.
+ * One difference is counted and not reported, [NullPointerPairing.SYNTHESIZED_TEXT_ONLY]: a null
+ * dereference that both engines make at the same expression, where the JVM described the Java engine's
+ * and left the port's bare. Which expression each failure came out of is established first, so a pair
+ * that only looks alike is a divergence.
  */
 class ParityFuzzTest {
 
@@ -33,10 +34,10 @@ class ParityFuzzTest {
         val ported = PortedJsonLogic()
 
         val counts = mutableMapOf<DisagreementKind, Int>()
+        val tolerated = mutableMapOf<String, Int>()
         val reports = mutableListOf<String>()
         var returned = 0
         var threw = 0
-        var tolerated = 0
 
         val elapsed = measureTimeMillis {
             repeat(CASE_COUNT) { index ->
@@ -46,16 +47,13 @@ class ParityFuzzTest {
                 val portedOutcome = outcomeOf { ported.apply(case.rule, case.data) }
                 if (oracleOutcome is Outcome.Threw) threw++ else returned++
 
-                val kind = disagreementBetween(oracleOutcome, portedOutcome) ?: return@repeat
-                val oracleError = (oracleOutcome as? Outcome.Threw)?.error
-                val portedError = (portedOutcome as? Outcome.Threw)?.error
-                if (oracleError != null && portedError != null &&
-                    isKnownSubstrNullPointerPair(oracleError, portedError)
-                ) {
-                    tolerated++
-                    return@repeat
+                val verdict = fuzzVerdict(oracleOutcome, portedOutcome)
+                if (verdict is FuzzVerdict.Tolerated) {
+                    tolerated[verdict.origin] = (tolerated[verdict.origin] ?: 0) + 1
                 }
-                counts[kind] = (counts[kind] ?: 0) + 1
+                if (verdict !is FuzzVerdict.Diverged) return@repeat
+
+                counts[verdict.kind] = (counts[verdict.kind] ?: 0) + 1
                 if (reports.size < REPORTED_DIVERGENCES) {
                     reports += disagreementReport(
                         label = "fuzz case #$index (seed $SEED)",
@@ -63,7 +61,7 @@ class ParityFuzzTest {
                         data = "${case.data}",
                         oracle = oracleOutcome,
                         ported = portedOutcome,
-                        kind = kind,
+                        kind = verdict.kind,
                     )
                 }
             }
@@ -73,7 +71,8 @@ class ParityFuzzTest {
         println(
             "parity fuzz: $CASE_COUNT generated cases in ${elapsed}ms " +
                 "(the Java engine returned on $returned, threw on $threw), " +
-                "$tolerated tolerated substr NullPointerException pairs, $divergences divergences" +
+                "${tolerated.values.sum()} tolerated NullPointerException texts" +
+                describeOrigins(tolerated) + ", $divergences divergences" +
                 counts.entries.joinToString("") { "\n  ${it.value}× ${it.key.description}" },
         )
         if (divergences > 0) {
@@ -83,6 +82,12 @@ class ParityFuzzTest {
             )
         }
     }
+
+    private fun describeOrigins(tolerated: Map<String, Int>): String = tolerated.entries
+        .sortedByDescending { it.value }
+        .takeIf { it.isNotEmpty() }
+        ?.joinToString(", ", " (", ")") { "${it.value} at ${it.key}" }
+        ?: ""
 
     private companion object {
         const val SEED = 0x5EEDB9A11L

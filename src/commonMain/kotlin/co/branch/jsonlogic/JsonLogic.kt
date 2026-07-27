@@ -50,19 +50,21 @@ import kotlinx.serialization.json.JsonElement
  * `JsonLogicException` is a checked exception that every caller must declare or catch, nothing
  * here needs a `throws` clause or a `try` block to compile.
  *
- * **Thread safety.** An instance is immutable once its registrations are done: concurrent calls to
- * `apply` share no mutable state and need no external synchronization. [addOperation] rebuilds the
- * operator table from scratch on every call, so a registration that finishes before an `apply`
- * begins is guaranteed to be visible to it. Calling [addOperation] *while* another thread is
- * inside `apply` is not synchronized against — that apply call may see the table before or after
- * the change, but never a half-built one — so callers that register operations after startup are
- * responsible for doing so before concurrent use begins.
+ * **Thread safety.** Finish configuring an instance — the default registrations plus any
+ * [addOperation] calls — on a single thread before sharing it with others. Once configuration is
+ * complete and the instance has been safely published to other threads (e.g. handed off through a
+ * `val`, or however the caller's concurrency model already publishes shared objects), concurrent
+ * `apply` calls share no mutable state and need no further synchronization. Calling [addOperation]
+ * concurrently with another [addOperation] call, or with an in-flight `apply`, is not supported:
+ * [addOperation] mutates a shared map and reassigns the evaluator field with no locking, so two
+ * concurrent registrations can race and silently lose one operation, and neither write carries any
+ * cross-thread visibility guarantee on its own.
  *
  * **The Infinity/NaN sharp edge.** A result of positive infinity, negative infinity, or NaN is
  * returned as a [JsonElement] holding the literal text `Infinity`, `-Infinity`, or `NaN` — JSON has
  * no token for any of them, but this engine can still produce them (e.g. `{"/": [1, 0]}`). Reading
  * the returned element's fields back out in Kotlin works fine, but a consumer who re-encodes it
- * through a standard JSON writer (this library's own [valueToJsonElement] included) will emit text
+ * through a standard JSON writer — including the one this library uses internally — will emit text
  * that most JSON parsers reject.
  */
 class JsonLogic {

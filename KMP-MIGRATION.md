@@ -30,8 +30,11 @@ Checkbox states: `[ ]` not started · `[~]` in progress · `[x]` merged to `main
 - `parity/` is **read-only** after WS-A (it is the oracle); enforced per PR via `git diff --stat`.
 - Only WS-A, WS-B (fixture codegen task) and WS-I2 (binary-compatibility-validator) may modify build
   files (`settings.gradle.kts`, `build.gradle.kts`, `gradle/libs.versions.toml`, wrapper).
-- `KMP-MIGRATION.md` is updated only by the orchestrator, directly on `main`, immediately after a
-  merge — never on workstream branches.
+- `KMP-MIGRATION.md` is updated only by the orchestrator. With branch protection requiring green
+  CI on every `main` commit, checkbox flips ride as an orchestrator-authored commit on the
+  workstream branch itself, added after the pre-merge rebase — implementer agents still never
+  touch this file. (Each branch touches only its own checklist line, so parallel branches cannot
+  conflict.)
 - No edits under `.github/workflows/` except where a workstream explicitly owns them (WS-A, WS-I2,
   WS-J).
 
@@ -71,9 +74,11 @@ Dependency order: A → {B, C, D} → E → {F1, F2, F3} → G → I1 → H → 
   deep for arrays/objects); engine-agnostic replay harness (engine passed as a function) with an
   operator filter for partial fixture subsets; `:parity` test resources re-pointed at `fixtures/`.
   Depends: A.
-- [~] **WS-C canonical helpers** (Opus 5) — `internal/CanonicalNumber.kt` (ECMAScript-style
-  `Double`→`String`, Java-compatible strict `String`→`Double`) and `internal/JavaSplit.kt`, with
-  cross-target determinism tests (jvm, wasmJsNode, iosSimulatorArm64). Depends: A.
+- [~] **WS-C canonical helpers** (Opus 5) — `internal/CanonicalNumber.kt` (`Double`→`String`
+  reproducing `java.lang.Double.toString` per the JDK 19+ shortest-decimal spec — the parity
+  oracle is the JAVA engine, so Java formatting semantics, not ECMAScript's — plus a
+  `Double.parseDouble`-faithful `String`→`Double`) and `internal/JavaSplit.kt`, with cross-target
+  determinism tests (jvm, wasmJsNode, iosSimulatorArm64). Depends: A.
 - [x] **WS-D AST + parser** (Sonnet 5) — sealed `ast/JsonLogicNode.kt` hierarchy; `JsonLogicParser.kt`
   (`JsonElement` → node tree); parse exception. Depends: A.
 - [ ] **WS-E evaluator core** (Opus 5) — `JsonLogicEvaluator`; `JsonLogicExpression` +

@@ -45,8 +45,8 @@ Checkbox states: `[ ]` not started · `[~]` in progress · `[x]` merged to `main
 
 ## Kickoff
 
-- [~] **K1** — grant the `workflow` scope to the active `gh` token (`gh auth refresh -h github.com -s workflow`); required to push workflow-file changes (WS-A's CI replacement).
-- [~] **K2** — commit this tracking doc; delete upstream `publish.yml` (its push-to-`main` trigger
+- [x] **K1** — grant the `workflow` scope to the active `gh` token (`gh auth refresh -h github.com -s workflow`); required to push workflow-file changes (WS-A's CI replacement).
+- [x] **K2** — commit this tracking doc; delete upstream `publish.yml` (its push-to-`main` trigger
   would fire on every squash-merge and attempt a Sonatype upload + version-bump push-back; the
   `workflow_dispatch` GitHub Packages replacement arrives in WS-J).
 - [ ] **K3** — after WS-A merges: one serial full 5-target build to prime the Kotlin/Native and wasm

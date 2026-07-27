@@ -135,6 +135,11 @@ kotlin {
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
+        jvmTest.dependencies {
+            // The frozen Java engine, so the JVM parity gate can diff it against this one
+            // case by case. Removed together with :parity once the port is accepted.
+            implementation(project(":parity"))
+        }
         commonTest {
             // The output Provider registers the generated dir and its codegen task dependency together.
             kotlin.srcDir(generateFixtures.flatMap { it.outputDir })

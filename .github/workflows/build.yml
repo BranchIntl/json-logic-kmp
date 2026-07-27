@@ -5,6 +5,10 @@ on:
     branches: [ main ]
   push:
     branches: [ main ]
+    paths-ignore:
+      - KMP-MIGRATION.md
+      - README.md
+      - CHANGELOG.md
 
 concurrency:
   group: build-${{ github.head_ref || github.ref }}

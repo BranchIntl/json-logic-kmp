@@ -18,11 +18,24 @@ import kotlin.io.encoding.ExperimentalEncodingApi
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.android.kotlin.multiplatform.library)
+    alias(libs.plugins.binary.compatibility.validator)
     `maven-publish`
 }
 
 group = "co.branch"
 version = "0.1.0-SNAPSHOT"
+
+// KLib ABI validation is experimental in BCV 0.17.0, but deterministic here: iosArm64 and
+// iosSimulatorArm64 main klibs compile without a full Xcode install (only linking a test
+// binary needs the Xcode toolchain), and wasmJs needs nothing platform-specific. Without this,
+// BCV only validates the jvm dump; it does not support this project's androidLibrary target
+// either way, so klib is the only route to covering the native and wasmJs public surface.
+apiValidation {
+    @OptIn(kotlinx.validation.ExperimentalBCVApi::class)
+    klib {
+        enabled = true
+    }
+}
 
 /**
  * Embeds every JSON fixture file under fixtures/ as base64 into a single generated Kotlin file,
@@ -138,11 +151,6 @@ kotlin {
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
-        jvmTest.dependencies {
-            // The frozen Java engine, so the JVM parity gate can diff it against this one
-            // case by case. Removed together with :parity once the port is accepted.
-            implementation(project(":parity"))
-        }
         commonTest {
             // The output Provider registers the generated dir and its codegen task dependency together.
             kotlin.srcDir(generateFixtures.flatMap { it.outputDir })
@@ -152,14 +160,6 @@ kotlin {
 
 tasks.withType<JavaCompile>().configureEach {
     options.release = 11
-}
-
-tasks.named<Test>("jvmTest") {
-    // The parity gate tells the two engines' failures apart by the frame that raised them. Once a
-    // throw site is hot, the JVM reports an implicit exception — a null dereference, an out-of-range
-    // index — as a shared instance carrying no stack trace and no message, leaving nothing to tell one
-    // operator's failure from another's. This keeps every throwable's own trace. Goes with :parity.
-    jvmArgs("-XX:-OmitStackTraceInFastThrow")
 }
 
 // Guarantee codegen runs before every Kotlin compilation, so no compile races the generated source.

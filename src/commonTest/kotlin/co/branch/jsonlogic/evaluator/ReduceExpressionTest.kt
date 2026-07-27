@@ -55,6 +55,24 @@ class ReduceExpressionTest {
     }
 
     @Test
+    fun theContextKeepsCurrentBeforeAccumulator() {
+        // `in` renders a non-string first argument the way the JVM would, which is what exposes the
+        // context's key order — including after a second iteration has rewritten both keys.
+        assertEquals(
+            true,
+            evaluateArrayOp("""{"in": [{"reduce": [[1], {"var": ""}, 0]}, "{current=1.0, accumulator=(this Map)}"]}"""),
+        )
+        assertEquals(
+            true,
+            evaluateArrayOp("""{"in": [{"reduce": [[1, 2], {"var": ""}, 0]}, "{current=2.0, accumulator=(this Map)}"]}"""),
+        )
+        assertEquals(
+            false,
+            evaluateArrayOp("""{"in": [{"reduce": [[1], {"var": ""}, 0]}, "{accumulator=(this Map), current=1.0}"]}"""),
+        )
+    }
+
+    @Test
     fun anEmptyArrayYieldsTheInitialAccumulator() {
         assertEquals(99.0, evaluateArrayOp("""{"reduce": [[], {"var": "current"}, 99]}"""))
     }

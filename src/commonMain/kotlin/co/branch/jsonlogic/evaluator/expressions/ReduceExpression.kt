@@ -41,7 +41,11 @@ class ReduceExpression private constructor() : JsonLogicExpression {
             return accumulator
         }
 
-        val context = mutableMapOf<String, Any?>("accumulator" to accumulator)
+        // `current` is seeded first only to claim the first position: the context's key order shows up
+        // wherever the map is rendered, and the hash order of these two keys in the engine this
+        // library ports puts `current` there. Its seeded value is replaced below before any reducer
+        // sees the map.
+        val context = mutableMapOf<String, Any?>("current" to null, "accumulator" to accumulator)
 
         for (item in ArrayLike.of(maybeArray)) {
             context["current"] = item

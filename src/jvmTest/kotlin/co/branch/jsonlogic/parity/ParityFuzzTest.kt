@@ -1,6 +1,5 @@
 package co.branch.jsonlogic.parity
 
-import kotlinx.serialization.json.JsonElement
 import kotlin.system.measureTimeMillis
 import kotlin.test.Test
 import kotlin.test.fail
@@ -20,6 +19,10 @@ import io.github.jamsesso.jsonlogic.JsonLogic as OracleJsonLogic
  *
  * The seed is fixed so a failure is reproducible: the reported case number is the number of
  * [FuzzGenerator.nextCase] calls that preceded it, so re-running reproduces the same case.
+ *
+ * Exactly one difference is not reported, [isKnownSubstrNullPointerPair], and only when it is that
+ * one difference: the pair has to be two plain `NullPointerException`s raised by `substr` itself in
+ * both engines, carrying the two messages the JVM is known to give them there.
  */
 class ParityFuzzTest {
 
@@ -33,7 +36,7 @@ class ParityFuzzTest {
         val reports = mutableListOf<String>()
         var returned = 0
         var threw = 0
-        var nullPointerText = 0
+        var tolerated = 0
 
         val elapsed = measureTimeMillis {
             repeat(CASE_COUNT) { index ->
@@ -44,8 +47,12 @@ class ParityFuzzTest {
                 if (oracleOutcome is Outcome.Threw) threw++ else returned++
 
                 val kind = disagreementBetween(oracleOutcome, portedOutcome) ?: return@repeat
-                if (differsOnlyInNullPointerText(oracleOutcome, portedOutcome)) {
-                    nullPointerText++
+                val oracleError = (oracleOutcome as? Outcome.Threw)?.error
+                val portedError = (portedOutcome as? Outcome.Threw)?.error
+                if (oracleError != null && portedError != null &&
+                    isKnownSubstrNullPointerPair(oracleError, portedError)
+                ) {
+                    tolerated++
                     return@repeat
                 }
                 counts[kind] = (counts[kind] ?: 0) + 1
@@ -66,7 +73,7 @@ class ParityFuzzTest {
         println(
             "parity fuzz: $CASE_COUNT generated cases in ${elapsed}ms " +
                 "(the Java engine returned on $returned, threw on $threw), " +
-                "$nullPointerText tolerated NullPointerException texts, $divergences divergences" +
+                "$tolerated tolerated substr NullPointerException pairs, $divergences divergences" +
                 counts.entries.joinToString("") { "\n  ${it.value}× ${it.key.description}" },
         )
         if (divergences > 0) {
@@ -75,33 +82,6 @@ class ParityFuzzTest {
                     "(showing the first ${reports.size}):\n${reports.joinToString("\n")}",
             )
         }
-    }
-
-    /**
-     * The single difference this fuzzer tolerates, and only because it is not a property of either
-     * engine: both threw `java.lang.NullPointerException` from the same operator on the same input —
-     * `substr` renders its first argument without a null check, deliberately in both — but the Java
-     * engine's exception sometimes carries a message the JVM synthesizes from *its* bytecode ("the
-     * return value of java.util.List.get(int) is null"), which the port's null check cannot produce.
-     *
-     * Nothing in either engine authors that text, and the JVM does not attach it consistently: it
-     * stops appearing once the throw site is hot, so the identical case reports it at the start of a
-     * run and reports no message at all later in the same run — a sweep of eight generator seeds
-     * produced around 100 of these per 20 000 cases for whichever seeds ran first and none for the
-     * rest, following the position in the run rather than the seed. Running the JVM with
-     * `-XX:-ShowCodeDetailsInExceptionMessages` removes the text entirely, leaving both engines
-     * reporting null.
-     *
-     * What the engines do author — the type, message and jsonPath of a JsonLogicException — is
-     * compared in full, as is every other exception both raise out of the same JVM call, such as the
-     * `StringIndexOutOfBoundsException` from `substr`'s range arithmetic. No fixture case reaches
-     * this path, so the acceptance gate is unaffected.
-     */
-    private fun differsOnlyInNullPointerText(oracle: Outcome<Any?>, ported: Outcome<JsonElement>): Boolean {
-        val oracleError = (oracle as? Outcome.Threw)?.error ?: return false
-        val portedError = (ported as? Outcome.Threw)?.error ?: return false
-
-        return oracleError is NullPointerException && oracleError.javaClass == portedError.javaClass
     }
 
     private companion object {

@@ -105,7 +105,7 @@ Dependency order: A → {B, C, D} → E → {F1, F2, F3} → G → I1 → H → 
   `Merge`, `In`. Depends: E.
 - [x] **WS-G entry point** (Sonnet 5, [PR #10](https://github.com/BranchIntl/json-logic-kmp/pull/10)) — `JsonLogic` public API; default-operator registration table;
   custom-operation registration; enable the full fixture replay across all targets. Depends: F1–F3.
-- [ ] **WS-I1 parity gate** (Opus 5) — JVM diff runner in `:parity` (Java engine vs KMP engine over
+- [x] **WS-I1 parity gate** (Opus 5, [PR #11](https://github.com/BranchIntl/json-logic-kmp/pull/11)) — JVM diff runner in `:parity` (Java engine vs KMP engine over
   all 289 + 46 cases); fix every divergence; acceptance = zero disagreements. Depends: G.
 - [ ] **WS-H test port** (Sonnet 5) — port the remaining hand-written JUnit test classes to
   `commonTest`; test-only, no `commonMain` edits. Depends: I1.
@@ -154,6 +154,14 @@ Collected as workstreams land; finalized when the doc moves to `docs/` at the en
   answers structurally (true). Unreachable by any fixture; reproducing it would mean adding a marker
   list type to the value domain to preserve a pathological asymmetry. Accepted; to be listed in the
   README known-deviations (WS-K).
+- **HotSpot fast-throw makes implicit-exception identity untrustworthy.** Once a throw site is
+  hot, the JVM reports a null dereference as a shared instance with no stack trace and no message —
+  so two NPEs from entirely different operators compare as identical signatures, and message text
+  comes and goes between runs. The parity fuzzer judges plain-NPE pairs on provenance (the topmost
+  frame belonging to each engine) before any signature, and `jvmTest` runs with
+  `-XX:-OmitStackTraceInFastThrow` so every throwable keeps its own trace. Getting this sound took
+  a two-round review: the first fix's waiver was site-blind, and its bypass hid in the pipeline's
+  early agreement return, not in the predicate the tests exercised.
 - **Squash-merge + follow-up push cancels the merge run.** With a shared concurrency group and
   `cancel-in-progress`, the tracking-doc push that followed each merge cancelled the merge commit's
   CI run, making the Actions tab look like CI never ran

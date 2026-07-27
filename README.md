@@ -208,11 +208,15 @@ that case behaves.
   standard fixture corpus; accepted deliberately rather than reproduced.
 - **No recursion-depth limit**, matching upstream. Evaluating a deeply-nested rule can exhaust the
   stack; bound or validate rule depth before evaluating input from an untrusted source.
-- **`truthy` on a Kotlin/Java array differs from upstream.** Arrays aren't part of the engine's value
-  domain (only `List`, `Map`, `String`, `Number`, `Boolean`, and `null` ever reach an expression), so
-  `truthy` has no case for one and it falls through to the default branch, returning `true` — even for
-  an empty array — where upstream's Java duck-typing treated an empty array as falsy. Convert to a
-  `List` first if you need array truthiness.
+- **`truthy` on a Kotlin/Java array differs from upstream.** Values parsed from rules or `JsonElement`
+  data are never arrays (only `List`, `Map`, `String`, `Number`, `Boolean`, and `null` ever reach an
+  expression that way), so `truthy` has no case for one and it falls through to the default branch,
+  returning `true` — even for an empty array — where upstream's Java duck-typing treated an empty
+  array as falsy. Convert to a `List` first if you need array truthiness. A custom operation can still
+  introduce an array: `addOperation`'s function type returns an unvalidated `Any?`, and whatever it
+  returns flows straight into any surrounding expression. Return domain values from custom
+  operations — `List` rather than an array, plus `Double`/`String`/`Boolean`/`null`/`Map` — or an
+  array result will reach a nested expression unconverted and hit this same truthiness divergence.
 
 ## Contributing
 

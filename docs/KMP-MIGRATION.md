@@ -180,13 +180,17 @@ permanent record.
   CI run, making the Actions tab look like CI never ran
   ([PR #4](https://github.com/BranchIntl/json-logic-kmp/pull/4) fixed this with `paths-ignore`).
 - **A public helper can resurface a domain decision made deep in the engine.** `JsonLogic.truthy`
-  accepts `Any?`, so it can be handed a Kotlin `Array` even though arrays were deliberately dropped
-  from the evaluator's value domain (only `List`/`Map`/`String`/`Number`/`Boolean`/`null` ever reach
-  an expression). `truthy` has no case for `Array`, so it falls through to the default `true` branch —
-  including for an empty array, where upstream's Java duck-typing returned false. Confirmed
+  accepts `Any?`, so it can be handed a Kotlin `Array` even though values parsed from rules or
+  `JsonElement` data are never arrays (only `List`/`Map`/`String`/`Number`/`Boolean`/`null` ever reach
+  an expression that way). `truthy` has no case for `Array`, so it falls through to the default `true`
+  branch — including for an empty array, where upstream's Java duck-typing returned false. Confirmed
   empirically (`JsonLogic.truthy(arrayOf<Int>())` is `true`) rather than assumed; accepted as a
   documented deviation rather than changed, since the engine itself can never produce or accept an
-  array (WS-K, final docs review).
+  array (WS-K, final docs review). The domain claim has a second hole a round-2 review caught: a
+  custom operation registered via `addOperation` returns an unvalidated `Any?`, so one that returns an
+  array (e.g. `IntArray(0)`) feeds it straight into a surrounding expression — confirmed empirically
+  with `{"!!": [{"myOp": []}]}` for a `myOp` returning `IntArray(0)`, which is also `true`. Custom
+  operations should return domain values (`List` rather than an array) to avoid it.
 
 ## Done criteria
 

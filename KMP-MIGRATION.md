@@ -107,7 +107,7 @@ Dependency order: A → {B, C, D} → E → {F1, F2, F3} → G → I1 → H → 
   custom-operation registration; enable the full fixture replay across all targets. Depends: F1–F3.
 - [x] **WS-I1 parity gate** (Opus 5, [PR #11](https://github.com/BranchIntl/json-logic-kmp/pull/11)) — JVM diff runner in `:parity` (Java engine vs KMP engine over
   all 289 + 46 cases); fix every divergence; acceptance = zero disagreements. Depends: G.
-- [ ] **WS-H test port** (Sonnet 5) — port the remaining hand-written JUnit test classes to
+- [x] **WS-H test port** (Sonnet 5, [PR #12](https://github.com/BranchIntl/json-logic-kmp/pull/12)) — port the remaining hand-written JUnit test classes to
   `commonTest`; test-only, no `commonMain` edits. Depends: I1.
 - [ ] **WS-I2 teardown + API surface** (Sonnet 5) — delete `:parity` + the Java tree; apply
   binary-compatibility-validator; `apiDump`; commit `api/`; add `apiCheck` to CI. Depends: H.

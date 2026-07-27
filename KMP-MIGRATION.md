@@ -109,7 +109,7 @@ Dependency order: A → {B, C, D} → E → {F1, F2, F3} → G → I1 → H → 
   all 289 + 46 cases); fix every divergence; acceptance = zero disagreements. Depends: G.
 - [x] **WS-H test port** (Sonnet 5, [PR #12](https://github.com/BranchIntl/json-logic-kmp/pull/12)) — port the remaining hand-written JUnit test classes to
   `commonTest`; test-only, no `commonMain` edits. Depends: I1.
-- [ ] **WS-I2 teardown + API surface** (Sonnet 5) — delete `:parity` + the Java tree; apply
+- [x] **WS-I2 teardown + API surface** (Sonnet 5, [PR #14](https://github.com/BranchIntl/json-logic-kmp/pull/14)) — delete `:parity` + the Java tree; apply
   binary-compatibility-validator; `apiDump`; commit `api/`; add `apiCheck` to CI. Depends: H.
 - [x] **WS-J publishing** (Sonnet 5, [PR #13](https://github.com/BranchIntl/json-logic-kmp/pull/13)) — `maven-publish` to GitHub Packages under `BranchIntl`; new
   `publish.yml` on `workflow_dispatch`. Depends: I2.

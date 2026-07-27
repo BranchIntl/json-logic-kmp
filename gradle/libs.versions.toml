@@ -1,0 +1,7 @@
+[versions]
+gson = "2.8.5"
+junit = "4.12"
+
+[libraries]
+gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }

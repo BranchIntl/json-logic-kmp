@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>JsonLogic Playground</title>
+    <meta name="description" content="Try JsonLogic expressions in your browser, evaluated by json-logic-kmp compiled to WebAssembly.">
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            html, body {
+                background: #16181d;
+            }
+        }
+
+        /* ComposeViewport sizes its canvas to this container, so it needs a resolved height. */
+        #playground {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Shown while the WebAssembly bundle downloads and instantiates. ComposeViewport clears
+           the container before mounting, so this disappears on its own — and stays put if the app
+           never starts, which is the useful failure mode. */
+        .boot {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #8b8f9a;
+            font-size: 15px;
+        }
+    </style>
+</head>
+<body>
+<div id="playground">
+    <div class="boot">Loading the JsonLogic playground&hellip;</div>
+</div>
+<noscript>
+    <p style="padding: 2rem; color: #8b8f9a">
+        This playground is a WebAssembly application and needs JavaScript enabled.
+    </p>
+</noscript>
+<!-- Relative on purpose: the site is served from the /json-logic-kmp/ project subpath. -->
+<script src="playground.js"></script>
+</body>
+</html>

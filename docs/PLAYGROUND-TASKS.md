@@ -9,8 +9,8 @@ Legend: `[ ]` not started · `[~]` in progress · `[x]` complete.
 
 ## Tasks
 
-- [~] **0 — Tracking doc + branch rename.** This file; branch renamed to Linear's suggested name.
-- [ ] **1 — Gradle wiring + "hello" bundle.** `include(":playground")`, version catalog entries for
+- [x] **0 — Tracking doc + branch rename.** This file; branch renamed to Linear's suggested name.
+- [x] **1 — Gradle wiring + "hello" bundle.** `include(":playground")`, version catalog entries for
       Compose Multiplatform 1.11.1 / Material 3 1.9.0 / kotlinx-browser 0.5.0, BCV
       `ignoredProjects`, `playground/build.gradle.kts`, `index.html`, `Main.kt`, placeholder `App`.
 - [ ] **2 — Theme + shell.** Light/dark schemes seeded from `isSystemInDarkTheme()` with a manual

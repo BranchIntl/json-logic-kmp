@@ -19,6 +19,9 @@ plugins {
 // BCV only validates the jvm dump; it does not support this project's androidLibrary target
 // either way, so klib is the only route to covering the native and wasmJs public surface.
 apiValidation {
+    // :playground is a demo app with no published API to validate.
+    ignoredProjects.add("playground")
+
     @OptIn(kotlinx.validation.ExperimentalBCVApi::class)
     klib {
         enabled = true

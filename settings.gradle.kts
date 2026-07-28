@@ -14,3 +14,5 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "json-logic-kmp"
+
+include(":lib")

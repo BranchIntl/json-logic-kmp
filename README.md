@@ -233,17 +233,17 @@ Every pull request runs three lanes, mirrored in `.github/workflows/build.yml`:
 
 | Lane         | Runner       | Command(s) |
 |--------------|--------------|------------|
-| `jvm-android`| `ubuntu-latest` | `./gradlew jvmTest testAndroidHostTest assemble apiCheck` |
-| `wasm`       | `ubuntu-latest` | `./gradlew wasmJsNodeTest` |
-| `ios`        | `macos-15`      | `./gradlew iosSimulatorArm64Test klibApiCheck` |
+| `jvm-android`| `ubuntu-latest` | `./gradlew :lib:jvmTest :lib:testAndroidHostTest :lib:assemble :lib:apiCheck` |
+| `wasm`       | `ubuntu-latest` | `./gradlew :lib:wasmJsNodeTest` |
+| `ios`        | `macos-15`      | `./gradlew :lib:iosSimulatorArm64Test :lib:klibApiCheck` |
 
 The public API is locked with [binary-compatibility-validator](https://github.com/Kotlin/binary-compatibility-validator)
 across both the JVM and KLib (native/wasm) surfaces; a breaking change requires updating the committed
-dumps under `api/`.
+dumps under `lib/api/`.
 
 ### Release process
 
-1. Bump `version` in `build.gradle.kts` on `main`.
+1. Bump `version` in `lib/build.gradle.kts` on `main`.
 2. From the `main` branch, dispatch the **Publish** workflow (`.github/workflows/publish.yml`) —
    either from the Actions tab or with `gh workflow run publish.yml --ref main`.
 3. The workflow builds and tests every macOS-buildable lane, then publishes all publications to

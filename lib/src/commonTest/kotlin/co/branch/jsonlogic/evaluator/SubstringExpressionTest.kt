@@ -6,10 +6,9 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 /**
- * Pins `substr`'s negative-index arithmetic, its argument-count and type checks, and the places
- * where an out-of-range offset is clamped to `""` versus reaches the underlying `substring` call
- * and throws — upstream only clamps the 2-argument form's start offset, and the 3-argument form's
- * combination of offsets when the start is past the end or past the computed end offset.
+ * Pins `substr`'s negative-index arithmetic, its argument-count and type checks, and the clamping
+ * that keeps every offset combination in range. Each expectation below is what the reference
+ * implementation returns for the same rule.
  */
 class SubstringExpressionTest {
 
@@ -90,39 +89,66 @@ class SubstringExpressionTest {
         assertEquals("second argument to substr must be a number", exception.message)
     }
 
+    /** A start further back than the string is long stops at its beginning, in either form. */
     @Test
-    fun aStartPastTheEndOfTheStringIsClampedToEmptyInTheTwoArgumentForm() {
-        assertEquals("", evaluate("""{"substr": ["ab", -10]}""", null, controlStringExpressions))
+    fun aStartBeforeTheBeginningIsClampedToIt() {
+        assertEquals("ab", evaluate("""{"substr": ["ab", -10]}""", null, controlStringExpressions))
+        assertEquals("jsonlogic", evaluate("""{"substr": ["jsonlogic", -40]}""", null, controlStringExpressions))
+        assertEquals("a", SubstringExpression.INSTANCE.evaluate(listOf("ab", -10.0, 1.0), null, "$"))
     }
 
     @Test
-    fun aStartPastTheEndOfTheStringThrowsInTheThreeArgumentForm() {
-        // Unlike the 2-argument form, upstream never clamps a start offset that is still negative
-        // after the end-relative adjustment in the 3-argument form: it reaches the underlying
-        // substring call and throws.
-        assertFailsWith<IndexOutOfBoundsException> {
-            SubstringExpression.INSTANCE.evaluate(listOf("ab", -10.0, 1.0), null, "$")
-        }
+    fun aStartPastTheEndYieldsTheEmptyString() {
+        assertEquals("", SubstringExpression.INSTANCE.evaluate(listOf("ab", 5.0), null, "$"))
+        assertEquals("", evaluate("""{"substr": ["ab", 2]}""", null, controlStringExpressions))
+        assertEquals("", evaluate("""{"substr": ["jsonlogic", 20, -40]}""", null, controlStringExpressions))
     }
 
     @Test
-    fun aPositiveStartPastTheStringLengthThrowsInTheTwoArgumentForm() {
-        // The 2-argument form only clamps a start that is negative after adjustment; a positive
-        // start past the string's length is never checked and reaches substring, which throws.
-        assertFailsWith<IndexOutOfBoundsException> {
-            SubstringExpression.INSTANCE.evaluate(listOf("ab", 5.0), null, "$")
-        }
+    fun aLengthPastTheEndIsClampedToWhatIsLeft() {
+        assertEquals("ab", evaluate("""{"substr": ["ab", 0, 10]}""", null, controlStringExpressions))
+        assertEquals("b", evaluate("""{"substr": ["ab", 1, 10]}""", null, controlStringExpressions))
     }
 
     @Test
-    fun aStartPastTheComputedEndIsClampedToEmptyInTheThreeArgumentForm() {
-        assertEquals("", evaluate("""{"substr": ["ab", 0, 10]}""", null, controlStringExpressions))
+    fun aNegativeLengthLongerThanWhatIsLeftYieldsTheEmptyString() {
+        assertEquals("", evaluate("""{"substr": ["ab", 1, -5]}""", null, controlStringExpressions))
+        assertEquals("", evaluate("""{"substr": ["ab", 0, -2]}""", null, controlStringExpressions))
+    }
+
+    /**
+     * The source is stringified, so a null one is the four characters of `"null"` — the reference
+     * renders `substr`'s source through `String()`, unlike `cat`, which drops a null argument.
+     */
+    @Test
+    fun aNullSourceRendersAsTheWordNull() {
+        assertEquals("ull", SubstringExpression.INSTANCE.evaluate(listOf(null, 1.0), null, "$"))
+        assertEquals("nu", SubstringExpression.INSTANCE.evaluate(listOf(null, 0.0, 2.0), null, "$"))
+        assertEquals("ull", evaluate("""{"substr": [{"var": "x"}, 1]}""", mapOf("x" to null), controlStringExpressions))
+    }
+
+    /**
+     * A fractional offset truncates toward zero, and a negative length truncates only after it has
+     * been added to what the start offset left — so `-1.5` against six characters drops one, not two.
+     */
+    @Test
+    fun fractionalOffsetsTruncateTowardZero() {
+        assertEquals("ab", evaluate("""{"substr": ["abcdef", 0, 2.7]}""", null, controlStringExpressions))
+        assertEquals("bc", evaluate("""{"substr": ["abcdef", 1.9, 2]}""", null, controlStringExpressions))
+        assertEquals("cdef", evaluate("""{"substr": ["abcdef", 2.7]}""", null, controlStringExpressions))
+        assertEquals("ef", evaluate("""{"substr": ["abcdef", -2.5]}""", null, controlStringExpressions))
+        assertEquals("abcd", evaluate("""{"substr": ["abcdef", 0, -1.5]}""", null, controlStringExpressions))
+        assertEquals("abcde", evaluate("""{"substr": ["abcdef", 0, -0.5]}""", null, controlStringExpressions))
+        assertEquals("cd", evaluate("""{"substr": ["abcdef", 2, -1.5]}""", null, controlStringExpressions))
+        assertEquals("", evaluate("""{"substr": ["abcdef", 0, -6.5]}""", null, controlStringExpressions))
     }
 
     @Test
-    fun aNullFirstArgumentThrowsRatherThanRenderingAsTheStringNull() {
-        assertFailsWith<NullPointerException> {
-            SubstringExpression.INSTANCE.evaluate(listOf(null, 0.0, 1.0), null, "$")
-        }
+    fun nonStringSourcesRenderBeforeSlicing() {
+        assertEquals("4", evaluate("""{"substr": [42, 0, 1]}""", null, controlStringExpressions))
+        assertEquals("1.5", evaluate("""{"substr": [1.5, 0, 3]}""", null, controlStringExpressions))
+        assertEquals("1", evaluate("""{"substr": [1, 0, 1]}""", null, controlStringExpressions))
+        assertEquals("tr", SubstringExpression.INSTANCE.evaluate(listOf(true, 0.0, 2.0), null, "$"))
+        assertEquals("100", SubstringExpression.INSTANCE.evaluate(listOf(1e7, 0.0, 3.0), null, "$"))
     }
 }

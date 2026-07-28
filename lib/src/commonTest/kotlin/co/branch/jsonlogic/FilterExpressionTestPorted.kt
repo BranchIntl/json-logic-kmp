@@ -25,8 +25,8 @@ class FilterExpressionTestPorted {
         val result = jsonLogic.apply(json, data).jsonArray
 
         assertEquals(3, result.size)
-        assertEquals("2.0", result[0].jsonPrimitive.content)
-        assertEquals("4.0", result[1].jsonPrimitive.content)
-        assertEquals("6.0", result[2].jsonPrimitive.content)
+        assertEquals("2", result[0].jsonPrimitive.content)
+        assertEquals("4", result[1].jsonPrimitive.content)
+        assertEquals("6", result[2].jsonPrimitive.content)
     }
 }

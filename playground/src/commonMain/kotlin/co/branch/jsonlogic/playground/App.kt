@@ -239,7 +239,7 @@ private fun SyntaxStatus(valid: Boolean) {
 @Composable
 private fun Footnote() {
     Text(
-        text = "Numbers normalize to Double, so 1 evaluates to 1.0. " +
+        text = "Every number is an IEEE 754 double, so 0.1 + 0.2 evaluates to 0.30000000000000004. " +
             "Infinity and NaN come back as bare literals, which JSON has no token for.",
         style = MaterialTheme.typography.bodySmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,

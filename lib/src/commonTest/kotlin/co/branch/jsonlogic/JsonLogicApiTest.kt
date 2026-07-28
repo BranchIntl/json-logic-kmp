@@ -1,6 +1,8 @@
 package co.branch.jsonlogic
 
 import co.branch.jsonlogic.ast.JsonLogicNode
+import co.branch.jsonlogic.ast.JsonLogicParseException
+import co.branch.jsonlogic.ast.JsonLogicParser
 import co.branch.jsonlogic.evaluator.JsonLogicEvaluationException
 import co.branch.jsonlogic.evaluator.expressions.PreEvaluatedArgumentsExpression
 import co.branch.jsonlogic.fixtures.jsonSemanticEquals
@@ -9,6 +11,7 @@ import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.jsonPrimitive
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -156,6 +159,30 @@ class JsonLogicApiTest {
 
         assertTrue(jsonSemanticEquals(viaPreParsedNode, viaStringConvenience))
         assertEquals(3.0, viaPreParsedNode.jsonPrimitive.content.toDouble())
+    }
+
+    /** A rule that already is a [kotlinx.serialization.json.JsonElement] pre-parses off the instance too. */
+    @Test
+    fun parseThenApplyPreParsedNodeMatchesApplyingTheJsonElement() {
+        val jsonLogic = JsonLogic()
+        val rule = Json.parseToJsonElement("""{"+": [{"var": "a"}, {"var": "b"}]}""")
+        val data = Json.parseToJsonElement("""{"a": 1, "b": 2}""")
+
+        val node: JsonLogicNode = jsonLogic.parse(rule)
+
+        assertTrue(jsonSemanticEquals(jsonLogic.apply(node, data), jsonLogic.apply(rule, data)))
+        assertEquals(node, jsonLogic.parse(rule, maxDepth = JsonLogicParser.DEFAULT_MAX_DEPTH))
+    }
+
+    @Test
+    fun parseRejectsARuleDeeperThanTheGivenBound() {
+        val jsonLogic = JsonLogic()
+        val rule = """{"+": [1, {"+": [1, 1]}]}"""
+
+        assertFailsWith<JsonLogicParseException> { jsonLogic.parse(rule, maxDepth = 2) }
+        assertFailsWith<JsonLogicParseException> {
+            jsonLogic.parse(Json.parseToJsonElement(rule), maxDepth = 2)
+        }
     }
 
     @Test

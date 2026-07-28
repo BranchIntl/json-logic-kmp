@@ -5,12 +5,13 @@ A [Kotlin Multiplatform](https://kotlinlang.org/docs/multiplatform.html) impleme
 and evaluate them the same way on every platform Kotlin runs on.
 
 This library is a fork of [jamsesso/json-logic-java](https://github.com/jamsesso/json-logic-java)
-(MIT, © 2018 Sam Jesso), rewritten as a pure Kotlin Multiplatform module. It is **bug-for-bug
-compatible** with the Java original, with a short list of documented deviations: before the Java
-sources were removed from this repository, both engines were run side by side over the same 335-case
-fixture corpus (289 value cases, 46 error cases) and machine-verified to agree on every one. See
-[Known deviations & sharp edges](#known-deviations--sharp-edges) below for what to watch for before
-you rely on this library.
+(MIT, © 2018 Sam Jesso), rewritten as a pure Kotlin Multiplatform module. It follows the Java
+original closely — before the Java sources were removed from this repository, both engines were run
+side by side over the same 335-case fixture corpus (289 value cases, 46 error cases) and
+machine-verified to agree on every one — but where the two disagree, the
+[JsonLogic reference implementation](https://github.com/jwadhams/json-logic-js) wins. See
+[Known deviations & sharp edges](#known-deviations--sharp-edges) below for where the two parted ways,
+and for what else to watch for before you rely on this library.
 
 **Try it in your browser: [crafted.branch.co/json-logic-kmp](https://crafted.branch.co/json-logic-kmp/)**
 
@@ -129,7 +130,7 @@ val result = jsonLogic.apply(
     """{"var": "a"}""",
     buildJsonObject { put("a", 1) },
 )
-// result.jsonPrimitive.content == "1.0"
+// result.jsonPrimitive.content == "1"
 ```
 
 The `data` parameter is always a `JsonElement?` — there is no overload that takes a data *string*.
@@ -144,8 +145,8 @@ jsonLogic.apply("""{"var": "a"}""", data)
 
 ### Parse once, apply many times
 
-`apply(rule: String, ...)` parses the rule fresh on every call. There is no internal parse cache, so
-parse a rule once with `parse()` and reuse the resulting node whenever you evaluate it repeatedly:
+`apply(rule, ...)` parses the rule fresh on every call. There is no internal parse cache, so parse a
+rule once with `parse()` and reuse the resulting node whenever you evaluate it repeatedly:
 
 ```kotlin
 val rule = jsonLogic.parse("""{"===": [{"var": "a"}, 1.0]}""")
@@ -153,6 +154,21 @@ val rule = jsonLogic.parse("""{"===": [{"var": "a"}, 1.0]}""")
 jsonLogic.apply(rule, buildJsonObject { put("a", 1) }) // true
 jsonLogic.apply(rule, buildJsonObject { put("a", 2) }) // false
 ```
+
+`parse` takes a rule in either of the forms `apply` accepts, so a rule that already is a
+`JsonElement` — one that arrived inside a larger payload, say — pre-parses without being serialized
+back to text first:
+
+```kotlin
+val payload = Json.parseToJsonElement("""{"rule": {"===": [{"var": "a"}, 1.0]}}""").jsonObject
+
+val rule = jsonLogic.parse(payload.getValue("rule"))
+```
+
+The absence of a cache is deliberate. Only you know what identifies a rule — a screen id, a field
+name, a hash — and a cache inside a `JsonLogic` instance would make it mutable, undoing the property
+that lets one configured instance be shared across threads. A `Map` from your own rule key to the
+parsed node, populated as rules arrive, is the whole of what a cache needs to be here.
 
 ### Custom operations
 
@@ -206,23 +222,29 @@ that case behaves.
   checked exception that every caller must declare or catch. No `try`/`catch` or `throws` clause is
   needed to call into this library.
 - **No parse cache; `addOperation` rebuilds eagerly.** Parse a rule once via `parse()` and reuse it
-  rather than re-parsing on every `apply(String, ...)` call. Finish configuring an instance (default
+  rather than re-parsing on every `apply(rule, ...)` call. Finish configuring an instance (default
   registrations plus any `addOperation` calls) on one thread before sharing it; once configuration is
   complete and the instance is safely published, concurrent `apply` calls are safe, but concurrent
   `addOperation` calls — with each other or with an in-flight `apply` — are not.
 - **Strict JSON parsing.** Rule strings are parsed as strict JSON via `kotlinx.serialization`.
   Upstream's Gson-backed parser was lenient (unquoted keys and similar); those inputs no longer parse.
-- **Numbers are always `Double`.** Every numeric result is normalized to `Double` and rendered with
-  Java's `Double.toString` canonical format on every platform — applying `{"var":"a"}` to `{"a":1}`
-  produces the JSON content `"1.0"`, not `"1"`. Integers beyond 2^53 lose precision, same as upstream.
+- **Numbers are always `Double`, and render the way JavaScript writes them.** Every numeric value is
+  normalized to `Double` inside the engine, so integers beyond 2^53 lose precision. Results cross back
+  into JSON through ECMAScript's `Number::toString`, byte-identical on every platform: a whole number
+  carries no decimal point (`{"+": [1, 2]}` is `3`), the plain-decimal range is `[1e-6, 1e21)`, and
+  everything outside it is exponential (`1e+21`, `1e-7`). `cat` and `substr` render a number the same
+  way. Two places still render one with Java's `Double.toString`: `log`'s diagnostic text, and the
+  substring test `in` performs against a string — so `{"in": [1, "a1b"]}` is `false` here, where the
+  reference implementation looks for `1` rather than `1.0` and answers `true`.
 - **Infinity and NaN aren't valid JSON.** A result of positive infinity, negative infinity, or NaN
   (e.g. from `{"/": [1, 0]}`) is returned as a `JsonElement` holding that literal, unquoted text, since
   JSON has no token for it. Reading it back out in Kotlin works fine, but re-encoding it through a
   standard JSON writer produces text most JSON parsers reject.
-- **`cat` and `substr` throw `NullPointerException` on a null operand** — faithful to upstream, which
-  crashes the same way rather than special-casing null. `substr` also throws, with platform-rendered
-  message text, on an out-of-range start/length combination that upstream doesn't clamp to the empty
-  string.
+- **`cat` drops a null argument; `substr` renders one as the text `null`.** The reference joins `cat`'s
+  arguments with `Array.prototype.join`, which renders null as the empty string, and stringifies
+  `substr`'s source with `String()`, which renders it as `"null"` — so `{"substr": [null, 1]}` is
+  `"ull"`. Both diverge from upstream, which throws `NullPointerException` in either case. `substr`
+  clamps every offset into range and likewise never throws for one.
 - **Preserved upstream quirks:** `all`'s error jsonPath always reports `[1]` for the failing element,
   regardless of its actual index; `substr` and `missing_some` type-check their numeric arguments as
   `Double` internally; a `var`'s default-value expression is evaluated twice when its key resolves to
@@ -232,8 +254,12 @@ that case behaves.
   result in an internal type whose `equals` always returns `false`, making the same comparison `false`
   there — and asymmetrically so, since the reverse operand order is `true`. Unreachable through the
   standard fixture corpus; accepted deliberately rather than reproduced.
-- **No recursion-depth limit**, matching upstream. Evaluating a deeply-nested rule can exhaust the
-  stack; bound or validate rule depth before evaluating input from an untrusted source.
+- **Rule nesting is bounded; a hand-built node is not.** Parsing and evaluating both recurse, so every
+  `parse` and `apply` overload that takes a rule as JSON rejects one nested deeper than
+  `JsonLogicParser.DEFAULT_MAX_DEPTH` (128 objects and arrays — `{"+": [1, 2]}` is 2 levels, and each
+  operator around it adds 2). `parse(rule, maxDepth)` moves the bound. A `JsonLogicNode` you assemble
+  yourself and hand to `apply` has been through no such check, and neither has the *data* a rule runs
+  against — converting that into the engine's value domain walks the whole tree recursively.
 - **`truthy` on a Kotlin/Java array differs from upstream.** Values parsed from rules or `JsonElement`
   data are never arrays (only `List`, `Map`, `String`, `Number`, `Boolean`, and `null` ever reach an
   expression that way), so `truthy` has no case for one and it falls through to the default branch,

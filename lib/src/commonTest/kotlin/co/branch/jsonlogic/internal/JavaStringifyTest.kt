@@ -3,7 +3,7 @@ package co.branch.jsonlogic.internal
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-/** Pins the Java-`String.valueOf`-equivalent rendering shared by `cat`, `log`, and `substr`. */
+/** Pins the Java-`String.valueOf`-equivalent rendering `log` writes its diagnostic text with. */
 class JavaStringifyTest {
 
     @Test

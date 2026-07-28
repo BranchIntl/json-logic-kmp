@@ -1,35 +1,21 @@
 package co.branch.jsonlogic.evaluator.expressions
 
-import co.branch.jsonlogic.internal.canonicalDoubleToString
-import co.branch.jsonlogic.internal.javaStringify
+import co.branch.jsonlogic.internal.ecmaStringify
 
 /**
  * `cat`: joins every argument's rendering into one string, with no separator.
  *
- * A [Double] that is a whole number renders as its integer part (`1.0` and `-2.0` join in as `1` and
- * `-2`) rather than the full decimal — matching upstream, which special-cases any `Double` whose own
- * `toString` ends in `.0` and prints its `intValue()` instead. Only whole-number magnitudes below
- * `1e7` take this path: past that, [canonicalDoubleToString] switches to scientific notation (e.g.
- * `1.0E7`), which does not end in `.0`. A null argument throws rather than rendering as the string
- * `"null"`: upstream renders every argument through a direct `toString()` call, not the null-safe
- * `String.valueOf` that `log`'s string concatenation uses. Every other value renders through
- * [javaStringify].
+ * A null argument contributes nothing rather than the text `"null"`, and never fails: the reference
+ * implementation joins its arguments with `Array.prototype.join`, which renders null as the empty
+ * string. Every other value renders through [ecmaStringify], so a whole number joins in without a
+ * decimal point — `1` and `-2` rather than `1.0` and `-2.0`.
  */
 class ConcatenateExpression private constructor() : PreEvaluatedArgumentsExpression {
 
     override val key: String = "cat"
 
     override fun evaluate(arguments: List<Any?>, data: Any?, jsonPath: String): Any? =
-        arguments.joinToString(separator = "") { stringify(it) }
-
-    private fun stringify(value: Any?): String {
-        if (value is Double) {
-            val rendered = canonicalDoubleToString(value)
-            return if (rendered.endsWith(".0")) value.toInt().toString() else rendered
-        }
-
-        return javaStringify(value!!)
-    }
+        arguments.joinToString(separator = "") { if (it == null) "" else ecmaStringify(it) }
 
     companion object {
         val INSTANCE = ConcatenateExpression()

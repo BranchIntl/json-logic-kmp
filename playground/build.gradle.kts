@@ -6,6 +6,10 @@ plugins {
     alias(libs.plugins.compose.compiler)
 }
 
+compose.resources {
+    packageOfResClass = "co.branch.jsonlogic.playground.resources"
+}
+
 kotlin {
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
@@ -32,6 +36,7 @@ kotlin {
             implementation(libs.compose.foundation)
             implementation(libs.compose.ui)
             implementation(libs.compose.material3)
+            implementation(libs.compose.components.resources)
         }
         wasmJsMain.dependencies {
             implementation(libs.kotlinx.browser)

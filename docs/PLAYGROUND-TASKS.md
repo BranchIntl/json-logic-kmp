@@ -13,10 +13,15 @@ Legend: `[ ]` not started · `[~]` in progress · `[x]` complete.
 - [x] **1 — Gradle wiring + "hello" bundle.** `include(":playground")`, version catalog entries for
       Compose Multiplatform 1.11.1 / Material 3 1.9.0 / kotlinx-browser 0.5.0, BCV
       `ignoredProjects`, `playground/build.gradle.kts`, `index.html`, `Main.kt`, placeholder `App`.
-- [ ] **2 — Theme + shell.** Light/dark schemes seeded from `isSystemInDarkTheme()` with a manual
-      toggle, `JsonSyntaxColors` composition local, header, responsive two-column layout.
-- [ ] **3 — Evaluation core + editors + result.** Debounced evaluation, sealed `EvalOutcome`,
-      editors with a line gutter, result panel with pretty-printing and error cards.
+- [x] **2 + 3 — Theme, shell, and live evaluation.** Merged: a shell with inert text boxes is not
+      independently verifiable, so the theme, layout and evaluation landed together. Light/dark
+      seeded from `isSystemInDarkTheme()` with a manual toggle, `SyntaxColors` composition local,
+      header, responsive two-column layout, debounced evaluation, sealed `EvalOutcome`, editors
+      with a line gutter, result panel with pretty-printing and error cards.
+
+      Also bundles JetBrains Mono: `FontFamily.Monospace` does not resolve under the web renderer
+      and silently falls back to the proportional default, which misaligns the JSON and the gutter
+      measured against it.
 - [ ] **4 — JSON syntax highlighting.** Partial-input-tolerant lexer feeding a
       `VisualTransformation` with `OffsetMapping.Identity`.
 - [ ] **5 — Curated examples.** Chip row of hand-written rule/data pairs spanning the operation

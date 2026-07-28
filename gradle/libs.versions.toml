@@ -13,6 +13,7 @@ kotlinxSerialization = "1.9.0"
 # Explicit coordinates rather than the Compose plugin's compose.runtime / compose.material3
 # accessors: every one of those is deprecated in 1.11.1 in favour of declaring the dependency
 # directly, and the catalog is where this project declares dependencies anyway.
+compose-components-resources = { group = "org.jetbrains.compose.components", name = "components-resources", version.ref = "compose" }
 compose-foundation = { group = "org.jetbrains.compose.foundation", name = "foundation", version.ref = "compose" }
 compose-material3 = { group = "org.jetbrains.compose.material3", name = "material3", version.ref = "composeMaterial3" }
 compose-runtime = { group = "org.jetbrains.compose.runtime", name = "runtime", version.ref = "compose" }

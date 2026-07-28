@@ -27,8 +27,10 @@ Legend: `[ ]` not started · `[~]` in progress · `[x]` complete.
 - [x] **5 — Curated examples.** Chip row of hand-written rule/data pairs spanning the operation
       families, plus a `commonTest` source set that pins what each one evaluates to. Tests run under
       `wasmJsBrowserTest`: Compose UI links skiko unconditionally, and skiko cannot load under Node.
-- [ ] **6 — Operations reference.** All 34 operators, collapsible, click-to-insert at the cursor.
-- [ ] **7 — Shareable URL state.** base64url hash round-trip, Share button, clipboard copy. Covers
+- [x] **6 + 7 — Operations reference and shareable URL state.** Merged: both wire into the same
+      handful of lines in `App`, and splitting them would have left one commit's feature
+      unreachable. All 34 operators plus `var`, collapsible, click-to-insert at the cursor;
+      base64url hash round-trip with a Share button and clipboard copy. Covers
       [AMP-3995](https://linear.app/branch/issue/AMP-3995/jsonlogic-playground-shareable-url-state).
 - [ ] **8 — CI lanes.** Root-scope the library lanes, add a main-only `playground` lane, qualify
       `publish.yml`.

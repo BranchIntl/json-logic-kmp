@@ -19,27 +19,43 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ClipEntry
+import androidx.compose.ui.platform.LocalClipboard
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import co.branch.jsonlogic.JsonLogic
 import co.branch.jsonlogic.playground.editor.JsonEditor
+import co.branch.jsonlogic.playground.share.SharedState
 import co.branch.jsonlogic.playground.theme.LocalPlaygroundColors
 import co.branch.jsonlogic.playground.theme.PlaygroundTheme
+import co.branch.jsonlogic.playground.ui.Chip
 import co.branch.jsonlogic.playground.ui.ExamplesRow
 import co.branch.jsonlogic.playground.ui.Header
+import co.branch.jsonlogic.playground.ui.OperationsReference
 import co.branch.jsonlogic.playground.ui.Panel
 import co.branch.jsonlogic.playground.ui.ResultContent
 import co.branch.jsonlogic.playground.ui.StatusLabel
 import co.branch.jsonlogic.playground.ui.typeName
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /** Below this width the three panels stack into a single scrolling column. */
 private val WideLayoutThreshold = 900.dp
 
+/**
+ * @param initial content restored from a shared link, or null to open on the first example.
+ * @param onShare publishes the current editors as a link and returns it, or null on a host with no
+ *   address bar to publish to — which hides the share control rather than offering a dead one.
+ */
 @Composable
-fun App() {
+fun App(
+    initial: SharedState? = null,
+    onShare: ((SharedState) -> String)? = null,
+) {
     var darkOverride by remember { mutableStateOf<Boolean?>(null) }
     val dark = darkOverride ?: isSystemInDarkTheme()
 
@@ -48,13 +64,24 @@ fun App() {
     val jsonLogic = remember { JsonLogic() }
     // Opening on the first example rather than an empty page means the first chip reads as selected
     // and there is something to evaluate immediately.
-    var rule by remember { mutableStateOf(TextFieldValue(Examples.first().rule)) }
-    var data by remember { mutableStateOf(TextFieldValue(Examples.first().data)) }
+    var rule by remember { mutableStateOf(TextFieldValue(initial?.rule ?: Examples.first().rule)) }
+    var data by remember { mutableStateOf(TextFieldValue(initial?.data ?: Examples.first().data)) }
     var evaluation by remember { mutableStateOf(Evaluation.Blank) }
+    var referenceExpanded by remember { mutableStateOf(false) }
+    var copied by remember { mutableStateOf(false) }
+    val clipboard = LocalClipboard.current
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(rule.text, data.text) {
         delay(120)
         evaluation = evaluate(jsonLogic, rule.text, data.text)
+    }
+
+    LaunchedEffect(copied) {
+        if (copied) {
+            delay(1600)
+            copied = false
+        }
     }
 
     PlaygroundTheme(dark) {
@@ -72,6 +99,21 @@ fun App() {
                         dark = dark,
                         onToggleTheme = { darkOverride = !dark },
                         compact = !wide,
+                        trailing = {
+                            if (onShare != null) {
+                                Chip(
+                                    text = if (copied) "Copied" else "Share",
+                                    onClick = {
+                                        val url = onShare(SharedState(rule.text, data.text))
+                                        scope.launch {
+                                            clipboard.setClipEntry(ClipEntry.withPlainText(url))
+                                        }
+                                        copied = true
+                                    },
+                                    selected = true,
+                                )
+                            }
+                        },
                     )
 
                     ExamplesRow(
@@ -94,6 +136,12 @@ fun App() {
                         onDataChange = { data = it },
                         evaluation = evaluation,
                         modifier = Modifier.weight(1f),
+                    )
+
+                    OperationsReference(
+                        expanded = referenceExpanded,
+                        onToggle = { referenceExpanded = !referenceExpanded },
+                        onInsert = { snippet -> rule = rule.insertAtCursor(snippet) },
                     )
 
                     Footnote()
@@ -167,6 +215,14 @@ private fun Editors(
             resultPanel(Modifier.fillMaxWidth().height(250.dp))
         }
     }
+}
+
+/** Replaces the selection, or inserts at the caret when nothing is selected. */
+private fun TextFieldValue.insertAtCursor(snippet: String): TextFieldValue {
+    val start = selection.min
+    val replaced = text.replaceRange(start, selection.max, snippet)
+
+    return TextFieldValue(replaced, TextRange(start + snippet.length))
 }
 
 @Composable

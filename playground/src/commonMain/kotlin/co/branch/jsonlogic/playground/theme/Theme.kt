@@ -124,6 +124,10 @@ fun PlaygroundTheme(dark: Boolean, content: @Composable () -> Unit) {
         fontFamily = FontFamily(Font(Res.font.jetbrains_mono_regular)),
         fontSize = 13.sp,
         lineHeight = 21.sp,
+        // Ligatures off. JetBrains Mono draws >= as ≥ and != as ≠, which is charming in prose and
+        // wrong here: every one of these is a literal operator name the reader has to be able to
+        // type back into the editor.
+        fontFeatureSettings = "liga 0, calt 0",
     )
 
     CompositionLocalProvider(

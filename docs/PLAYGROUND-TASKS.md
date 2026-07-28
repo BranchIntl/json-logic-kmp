@@ -22,7 +22,7 @@ Legend: `[ ]` not started · `[~]` in progress · `[x]` complete.
       Also bundles JetBrains Mono: `FontFamily.Monospace` does not resolve under the web renderer
       and silently falls back to the proportional default, which misaligns the JSON and the gutter
       measured against it.
-- [ ] **4 — JSON syntax highlighting.** Partial-input-tolerant lexer feeding a
+- [x] **4 — JSON syntax highlighting.** Partial-input-tolerant lexer feeding a
       `VisualTransformation` with `OffsetMapping.Identity`.
 - [ ] **5 — Curated examples.** Chip row of hand-written rule/data pairs spanning the operation
       families.

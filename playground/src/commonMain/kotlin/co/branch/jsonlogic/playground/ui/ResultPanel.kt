@@ -13,11 +13,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import co.branch.jsonlogic.playground.EvalOutcome
+import co.branch.jsonlogic.playground.editor.highlightJson
 import co.branch.jsonlogic.playground.theme.LocalMonospaceStyle
+import co.branch.jsonlogic.playground.theme.LocalPlaygroundColors
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -62,8 +65,10 @@ private fun SuccessBody(value: JsonElement, modifier: Modifier) {
                 .horizontalScroll(rememberScrollState())
                 .padding(horizontal = 14.dp, vertical = 10.dp),
         ) {
+            val colors = LocalPlaygroundColors.current.syntax
+            val pretty = prettyPrint(value)
             Text(
-                text = prettyPrint(value),
+                text = remember(pretty, colors) { highlightJson(pretty, colors) },
                 style = LocalMonospaceStyle.current,
                 color = MaterialTheme.colorScheme.onSurface,
             )

@@ -28,7 +28,7 @@ fun JsonEditor(
     value: TextFieldValue,
     onValueChange: (TextFieldValue) -> Unit,
     modifier: Modifier = Modifier,
-    visualTransformation: VisualTransformation = VisualTransformation.None,
+    visualTransformation: VisualTransformation = rememberJsonHighlight(),
 ) {
     val colors = LocalPlaygroundColors.current
     var layout by remember { mutableStateOf<TextLayoutResult?>(null) }

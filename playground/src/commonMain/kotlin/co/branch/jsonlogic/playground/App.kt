@@ -65,7 +65,7 @@ fun App(
     var data by remember { mutableStateOf(TextFieldValue(initial?.data ?: Examples.first().data)) }
     var evaluation by remember { mutableStateOf(Evaluation.Blank) }
     var referenceExpanded by remember { mutableStateOf(false) }
-    var copied by remember { mutableStateOf(false) }
+    var shareResult by remember { mutableStateOf<String?>(null) }
     val clipboard = LocalClipboard.current
     val scope = rememberCoroutineScope()
 
@@ -74,10 +74,10 @@ fun App(
         evaluation = evaluate(jsonLogic, rule.text, data.text)
     }
 
-    LaunchedEffect(copied) {
-        if (copied) {
+    LaunchedEffect(shareResult) {
+        if (shareResult != null) {
             delay(1600)
-            copied = false
+            shareResult = null
         }
     }
 
@@ -102,13 +102,18 @@ fun App(
                         trailing = {
                             if (onShare != null) {
                                 Chip(
-                                    text = if (copied) "Copied" else "Share",
+                                    text = shareResult ?: "Share",
                                     onClick = {
                                         val url = onShare(SharedState(rule.text, data.text))
                                         scope.launch {
-                                            clipboard.setClipEntry(ClipEntry.withPlainText(url))
+                                            // navigator.clipboard only exists in a secure context,
+                                            // so over plain HTTP the copy throws. The link is in
+                                            // the address bar either way; say which happened.
+                                            val copied = runCatching {
+                                                clipboard.setClipEntry(ClipEntry.withPlainText(url))
+                                            }.isSuccess
+                                            shareResult = if (copied) "Copied" else "In the URL"
                                         }
-                                        copied = true
                                     },
                                     selected = true,
                                 )

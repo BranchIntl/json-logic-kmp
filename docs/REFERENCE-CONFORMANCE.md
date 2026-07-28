@@ -66,7 +66,7 @@ fixture corpus through it.
       `String.prototype.substr` semantics plus the reference's negative-length emulation and stops
       throwing on operand shape. The arity and numeric-type `JsonLogicEvaluationException`s stay: the
       reference has no equivalent, three error fixtures lock them, and they beat silent coercion.
-- [ ] **T4 — Depth-bounded parse.** A default bound on JSON nesting levels, enforced while descending,
+- [x] **T4 — Depth-bounded parse.** A default bound on JSON nesting levels, enforced while descending,
       plus explicit `maxDepth` overloads. The string path additionally gets an iterative bracket
       pre-scan ahead of `Json.parseToJsonElement`, whose stackless path covers deep *objects* but not
       the object/array alternation every JsonLogic rule is built from.

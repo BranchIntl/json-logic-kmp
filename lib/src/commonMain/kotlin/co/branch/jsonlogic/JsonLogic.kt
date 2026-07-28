@@ -43,12 +43,18 @@ import kotlinx.serialization.json.JsonElement
  * ```
  *
  * **Failure modes.** [parse] and every `apply` overload throw [JsonLogicParseException] when the
- * rule is not well-formed JSON or violates the operation-object shape (an object with more than
- * one key), and [JsonLogicEvaluationException] when evaluation itself fails — an unregistered
- * operator, a wrong argument count, a value of the wrong shape. Both extend [JsonLogicException],
- * itself an unchecked [RuntimeException]: unlike the engine this library ports, whose
- * `JsonLogicException` is a checked exception that every caller must declare or catch, nothing
- * here needs a `throws` clause or a `try` block to compile.
+ * rule is not well-formed JSON, violates the operation-object shape (an object with more than one
+ * key), or nests deeper than [JsonLogicParser.DEFAULT_MAX_DEPTH] containers, and
+ * [JsonLogicEvaluationException] when evaluation itself fails — an unregistered operator, a wrong
+ * argument count, a value of the wrong shape. Both extend [JsonLogicException], itself an unchecked
+ * [RuntimeException]: unlike the engine this library ports, whose `JsonLogicException` is a checked
+ * exception that every caller must declare or catch, nothing here needs a `throws` clause or a
+ * `try` block to compile.
+ *
+ * **The depth bound.** Parsing and evaluating both recurse, so an arbitrarily deep rule would
+ * exhaust the stack. Every overload that takes a rule as JSON therefore bounds its nesting, and
+ * those taking a `maxDepth` move that bound. A [JsonLogicNode] built by hand and handed to [apply]
+ * has been through no such check.
  *
  * **Thread safety.** Finish configuring an instance — the default registrations plus any
  * [addOperation] calls — on a single thread before sharing it with others. Once configuration is
@@ -146,6 +152,12 @@ class JsonLogic {
 
     /** Parses [rule] into a [JsonLogicNode] tree, throwing [JsonLogicParseException] on failure. */
     fun parse(rule: String): JsonLogicNode = JsonLogicParser.parse(rule)
+
+    /**
+     * Parses [rule] into a [JsonLogicNode] tree, rejecting one nested deeper than [maxDepth]
+     * containers instead of [JsonLogicParser.DEFAULT_MAX_DEPTH].
+     */
+    fun parse(rule: String, maxDepth: Int): JsonLogicNode = JsonLogicParser.parse(rule, maxDepth)
 
     /**
      * Parses [rule] and evaluates it against [data] (or against no data at all, when null),

@@ -8,6 +8,7 @@ public final class co/branch/jsonlogic/JsonLogic {
 	public final fun apply (Lkotlinx/serialization/json/JsonElement;Lkotlinx/serialization/json/JsonElement;)Lkotlinx/serialization/json/JsonElement;
 	public static synthetic fun apply$default (Lco/branch/jsonlogic/JsonLogic;Ljava/lang/String;Lkotlinx/serialization/json/JsonElement;ILjava/lang/Object;)Lkotlinx/serialization/json/JsonElement;
 	public final fun parse (Ljava/lang/String;)Lco/branch/jsonlogic/ast/JsonLogicNode;
+	public final fun parse (Ljava/lang/String;I)Lco/branch/jsonlogic/ast/JsonLogicNode;
 }
 
 public final class co/branch/jsonlogic/JsonLogic$Companion {
@@ -90,9 +91,12 @@ public final class co/branch/jsonlogic/ast/JsonLogicParseException : co/branch/j
 }
 
 public final class co/branch/jsonlogic/ast/JsonLogicParser {
+	public static final field DEFAULT_MAX_DEPTH I
 	public static final field INSTANCE Lco/branch/jsonlogic/ast/JsonLogicParser;
 	public final fun parse (Ljava/lang/String;)Lco/branch/jsonlogic/ast/JsonLogicNode;
+	public final fun parse (Ljava/lang/String;I)Lco/branch/jsonlogic/ast/JsonLogicNode;
 	public final fun parse (Lkotlinx/serialization/json/JsonElement;)Lco/branch/jsonlogic/ast/JsonLogicNode;
+	public final fun parse (Lkotlinx/serialization/json/JsonElement;I)Lco/branch/jsonlogic/ast/JsonLogicNode;
 }
 
 public final class co/branch/jsonlogic/ast/JsonLogicString : co/branch/jsonlogic/ast/JsonLogicNode {

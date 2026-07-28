@@ -34,7 +34,7 @@ Legend: `[ ]` not started · `[~]` in progress · `[x]` complete.
       [AMP-3995](https://linear.app/branch/issue/AMP-3995/jsonlogic-playground-shareable-url-state).
 - [x] **8 — CI lanes.** Root-scope the library lanes, add a main-only `playground` lane, qualify
       `publish.yml`.
-- [ ] **9 — Pages workflow.** `pages.yml` with SHA-pinned actions and least-privilege permissions.
+- [x] **9 — Pages workflow.** `pages.yml` with SHA-pinned actions and least-privilege permissions.
 - [ ] **10 — Docs.** README playground section and CI lane table; CHANGELOG entry.
 
 ## Manual step

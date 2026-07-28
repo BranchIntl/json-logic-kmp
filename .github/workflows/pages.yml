@@ -1,0 +1,54 @@
+name: Pages
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - docs/KMP-MIGRATION.md
+      - README.md
+      - CHANGELOG.md
+  # Lets the current main be redeployed without an empty commit — needed at least once, after
+  # Pages is first enabled in the repository settings.
+  workflow_dispatch:
+
+# contents:read to check out; pages:write and id-token:write are what deploy-pages needs to mint
+# its OIDC token and publish the artifact.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# GitHub's recommended grouping for Pages. Deployments are serialized and never cancelled
+# mid-flight, because a half-cancelled deploy can leave the site in an indeterminate state.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4.8.0
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4.4.3
+      # Not required to build a static bundle. It earns its place by failing here, legibly, when
+      # Pages has not been enabled, rather than at deploy time.
+      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+      - name: Build the playground distribution
+        run: ./gradlew :playground:wasmJsBrowserDistribution
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: playground/build/dist/wasmJs/productionExecutable
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0

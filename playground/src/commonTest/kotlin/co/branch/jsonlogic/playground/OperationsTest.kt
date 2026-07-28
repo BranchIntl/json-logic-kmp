@@ -8,9 +8,8 @@ import kotlin.test.assertTrue
 class OperationsTest {
 
     /**
-     * Every snippet must evaluate against no data at all, which is the state the rule editor is in
-     * when someone clicks one. It also proves the operator is actually registered: an unregistered
-     * one fails evaluation rather than silently returning something.
+     * No data is the state the rule editor is in when someone clicks a snippet. Evaluating also
+     * proves the operator is registered, since an unregistered one fails.
      */
     @Test
     fun everySnippetEvaluatesWithoutData() {
@@ -26,10 +25,7 @@ class OperationsTest {
         }
     }
 
-    /**
-     * The reference claims to list every registered operation. `var` is excluded from the count
-     * because the parser treats it as rule syntax rather than registering it.
-     */
+    /** `var` is excluded from the count: the parser treats it as rule syntax, not an operation. */
     @Test
     fun listsAllThirtyFourRegisteredOperations() {
         val registered = AllOperations.filterNot { it.symbol == "var" }

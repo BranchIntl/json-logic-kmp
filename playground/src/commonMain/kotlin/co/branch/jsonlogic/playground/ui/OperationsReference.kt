@@ -33,12 +33,7 @@ import co.branch.jsonlogic.playground.OperationGroups
 import co.branch.jsonlogic.playground.theme.LocalMonospaceStyle
 import co.branch.jsonlogic.playground.theme.LocalPlaygroundColors
 
-/**
- * The full operator list, collapsed by default so it never competes with the editors for space.
- *
- * Clicking an entry inserts its snippet, which is why [onInsert] takes the snippet rather than the
- * whole operation.
- */
+/** The full operator list, collapsed by default so it never competes with the editors for space. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun OperationsReference(
@@ -73,8 +68,7 @@ fun OperationsReference(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    // Bounded so an expanded reference scrolls itself instead of squeezing the
-                    // editors out of the viewport.
+                    // Bounded, so expanding it scrolls rather than squeezing out the editors.
                     .heightIn(max = 260.dp)
                     .verticalScroll(rememberScrollState())
                     .padding(top = 4.dp, bottom = 4.dp),
@@ -113,8 +107,8 @@ private fun OperationRow(operation: Operation, onInsert: (String) -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        // The column is fixed so every summary starts at the same offset; the pill inside hugs its
-        // text, because a lone "+" centred in a wide filled box reads as a rendering mistake.
+        // Fixed column so every summary starts at the same offset; the pill hugs its text,
+        // because a lone "+" in a wide filled box reads as a rendering mistake.
         Box(Modifier.width(112.dp)) {
             Text(
                 text = operation.symbol,

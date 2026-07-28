@@ -7,7 +7,6 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 
-/** What the result panel shows. */
 sealed interface EvalOutcome {
 
     /** No rule has been entered yet. */
@@ -24,19 +23,16 @@ enum class FailureKind(val label: String) {
     Evaluation("Evaluation failed"),
 
     /**
-     * An exception the engine does not model, which callers still have to survive: `cat` and
-     * `substr` throw a bare `NullPointerException` on a null operand, and `substr` throws on a
-     * start/length pair that runs past the end of the string.
+     * Failures the engine does not model but callers must survive: `cat` and `substr` throw a bare
+     * `NullPointerException` on a null operand, and `substr` on an out-of-range start/length.
      */
     Unexpected("Unexpected failure"),
 }
 
 /**
- * One evaluation pass: the result, plus whether each editor's text parsed.
- *
- * The two validity flags are tracked separately from [outcome] because both editors have their own
- * status indicator, and a single sequential evaluation would only ever report the first failure —
- * leaving the other editor showing "valid" for text that is not.
+ * The validity flags are separate from [outcome] because each editor has its own status indicator:
+ * a single sequential evaluation reports only the first failure, leaving the other editor claiming
+ * text that does not parse is valid.
  */
 data class Evaluation(
     val outcome: EvalOutcome,
@@ -89,10 +85,8 @@ private fun apply(jsonLogic: JsonLogic, rule: JsonLogicNode, data: JsonElement?)
     }
 
 /**
- * The most specific message available.
- *
- * A [JsonLogicException] built from a cause takes its own message from that cause's `toString`,
- * which prefixes the text with a class name; reading the root cause's message directly avoids it.
+ * A [JsonLogicException] built from a cause takes its message from that cause's `toString`, which
+ * prefixes a class name; the root cause's own message does not.
  */
 private fun Throwable.describe(): String {
     val root = generateSequence(this) { it.cause }.last()

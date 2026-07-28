@@ -3,18 +3,13 @@ package co.branch.jsonlogic.playground.share
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
-/** Everything a shared link carries: whatever was in the two editors. */
 data class SharedState(val rule: String, val data: String)
 
 /**
- * Encodes the editors into a URL fragment, and back.
+ * The payload sits in the fragment so it never reaches the server, and is base64url because JSON is
+ * dense in the characters percent-encoding triples in size.
  *
- * The payload lives in the fragment rather than the query string so it never reaches the server,
- * and each half is base64url rather than percent-encoded: JSON is dense in `{`, `"`, `:` and `,`,
- * every one of which costs three characters percent-encoded, against base64's flat one-third.
- *
- * Decoding is total — any malformed fragment yields null, and the caller opens on its default
- * content instead. A half-readable link is not worth recovering.
+ * Decoding is total: any malformed fragment yields null, for the caller to fall back on.
  */
 @OptIn(ExperimentalEncodingApi::class)
 object ShareLink {

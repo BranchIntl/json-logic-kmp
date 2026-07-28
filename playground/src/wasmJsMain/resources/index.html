@@ -26,9 +26,8 @@
             height: 100%;
         }
 
-        /* Shown while the WebAssembly bundle downloads and instantiates. ComposeViewport clears
-           the container before mounting, so this disappears on its own — and stays put if the app
-           never starts, which is the useful failure mode. */
+        /* ComposeViewport clears the container before mounting, so this disappears on its own,
+           and stays put if the app never starts. */
         .boot {
             display: flex;
             align-items: center;

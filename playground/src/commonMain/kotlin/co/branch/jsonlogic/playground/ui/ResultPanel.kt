@@ -109,10 +109,8 @@ private fun FailureBody(failure: EvalOutcome.Failure, modifier: Modifier) {
 }
 
 /**
- * Renders a result for display.
- *
- * Infinity and NaN reach here as unquoted literals, since JSON has no token for them; they are
- * printed as-is rather than hidden, because that is exactly what the engine returned.
+ * Infinity and NaN arrive as unquoted literals, since JSON has no token for them, and are printed
+ * as-is because that is what the engine returned.
  */
 fun prettyPrint(value: JsonElement): String =
     try {
@@ -122,10 +120,8 @@ fun prettyPrint(value: JsonElement): String =
     }
 
 /**
- * The JSON type of a result, shown beside the Result panel's label.
- *
- * Worth surfacing because the engine normalizes every number to a Double: seeing `number` next to
- * `1.0` explains a result that would otherwise look like a formatting bug.
+ * Worth showing because the engine normalizes every number to a Double: `number` beside `1.0`
+ * explains a result that would otherwise read as a formatting bug.
  */
 fun JsonElement.typeName(): String = when (this) {
     JsonNull -> "null"

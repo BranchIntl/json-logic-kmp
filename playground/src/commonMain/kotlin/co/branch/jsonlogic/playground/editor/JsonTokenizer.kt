@@ -17,14 +17,9 @@ enum class JsonTokenKind {
 data class JsonToken(val start: Int, val endExclusive: Int, val kind: JsonTokenKind)
 
 /**
- * Splits JSON-ish text into coloured spans.
- *
- * This is a scanner, not a parser: the editors call it on every keystroke, so it has to produce
- * something sensible for text that is not valid JSON yet — an unclosed string, a half-typed
- * keyword, a stray character. It never throws and never rejects input; anything it cannot classify
- * becomes [JsonTokenKind.Unknown].
- *
- * Whitespace produces no token, so the spans returned do not necessarily cover the whole input.
+ * A scanner, not a parser: the editors call it on every keystroke, so it never throws and never
+ * rejects. Anything it cannot classify becomes [JsonTokenKind.Unknown], and whitespace produces no
+ * token at all, so the spans need not cover the whole input.
  */
 object JsonTokenizer {
 

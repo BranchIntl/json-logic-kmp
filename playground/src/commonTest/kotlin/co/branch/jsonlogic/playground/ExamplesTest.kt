@@ -8,10 +8,7 @@ import kotlin.test.assertTrue
 
 class ExamplesTest {
 
-    /**
-     * Every preset must evaluate, or the playground ships a chip that greets the reader with an
-     * error card.
-     */
+    /** A preset that does not evaluate greets the reader with an error card. */
     @Test
     fun everyExampleEvaluates() {
         val jsonLogic = JsonLogic()
@@ -28,10 +25,7 @@ class ExamplesTest {
         }
     }
 
-    /**
-     * Pins what each preset actually produces. A preset whose output silently changes has stopped
-     * demonstrating the thing its label claims.
-     */
+    /** A preset whose output changes has stopped demonstrating the thing its label claims. */
     @Test
     fun examplesProduceTheirDocumentedResults() {
         val expected = mapOf(

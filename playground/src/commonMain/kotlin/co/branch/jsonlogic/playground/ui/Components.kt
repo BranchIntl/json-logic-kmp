@@ -33,12 +33,7 @@ import co.branch.jsonlogic.playground.theme.LocalPlaygroundColors
 import kotlin.math.cos
 import kotlin.math.sin
 
-/**
- * A labelled, bordered region — the repeating unit of the layout.
- *
- * The label row sits outside the border so the content area is entirely the caller's, which is what
- * lets an editor fill it edge to edge.
- */
+/** The label row sits outside the border, so an editor can fill the content area edge to edge. */
 @Composable
 fun Panel(
     label: String,
@@ -74,7 +69,6 @@ fun Panel(
     }
 }
 
-/** A coloured dot plus a short caption, used to report whether a panel's JSON currently parses. */
 @Composable
 fun StatusLabel(text: String, color: Color) {
     Row(
@@ -92,7 +86,6 @@ fun StatusLabel(text: String, color: Color) {
     }
 }
 
-/** A rounded, tappable pill. Used for the example presets and the operator rows. */
 @Composable
 fun Chip(
     text: String,
@@ -120,12 +113,7 @@ fun Chip(
     }
 }
 
-/**
- * Sun and moon glyphs, drawn rather than pulled from an icon font.
- *
- * The two shapes are the only icons the playground needs, and drawing them keeps the bundle free of
- * an icon dependency.
- */
+/** Drawn, not pulled from an icon font: these two are the only icons the playground needs. */
 @Composable
 fun SunIcon(tint: Color, modifier: Modifier = Modifier) {
     Canvas(modifier.size(16.dp)) {
@@ -150,8 +138,8 @@ fun MoonIcon(tint: Color, modifier: Modifier = Modifier) {
     Canvas(
         modifier
             .size(16.dp)
-            // The crescent is carved out with BlendMode.Clear, which needs its own layer — without
-            // it the cut would punch through whatever is painted behind the icon.
+            // BlendMode.Clear needs its own layer, or the cut punches through what is behind
+            // the icon.
             .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen },
     ) {
         val radius = size.minDimension * 0.42f

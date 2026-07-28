@@ -1,20 +1,13 @@
 package co.branch.jsonlogic.playground
 
-/**
- * One entry in the operations reference.
- *
- * Every [snippet] is self-contained — it evaluates against no data at all — so clicking one always
- * produces a working rule rather than something that needs a matching data document first.
- */
+/** Every [snippet] evaluates against no data, so clicking one always leaves a working rule. */
 data class Operation(val symbol: String, val summary: String, val snippet: String)
 
 data class OperationGroup(val name: String, val operations: List<Operation>)
 
 /**
- * The 34 operations a fresh `JsonLogic()` registers, grouped as the README groups them, plus `var`.
- *
- * `var` is listed apart because it is not a registered operation: the parser treats it as rule
- * syntax, which is why it is not one of the 34.
+ * The 34 operations a fresh `JsonLogic()` registers, plus `var` — which is not among them because
+ * the parser treats it as rule syntax rather than registering it.
  */
 val OperationGroups: List<OperationGroup> = listOf(
     OperationGroup(
@@ -92,5 +85,4 @@ val OperationGroups: List<OperationGroup> = listOf(
     ),
 )
 
-/** Every operation across the groups, `var` included. */
 val AllOperations: List<Operation> = OperationGroups.flatMap { it.operations }

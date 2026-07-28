@@ -17,7 +17,6 @@ import co.branch.jsonlogic.playground.resources.Res
 import co.branch.jsonlogic.playground.resources.jetbrains_mono_regular
 import org.jetbrains.compose.resources.Font
 
-/** Per-token colours for the JSON editors and the result panel. */
 @Immutable
 data class SyntaxColors(
     val key: Color,
@@ -43,7 +42,6 @@ val LocalPlaygroundColors = staticCompositionLocalOf<PlaygroundColors> {
     error("No PlaygroundColors: wrap the content in PlaygroundTheme.")
 }
 
-/** The shared style for every piece of JSON on screen, editable or not. */
 val LocalMonospaceStyle = staticCompositionLocalOf<TextStyle> {
     error("No monospace style: wrap the content in PlaygroundTheme.")
 }
@@ -117,16 +115,14 @@ private val PlaygroundTypography = Typography().run {
 
 @Composable
 fun PlaygroundTheme(dark: Boolean, content: @Composable () -> Unit) {
-    // The font is bundled rather than named: FontFamily.Monospace does not resolve to a monospace
-    // face under the web renderer, and falls back to the proportional default — which misaligns
-    // both the JSON itself and the line-number gutter that is measured against it.
+    // Bundled, not named: FontFamily.Monospace falls back to the proportional default under the
+    // web renderer, which misaligns the JSON and the gutter measured against it.
     val monospace = TextStyle(
         fontFamily = FontFamily(Font(Res.font.jetbrains_mono_regular)),
         fontSize = 13.sp,
         lineHeight = 21.sp,
-        // Ligatures off. JetBrains Mono draws >= as ≥ and != as ≠, which is charming in prose and
-        // wrong here: every one of these is a literal operator name the reader has to be able to
-        // type back into the editor.
+        // JetBrains Mono draws >= as ≥ and != as ≠. These are operator names the reader has to
+        // be able to type back.
         fontFeatureSettings = "liga 0, calt 0",
     )
 

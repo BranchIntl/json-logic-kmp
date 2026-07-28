@@ -7,19 +7,16 @@ on:
       - docs/KMP-MIGRATION.md
       - README.md
       - CHANGELOG.md
-  # Lets the current main be redeployed without an empty commit — needed at least once, after
-  # Pages is first enabled in the repository settings.
+  # Redeploys the current main without an empty commit, needed once after Pages is enabled.
   workflow_dispatch:
 
-# contents:read to check out; pages:write and id-token:write are what deploy-pages needs to mint
-# its OIDC token and publish the artifact.
+# pages:write and id-token:write are what deploy-pages needs to mint its OIDC token.
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# GitHub's recommended grouping for Pages. Deployments are serialized and never cancelled
-# mid-flight, because a half-cancelled deploy can leave the site in an indeterminate state.
+# Never cancelled mid-flight: a half-cancelled deploy can leave the site indeterminate.
 concurrency:
   group: pages
   cancel-in-progress: false
@@ -34,8 +31,7 @@ jobs:
           distribution: temurin
           java-version: 21
       - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4.4.3
-      # Not required to build a static bundle. It earns its place by failing here, legibly, when
-      # Pages has not been enabled, rather than at deploy time.
+      # Only here to fail legibly, at this step, when Pages has not been enabled.
       - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
       - name: Build the playground distribution
         run: ./gradlew :playground:wasmJsBrowserDistribution

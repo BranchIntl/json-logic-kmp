@@ -1,14 +1,10 @@
 package co.branch.jsonlogic.playground
 
-/** A rule and the data it is meant to run against, loaded together by the example chips. */
 data class Example(val label: String, val rule: String, val data: String)
 
 /**
- * The presets offered above the editors, one per operation family.
- *
- * Hand-written rather than drawn from the repository's fixture corpus: those cases exist to pin
- * down edge-case behaviour and mostly read as degenerate, which is the opposite of what an
- * introduction to the language needs.
+ * One preset per operation family. Hand-written rather than drawn from `lib/fixtures/`, whose cases
+ * pin down edge-case behaviour and read as degenerate.
  */
 val Examples: List<Example> = listOf(
     Example(

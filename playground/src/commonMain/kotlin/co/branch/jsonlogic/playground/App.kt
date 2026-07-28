@@ -48,8 +48,8 @@ private val WideLayoutThreshold = 900.dp
 
 /**
  * @param initial content restored from a shared link, or null to open on the first example.
- * @param onShare publishes the current editors as a link and returns it, or null on a host with no
- *   address bar to publish to — which hides the share control rather than offering a dead one.
+ * @param onShare publishes the editors as a link and returns it. Null hides the share control, for
+ *   a host with no address bar to publish to.
  */
 @Composable
 fun App(
@@ -59,11 +59,8 @@ fun App(
     var darkOverride by remember { mutableStateOf<Boolean?>(null) }
     val dark = darkOverride ?: isSystemInDarkTheme()
 
-    // Constructing JsonLogic registers all 34 default operations, so it is built once rather than
-    // per keystroke.
+    // Built once: the constructor registers all 34 default operations.
     val jsonLogic = remember { JsonLogic() }
-    // Opening on the first example rather than an empty page means the first chip reads as selected
-    // and there is something to evaluate immediately.
     var rule by remember { mutableStateOf(TextFieldValue(initial?.rule ?: Examples.first().rule)) }
     var data by remember { mutableStateOf(TextFieldValue(initial?.data ?: Examples.first().data)) }
     var evaluation by remember { mutableStateOf(Evaluation.Blank) }
@@ -92,10 +89,8 @@ fun App(
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        // Wide fills the viewport and lets the panels divide it. Narrow scrolls the
-                        // whole page instead: stacked panels do not fit, and confining them to a
-                        // scroll region of their own would bury the result under a screen-tall
-                        // editor.
+                        // Narrow scrolls the page: confining the stacked panels to their own
+                        // scroll region buries the result under a screen-tall editor.
                         .then(if (wide) Modifier else Modifier.verticalScroll(rememberScrollState()))
                         .padding(horizontal = if (wide) 22.dp else 14.dp, vertical = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(14.dp),
@@ -122,8 +117,7 @@ fun App(
                     )
 
                     ExamplesRow(
-                        // Derived rather than tracked, so editing either editor deselects the chip
-                        // without any bookkeeping.
+                        // Derived, so editing either editor deselects the chip on its own.
                         activeLabel = Examples.firstOrNull {
                             it.rule == rule.text && it.data == data.text
                         }?.label,
@@ -219,7 +213,6 @@ private fun Editors(
     }
 }
 
-/** Replaces the selection, or inserts at the caret when nothing is selected. */
 private fun TextFieldValue.insertAtCursor(snippet: String): TextFieldValue {
     val start = selection.min
     val replaced = text.replaceRange(start, selection.max, snippet)

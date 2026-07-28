@@ -42,10 +42,8 @@ private fun SyntaxColors.of(kind: JsonTokenKind) = when (kind) {
 }
 
 /**
- * Highlighting for an editable field.
- *
- * The mapping is [OffsetMapping.Identity] because the transformation only adds styles: every
- * character keeps its position, so the cursor and selection need no translation.
+ * [OffsetMapping.Identity] is safe because the transformation only adds styles: every character
+ * keeps its position, so the cursor and selection need no translation.
  */
 @Composable
 fun rememberJsonHighlight(): VisualTransformation {

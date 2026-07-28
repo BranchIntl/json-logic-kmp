@@ -16,8 +16,7 @@ fun main() {
             initial = shared,
             onShare = { state ->
                 val url = shareUrl(state)
-                // replaceState rather than pushState: sharing is not navigation, and every share
-                // would otherwise add an entry the back button has to walk through.
+                // Not pushState: sharing is not navigation, and would litter the back button.
                 window.history.replaceState(null, "", url)
                 url
             },
@@ -25,6 +24,5 @@ fun main() {
     }
 }
 
-/** The current address with a fresh fragment, leaving the path and query untouched. */
 private fun shareUrl(state: SharedState): String =
     with(window.location) { "$origin$pathname$search#${ShareLink.encode(state)}" }

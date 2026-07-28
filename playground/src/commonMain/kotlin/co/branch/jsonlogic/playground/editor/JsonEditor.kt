@@ -22,7 +22,6 @@ import androidx.compose.ui.unit.dp
 import co.branch.jsonlogic.playground.theme.LocalPlaygroundColors
 import co.branch.jsonlogic.playground.theme.LocalMonospaceStyle
 
-/** A monospace JSON text area with a line-number gutter. */
 @Composable
 fun JsonEditor(
     value: TextFieldValue,
@@ -52,8 +51,8 @@ fun JsonEditor(
 }
 
 /**
- * The line numbers, rendered as one text block in the editor's own style so the two stay aligned
- * for free — including where a long line soft-wraps, which contributes blank gutter rows.
+ * One text block in the editor's own style, so the two stay aligned for free — including across a
+ * soft-wrapped line, which contributes blank gutter rows.
  */
 @Composable
 private fun LineGutter(text: String, layout: TextLayoutResult?, color: Color) {

@@ -2,17 +2,13 @@
 agp = "9.1.0"
 binaryCompatibilityValidator = "0.17.0"
 compose = "1.11.1"
-# Compose Multiplatform ships Material 3 on its own version line: 1.11.1's Gradle plugin resolves
-# composeMaterial3Version to 1.9.0, and no material3 artifact is published at 1.11.1.
+# Material 3 rides its own version line; no material3 artifact is published at the Compose version.
 composeMaterial3 = "1.9.0"
 kotlin = "2.3.20"
 kotlinxBrowser = "0.5.0"
 kotlinxSerialization = "1.9.0"
 
 [libraries]
-# Explicit coordinates rather than the Compose plugin's compose.runtime / compose.material3
-# accessors: every one of those is deprecated in 1.11.1 in favour of declaring the dependency
-# directly, and the catalog is where this project declares dependencies anyway.
 compose-components-resources = { group = "org.jetbrains.compose.components", name = "components-resources", version.ref = "compose" }
 compose-foundation = { group = "org.jetbrains.compose.foundation", name = "foundation", version.ref = "compose" }
 compose-material3 = { group = "org.jetbrains.compose.material3", name = "material3", version.ref = "composeMaterial3" }

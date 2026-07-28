@@ -46,10 +46,7 @@ class JsonTokenizerTest {
         assertEquals(1, tokens.count { it.kind == JsonTokenKind.StringValue })
     }
 
-    /**
-     * The editors tokenize on every keystroke, so half-typed text is the common case, not the edge
-     * case. Each of these is a real intermediate state of typing valid JSON.
-     */
+    /** Tokenizing on every keystroke makes half-typed text the common case, not the edge case. */
     @Test
     fun survivesPartialInput() {
         val partials = listOf(

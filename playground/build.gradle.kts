@@ -17,9 +17,7 @@ kotlin {
 
         browser {
             commonWebpackConfig {
-                // Pins the bundle filename that index.html's script tag points at. The default is
-                // derived from the archives name, so without this, renaming the module directory
-                // would silently leave the page requesting a file that no longer exists.
+                // index.html's script tag points at this name.
                 outputFileName = "playground.js"
             }
         }

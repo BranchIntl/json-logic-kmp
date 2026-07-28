@@ -9,9 +9,11 @@ import co.branch.jsonlogic.internal.ecmaStringify
  *
  * Requires 2 or 3 arguments; the second must be a number giving the start offset, and the optional
  * third a length, or, when negative, how many characters to drop from the end of what the start
- * offset left. A negative start counts back from the end of the string. Every offset is clamped into
- * range rather than rejected, so no combination of them fails: a start past the end yields the empty
- * string, and a start still negative after the end-relative adjustment yields the whole of it.
+ * offset left. Both are type-checked as [Double] — every number this engine produces already is one —
+ * and neither is range-checked: a negative start counts back from the end of the string, a fraction
+ * truncates toward zero, and every offset is clamped into range rather than rejected, so no
+ * combination of them fails. A start past the end yields the empty string, and a start still negative
+ * after the end-relative adjustment yields the whole of it.
  */
 class SubstringExpression private constructor() : PreEvaluatedArgumentsExpression {
 
@@ -31,15 +33,17 @@ class SubstringExpression private constructor() : PreEvaluatedArgumentsExpressio
         }
 
         val value = ecmaStringify(arguments[0])
-        val start = (arguments[1] as Double).toInt()
-        val length = if (arguments.size == 3) (arguments[2] as Double).toInt() else null
+        val start = arguments[1] as Double
+        val length = if (arguments.size == 3) arguments[2] as Double else null
 
         // A negative length drops that many characters from the end of what the start offset left,
-        // which the reference reaches by taking the substring twice.
+        // which the reference reaches by taking the substring twice. The fraction of a negative length
+        // therefore survives into the second call and truncates there, against a length that has
+        // already changed: -1.5 against six characters drops one, not two.
         if (length != null && length < 0) {
             val fromStart = substring(value, start, null)
 
-            return substring(fromStart, 0, fromStart.length + length)
+            return substring(fromStart, 0.0, fromStart.length + length)
         }
 
         return substring(value, start, length)
@@ -51,13 +55,14 @@ class SubstringExpression private constructor() : PreEvaluatedArgumentsExpressio
 }
 
 /**
- * `String.prototype.substr(start, length)`: a negative [start] counts back from the end and stops at
- * the beginning, a null [length] runs to the end, and both are clamped into range so the call always
- * returns a string.
+ * `String.prototype.substr(start, length)`: each offset truncates toward zero, a negative [start]
+ * counts back from the end and stops at the beginning, a null [length] runs to the end, and both are
+ * clamped into range so the call always returns a string.
  */
-private fun substring(value: String, start: Int, length: Int?): String {
-    val from = if (start < 0) (value.length + start).coerceAtLeast(0) else start.coerceAtMost(value.length)
-    val count = (length ?: (value.length - from)).coerceIn(0, value.length - from)
+private fun substring(value: String, start: Double, length: Double?): String {
+    val offset = start.toInt()
+    val from = if (offset < 0) (value.length + offset).coerceAtLeast(0) else offset.coerceAtMost(value.length)
+    val count = (length?.toInt() ?: (value.length - from)).coerceIn(0, value.length - from)
 
     return value.substring(from, from + count)
 }

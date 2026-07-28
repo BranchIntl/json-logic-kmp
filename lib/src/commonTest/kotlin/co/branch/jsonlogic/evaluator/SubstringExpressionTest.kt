@@ -127,6 +127,22 @@ class SubstringExpressionTest {
         assertEquals("ull", evaluate("""{"substr": [{"var": "x"}, 1]}""", mapOf("x" to null), controlStringExpressions))
     }
 
+    /**
+     * A fractional offset truncates toward zero, and a negative length truncates only after it has
+     * been added to what the start offset left — so `-1.5` against six characters drops one, not two.
+     */
+    @Test
+    fun fractionalOffsetsTruncateTowardZero() {
+        assertEquals("ab", evaluate("""{"substr": ["abcdef", 0, 2.7]}""", null, controlStringExpressions))
+        assertEquals("bc", evaluate("""{"substr": ["abcdef", 1.9, 2]}""", null, controlStringExpressions))
+        assertEquals("cdef", evaluate("""{"substr": ["abcdef", 2.7]}""", null, controlStringExpressions))
+        assertEquals("ef", evaluate("""{"substr": ["abcdef", -2.5]}""", null, controlStringExpressions))
+        assertEquals("abcd", evaluate("""{"substr": ["abcdef", 0, -1.5]}""", null, controlStringExpressions))
+        assertEquals("abcde", evaluate("""{"substr": ["abcdef", 0, -0.5]}""", null, controlStringExpressions))
+        assertEquals("cd", evaluate("""{"substr": ["abcdef", 2, -1.5]}""", null, controlStringExpressions))
+        assertEquals("", evaluate("""{"substr": ["abcdef", 0, -6.5]}""", null, controlStringExpressions))
+    }
+
     @Test
     fun nonStringSourcesRenderBeforeSlicing() {
         assertEquals("4", evaluate("""{"substr": [42, 0, 1]}""", null, controlStringExpressions))

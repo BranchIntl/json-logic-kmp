@@ -12,7 +12,7 @@ fixture corpus (289 value cases, 46 error cases) and machine-verified to agree o
 [Known deviations & sharp edges](#known-deviations--sharp-edges) below for what to watch for before
 you rely on this library.
 
-**Try it in your browser: [branchintl.github.io/json-logic-kmp](https://branchintl.github.io/json-logic-kmp/)**
+**Try it in your browser: [crafted.branch.co/json-logic-kmp](https://crafted.branch.co/json-logic-kmp/)**
 
 ## Supported targets
 
@@ -30,7 +30,7 @@ serialized data string with `Json.parseToJsonElement` first (see [Usage](#usage)
 
 ## Playground
 
-<https://branchintl.github.io/json-logic-kmp/> — two JSON editors and a live result panel, with
+<https://crafted.branch.co/json-logic-kmp/> — two JSON editors and a live result panel, with
 example presets and a reference for every operation. Links are shareable: **Share** puts the
 current rule and data in the URL.
 

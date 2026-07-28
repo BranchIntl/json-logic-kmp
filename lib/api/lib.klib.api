@@ -419,6 +419,8 @@ final class co.branch.jsonlogic/JsonLogic { // co.branch.jsonlogic/JsonLogic|nul
     final fun apply(kotlinx.serialization.json/JsonElement, kotlinx.serialization.json/JsonElement?): kotlinx.serialization.json/JsonElement // co.branch.jsonlogic/JsonLogic.apply|apply(kotlinx.serialization.json.JsonElement;kotlinx.serialization.json.JsonElement?){}[0]
     final fun parse(kotlin/String): co.branch.jsonlogic.ast/JsonLogicNode // co.branch.jsonlogic/JsonLogic.parse|parse(kotlin.String){}[0]
     final fun parse(kotlin/String, kotlin/Int): co.branch.jsonlogic.ast/JsonLogicNode // co.branch.jsonlogic/JsonLogic.parse|parse(kotlin.String;kotlin.Int){}[0]
+    final fun parse(kotlinx.serialization.json/JsonElement): co.branch.jsonlogic.ast/JsonLogicNode // co.branch.jsonlogic/JsonLogic.parse|parse(kotlinx.serialization.json.JsonElement){}[0]
+    final fun parse(kotlinx.serialization.json/JsonElement, kotlin/Int): co.branch.jsonlogic.ast/JsonLogicNode // co.branch.jsonlogic/JsonLogic.parse|parse(kotlinx.serialization.json.JsonElement;kotlin.Int){}[0]
 
     final object Companion { // co.branch.jsonlogic/JsonLogic.Companion|null[0]
         final fun truthy(kotlin/Any?): kotlin/Boolean // co.branch.jsonlogic/JsonLogic.Companion.truthy|truthy(kotlin.Any?){}[0]

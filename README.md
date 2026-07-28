@@ -144,8 +144,8 @@ jsonLogic.apply("""{"var": "a"}""", data)
 
 ### Parse once, apply many times
 
-`apply(rule: String, ...)` parses the rule fresh on every call. There is no internal parse cache, so
-parse a rule once with `parse()` and reuse the resulting node whenever you evaluate it repeatedly:
+`apply(rule, ...)` parses the rule fresh on every call. There is no internal parse cache, so parse a
+rule once with `parse()` and reuse the resulting node whenever you evaluate it repeatedly:
 
 ```kotlin
 val rule = jsonLogic.parse("""{"===": [{"var": "a"}, 1.0]}""")
@@ -153,6 +153,19 @@ val rule = jsonLogic.parse("""{"===": [{"var": "a"}, 1.0]}""")
 jsonLogic.apply(rule, buildJsonObject { put("a", 1) }) // true
 jsonLogic.apply(rule, buildJsonObject { put("a", 2) }) // false
 ```
+
+`parse` takes a rule in either of the forms `apply` accepts, so a rule that already is a
+`JsonElement` — one that arrived inside a larger payload, say — pre-parses without being serialized
+back to text first:
+
+```kotlin
+val rule = jsonLogic.parse(payload["show_if"]!!)
+```
+
+The absence of a cache is deliberate. Only you know what identifies a rule — a screen id, a field
+name, a hash — and a cache inside a `JsonLogic` instance would make it mutable, undoing the property
+that lets one configured instance be shared across threads. A `Map` from your own rule key to the
+parsed node, populated as rules arrive, is the whole of what a cache needs to be here.
 
 ### Custom operations
 

@@ -9,6 +9,8 @@ public final class co/branch/jsonlogic/JsonLogic {
 	public static synthetic fun apply$default (Lco/branch/jsonlogic/JsonLogic;Ljava/lang/String;Lkotlinx/serialization/json/JsonElement;ILjava/lang/Object;)Lkotlinx/serialization/json/JsonElement;
 	public final fun parse (Ljava/lang/String;)Lco/branch/jsonlogic/ast/JsonLogicNode;
 	public final fun parse (Ljava/lang/String;I)Lco/branch/jsonlogic/ast/JsonLogicNode;
+	public final fun parse (Lkotlinx/serialization/json/JsonElement;)Lco/branch/jsonlogic/ast/JsonLogicNode;
+	public final fun parse (Lkotlinx/serialization/json/JsonElement;I)Lco/branch/jsonlogic/ast/JsonLogicNode;
 }
 
 public final class co/branch/jsonlogic/JsonLogic$Companion {

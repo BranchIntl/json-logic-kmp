@@ -159,6 +159,15 @@ class JsonLogic {
      */
     fun parse(rule: String, maxDepth: Int): JsonLogicNode = JsonLogicParser.parse(rule, maxDepth)
 
+    /** Parses [rule] into a [JsonLogicNode] tree, throwing [JsonLogicParseException] on failure. */
+    fun parse(rule: JsonElement): JsonLogicNode = JsonLogicParser.parse(rule)
+
+    /**
+     * Parses [rule] into a [JsonLogicNode] tree, rejecting one nested deeper than [maxDepth]
+     * containers instead of [JsonLogicParser.DEFAULT_MAX_DEPTH].
+     */
+    fun parse(rule: JsonElement, maxDepth: Int): JsonLogicNode = JsonLogicParser.parse(rule, maxDepth)
+
     /**
      * Parses [rule] and evaluates it against [data] (or against no data at all, when null),
      * returning the result as a [JsonElement].

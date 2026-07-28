@@ -70,7 +70,7 @@ fixture corpus through it.
       plus explicit `maxDepth` overloads. The string path additionally gets an iterative bracket
       pre-scan ahead of `Json.parseToJsonElement`, whose stackless path covers deep *objects* but not
       the object/array alternation every JsonLogic rule is built from.
-- [ ] **T5 — `JsonLogic.parse(JsonElement)`.** Makes `parse` symmetric with `apply` for a consumer
+- [x] **T5 — `JsonLogic.parse(JsonElement)`.** Makes `parse` symmetric with `apply` for a consumer
       whose rules already are `JsonElement`. No internal parse cache: rule identity lives with the
       caller, and a cache would put mutable state back into an instance documented as safe to share
       once configured.

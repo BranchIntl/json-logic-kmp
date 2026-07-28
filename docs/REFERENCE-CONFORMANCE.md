@@ -62,7 +62,7 @@ fixture corpus through it.
 - [x] **T2 — Integer-form results at the JSON boundary.** `valueToJsonElement` renders through the ES
       renderer, so `{"+": [1, 2]}` is `3` rather than `3.0`. Input coercion and the internal `Double`
       value domain are untouched.
-- [ ] **T3 — `cat` and `substr` reference conformance.** `cat` renders null as `""`; `substr` takes
+- [x] **T3 — `cat` and `substr` reference conformance.** `cat` renders null as `""`; `substr` takes
       `String.prototype.substr` semantics plus the reference's negative-length emulation and stops
       throwing on operand shape. The arity and numeric-type `JsonLogicEvaluationException`s stay: the
       reference has no equivalent, three error fixtures lock them, and they beat silent coercion.

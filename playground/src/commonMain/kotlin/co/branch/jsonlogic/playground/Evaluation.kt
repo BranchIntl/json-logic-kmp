@@ -23,8 +23,9 @@ enum class FailureKind(val label: String) {
     Evaluation("Evaluation failed"),
 
     /**
-     * Failures the engine does not model but callers must survive: `cat` and `substr` throw a bare
-     * `NullPointerException` on a null operand, and `substr` on an out-of-range start/length.
+     * Anything the engine raises outside its own exception hierarchy. Nothing known reaches this, but
+     * a browser tab is a bad place to discover otherwise: a custom operation or a rule shape no test
+     * covers would take the whole page down instead of filling in one card.
      */
     Unexpected("Unexpected failure"),
 }

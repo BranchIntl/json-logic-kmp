@@ -74,7 +74,7 @@ fixture corpus through it.
       whose rules already are `JsonElement`. No internal parse cache: rule identity lives with the
       caller, and a cache would put mutable state back into an instance documented as safe to share
       once configured.
-- [ ] **T6 — Docs and API dumps.** `CHANGELOG.md` `[Unreleased]`, the affected README sharp-edges
+- [x] **T6 — Docs and API dumps.** `CHANGELOG.md` `[Unreleased]`, the affected README sharp-edges
       bullets, the playground's copy about null operands and number form, and refreshed
       `binary-compatibility-validator` dumps.
 

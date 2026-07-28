@@ -2,6 +2,42 @@
 
 All notable changes to this project are documented in this file.
 
+## [Unreleased]
+
+Where the [JsonLogic reference implementation](https://github.com/jwadhams/json-logic-js) and the
+engine this library ports disagree, the reference now wins. See
+[docs/REFERENCE-CONFORMANCE.md](docs/REFERENCE-CONFORMANCE.md) for the evidence behind each change
+below.
+
+### Added
+
+- `JsonLogic.parse` accepts a rule as a `JsonElement`, not only as a string, so a rule that already
+  is a `JsonElement` pre-parses without being serialized back to text. There is still no internal
+  parse cache, and the README now says why.
+- A nesting bound on every parse entry point: a rule nested deeper than
+  `JsonLogicParser.DEFAULT_MAX_DEPTH` (128 containers) is rejected with `JsonLogicParseException`,
+  and `parse(rule, maxDepth)` overloads move that bound. Parsing and evaluating both recurse, so a
+  deeply nested rule from an untrusted source could previously exhaust the stack. On the string path
+  the bound is applied to the text before the JSON parser sees it, since building the tree overflows
+  first — measured between 2,000 and 5,000 levels on a 50 KB rule.
+
+### Changed
+
+- Numeric results render the way ECMAScript's `Number::toString` does, which is what the reference
+  implementation serializes: `{"+": [1, 2]}` now returns the JSON token `3` rather than `3.0`, and
+  the plain-decimal range widens from `[1e-3, 1e7)` to `[1e-6, 1e21)`. Numbers are still normalized
+  to `Double` inside the engine, and string-to-number coercion is unchanged.
+- `cat` renders a null argument as the empty string rather than throwing `NullPointerException`,
+  matching the reference's use of `Array.prototype.join` — so a rule interpolating a variable still
+  renders before that variable is set. The community conformance suite asserts this, and the engine
+  this library ports has [an open bug](https://github.com/jamsesso/json-logic-java/issues/36) for it.
+- `substr` takes `String.prototype.substr` semantics: every offset is clamped into range, so it no
+  longer throws on a null source or an out-of-range start/length, and a start before the beginning
+  now yields the whole string where it previously yielded the empty one. Its argument-count and
+  numeric-type checks are unchanged.
+- `cat` and `substr` render a number the same way results do, so `cat` no longer switches to
+  scientific notation at `1e7`.
+
 ## [0.1.0] - 2026-07-28
 
 ### Added

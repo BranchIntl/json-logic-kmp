@@ -217,7 +217,7 @@ publishing {
             }
             scm {
                 url = "https://github.com/BranchIntl/json-logic-kmp"
-                connection = "scm:git:git://github.com/BranchIntl/json-logic-kmp.git"
+                connection = "scm:git:https://github.com/BranchIntl/json-logic-kmp.git"
                 developerConnection = "scm:git:ssh://git@github.com/BranchIntl/json-logic-kmp.git"
             }
         }

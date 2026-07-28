@@ -92,6 +92,11 @@ fun App(
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
+                        // Wide fills the viewport and lets the panels divide it. Narrow scrolls the
+                        // whole page instead: stacked panels do not fit, and confining them to a
+                        // scroll region of their own would bury the result under a screen-tall
+                        // editor.
+                        .then(if (wide) Modifier else Modifier.verticalScroll(rememberScrollState()))
                         .padding(horizontal = if (wide) 22.dp else 14.dp, vertical = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(14.dp),
                 ) {
@@ -135,7 +140,7 @@ fun App(
                         data = data,
                         onDataChange = { data = it },
                         evaluation = evaluation,
-                        modifier = Modifier.weight(1f),
+                        modifier = if (wide) Modifier.weight(1f) else Modifier,
                     )
 
                     OperationsReference(
@@ -206,13 +211,10 @@ private fun Editors(
             resultPanel(Modifier.weight(1f))
         }
     } else {
-        Column(
-            modifier = modifier.verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
-        ) {
-            rulePanel(Modifier.fillMaxWidth().height(250.dp))
-            dataPanel(Modifier.fillMaxWidth().height(170.dp))
-            resultPanel(Modifier.fillMaxWidth().height(250.dp))
+        Column(modifier, verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            rulePanel(Modifier.fillMaxWidth().height(230.dp))
+            dataPanel(Modifier.fillMaxWidth().height(150.dp))
+            resultPanel(Modifier.fillMaxWidth().height(220.dp))
         }
     }
 }

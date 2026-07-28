@@ -17,10 +17,10 @@ class MergeExpressionTestPorted {
         val result = jsonLogic.apply("""{"merge": [[1, 2], [3, 4]]}""", null).jsonArray
 
         assertEquals(4, result.size)
-        assertEquals("1.0", result[0].jsonPrimitive.content)
-        assertEquals("2.0", result[1].jsonPrimitive.content)
-        assertEquals("3.0", result[2].jsonPrimitive.content)
-        assertEquals("4.0", result[3].jsonPrimitive.content)
+        assertEquals("1", result[0].jsonPrimitive.content)
+        assertEquals("2", result[1].jsonPrimitive.content)
+        assertEquals("3", result[2].jsonPrimitive.content)
+        assertEquals("4", result[3].jsonPrimitive.content)
     }
 
     @Test
@@ -28,9 +28,9 @@ class MergeExpressionTestPorted {
         val result = jsonLogic.apply("""{"merge": [1, 2, [3, 4]]}""", null).jsonArray
 
         assertEquals(4, result.size)
-        assertEquals("1.0", result[0].jsonPrimitive.content)
-        assertEquals("2.0", result[1].jsonPrimitive.content)
-        assertEquals("3.0", result[2].jsonPrimitive.content)
-        assertEquals("4.0", result[3].jsonPrimitive.content)
+        assertEquals("1", result[0].jsonPrimitive.content)
+        assertEquals("2", result[1].jsonPrimitive.content)
+        assertEquals("3", result[2].jsonPrimitive.content)
+        assertEquals("4", result[3].jsonPrimitive.content)
     }
 }

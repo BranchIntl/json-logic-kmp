@@ -129,7 +129,7 @@ val result = jsonLogic.apply(
     """{"var": "a"}""",
     buildJsonObject { put("a", 1) },
 )
-// result.jsonPrimitive.content == "1.0"
+// result.jsonPrimitive.content == "1"
 ```
 
 The `data` parameter is always a `JsonElement?` — there is no overload that takes a data *string*.

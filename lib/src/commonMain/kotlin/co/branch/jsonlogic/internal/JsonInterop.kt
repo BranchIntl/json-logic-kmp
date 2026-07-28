@@ -29,17 +29,19 @@ internal fun jsonElementToValue(element: JsonElement): Any? = when (element) {
 /**
  * Converts an evaluation result back into a JSON tree.
  *
- * Numbers are emitted as unquoted literals holding their Java `Double.toString` rendering, so a
- * primitive's `content` is identical on every target — `JsonPrimitive(1.0)` would instead store
- * whatever the platform's own formatting produces. The same route carries the infinities and NaN,
- * which JSON has no form for but the engine can return.
+ * Numbers are emitted as unquoted literals holding the rendering ECMAScript's `Number::toString`
+ * gives them, which is what the JsonLogic reference implementation serializes: a whole number
+ * carries no decimal point, so `{"+": [1, 2]}` is the JSON token `3`. Going through a literal rather
+ * than `JsonPrimitive(1.0)` keeps a primitive's `content` identical on every target instead of
+ * whatever the platform's own formatting produces, and it is also what carries the infinities and
+ * NaN, which JSON has no form for but the engine can return.
  */
 @OptIn(ExperimentalSerializationApi::class)
 internal fun valueToJsonElement(value: Any?): JsonElement = when (value) {
     null -> JsonNull
     is Boolean -> JsonPrimitive(value)
     is String -> JsonPrimitive(value)
-    is Number -> JsonUnquotedLiteral(canonicalDoubleToString(value.toDouble()))
+    is Number -> JsonUnquotedLiteral(ecmaDoubleToString(value.toDouble()))
     is Map<*, *> -> JsonObject(value.entries.associate { (key, item) -> "$key" to valueToJsonElement(item) })
     is Iterable<*> -> JsonArray(value.map { valueToJsonElement(it) })
     else -> throw IllegalArgumentException("Cannot represent a ${value::class.simpleName} as JSON")

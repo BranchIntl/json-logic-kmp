@@ -59,7 +59,7 @@ fixture corpus through it.
       digits out ES-style: plain decimal for `10^-6 ≤ |x| < 10^21` with no forced `.0`, `d.ddde±nn`
       outside it, `-0.0` as `0`. Infinity and NaN keep rendering as themselves. Verified by a
       boundary table in `commonTest` and a `wasmJsTest` oracle against V8's own `String(x)`.
-- [ ] **T2 — Integer-form results at the JSON boundary.** `valueToJsonElement` renders through the ES
+- [x] **T2 — Integer-form results at the JSON boundary.** `valueToJsonElement` renders through the ES
       renderer, so `{"+": [1, 2]}` is `3` rather than `3.0`. Input coercion and the internal `Double`
       value domain are untouched.
 - [ ] **T3 — `cat` and `substr` reference conformance.** `cat` renders null as `""`; `substr` takes

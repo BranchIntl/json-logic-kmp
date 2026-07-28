@@ -100,9 +100,9 @@ class VariableTest {
         }
 
         assertEquals("John", jsonLogic.apply("""{"var": "users.0.name"}""", data).jsonPrimitive.content)
-        assertEquals("1337.0", jsonLogic.apply("""{"var": "users.0.followers"}""", data).jsonPrimitive.content)
+        assertEquals("1337", jsonLogic.apply("""{"var": "users.0.followers"}""", data).jsonPrimitive.content)
         assertEquals("Jane", jsonLogic.apply("""{"var": "users.1.name"}""", data).jsonPrimitive.content)
-        assertEquals("2048.0", jsonLogic.apply("""{"var": "users.1.followers"}""", data).jsonPrimitive.content)
+        assertEquals("2048", jsonLogic.apply("""{"var": "users.1.followers"}""", data).jsonPrimitive.content)
     }
 
     @Test
@@ -150,9 +150,9 @@ class VariableTest {
         val result = jsonLogic.apply(rule, data)
 
         // Upstream checked `result instanceof Number`; the JsonElement equivalent is an unquoted
-        // primitive whose content is the Java Double rendering.
+        // primitive.
         assertFalse(result.jsonPrimitive.isString)
-        assertEquals("20.0", result.jsonPrimitive.content)
+        assertEquals("20", result.jsonPrimitive.content)
     }
 
     @Test

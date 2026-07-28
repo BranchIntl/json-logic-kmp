@@ -120,8 +120,8 @@ fun prettyPrint(value: JsonElement): String =
     }
 
 /**
- * Worth showing because the engine normalizes every number to a Double: `number` beside `1.0`
- * explains a result that would otherwise read as a formatting bug.
+ * The JSON type name for a result. kotlinx models an unquoted primitive by its text alone, so a
+ * boolean is recognized by its content rather than by its type.
  */
 fun JsonElement.typeName(): String = when (this) {
     JsonNull -> "null"

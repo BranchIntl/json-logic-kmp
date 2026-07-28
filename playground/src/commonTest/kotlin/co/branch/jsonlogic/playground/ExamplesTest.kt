@@ -32,7 +32,7 @@ class ExamplesTest {
             "Range check" to "true",
             "Variables" to "\"London\"",
             "Branching" to "\"B\"",
-            "Map" to "[\n  1250.0,\n  700.0\n]",
+            "Map" to "[\n  1250,\n  700\n]",
             "Filter and reduce" to "19.5",
             "Membership" to "true",
             "Strings" to "\"KMP-0727\"",

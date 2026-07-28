@@ -24,6 +24,6 @@ class ReduceExpressionTestPorted {
 
         val result = jsonLogic.apply(json, data)
 
-        assertEquals("21.0", result.jsonPrimitive.content)
+        assertEquals("21", result.jsonPrimitive.content)
     }
 }

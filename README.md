@@ -280,10 +280,10 @@ publishes nothing and has no dump.
    either from the Actions tab or with `gh workflow run publish.yml --ref main`.
 3. The workflow builds and tests every macOS-buildable lane, then publishes all publications to
    GitHub Packages. It only runs against `main`; dispatching it against any other ref is a no-op.
-4. Tag the published commit and cut a GitHub Release from that tag:
-   `git tag -a v0.1.0 -m v0.1.0 && git push origin v0.1.0`. GitHub Packages records no source
-   revision alongside a version, so the tag is what ties a published artifact to the commit it was
-   built from.
+4. Tag the published commit and cut a GitHub Release from that tag, using the version just
+   published: `git tag -a v<version> -m v<version> && git push origin v<version>`. GitHub Packages
+   records no source revision alongside a version, so the tag is what ties a published artifact to
+   the commit it was built from.
 
 GitHub Packages will not overwrite a version that already exists, so a bad publish cannot be
 re-pushed under the same coordinates — delete that version from the repository's Packages page, or

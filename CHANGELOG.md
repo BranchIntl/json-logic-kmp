@@ -14,6 +14,12 @@ All notable changes to this project are documented in this file.
   removed from the repository.
 - Published to GitHub Packages as `co.branch:json-logic-kmp`, via a manually dispatched Publish
   workflow.
+- An interactive playground at <https://branchintl.github.io/json-logic-kmp/> — a Compose
+  Multiplatform app in `playground/`, compiled to WebAssembly against this library's `wasmJs`
+  target, with two JSON editors, a live result panel, example presets, a reference for every
+  operation, and shareable links that carry the rule and data in the URL. Deployed from `main` by
+  `.github/workflows/pages.yml`; excluded from the published artifacts and from binary-compatibility
+  validation.
 
 ### Changed
 

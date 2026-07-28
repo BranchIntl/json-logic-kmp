@@ -25,7 +25,7 @@ jobs:
           java-version: 21
       - uses: gradle/actions/setup-gradle@v4
       - name: JVM and Android host tests
-        run: ./gradlew jvmTest testAndroidHostTest assemble apiCheck
+        run: ./gradlew :lib:jvmTest :lib:testAndroidHostTest :lib:assemble :lib:apiCheck
 
   wasm:
     runs-on: ubuntu-latest
@@ -37,7 +37,7 @@ jobs:
           java-version: 21
       - uses: gradle/actions/setup-gradle@v4
       - name: Wasm tests
-        run: ./gradlew wasmJsNodeTest
+        run: ./gradlew :lib:wasmJsNodeTest
 
   ios:
     runs-on: macos-15
@@ -49,4 +49,4 @@ jobs:
           java-version: 21
       - uses: gradle/actions/setup-gradle@v4
       - name: iOS simulator tests
-        run: ./gradlew iosSimulatorArm64Test klibApiCheck
+        run: ./gradlew :lib:iosSimulatorArm64Test :lib:klibApiCheck

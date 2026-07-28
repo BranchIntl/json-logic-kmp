@@ -27,19 +27,13 @@ import co.branch.jsonlogic.JsonLogic
 import co.branch.jsonlogic.playground.editor.JsonEditor
 import co.branch.jsonlogic.playground.theme.LocalPlaygroundColors
 import co.branch.jsonlogic.playground.theme.PlaygroundTheme
+import co.branch.jsonlogic.playground.ui.ExamplesRow
 import co.branch.jsonlogic.playground.ui.Header
 import co.branch.jsonlogic.playground.ui.Panel
 import co.branch.jsonlogic.playground.ui.ResultContent
 import co.branch.jsonlogic.playground.ui.StatusLabel
 import co.branch.jsonlogic.playground.ui.typeName
 import kotlinx.coroutines.delay
-
-private const val DefaultRule = """{"and": [
-  {">": [{"var": "temp"}, 18]},
-  {"<": [{"var": "temp"}, 26]}
-]}"""
-
-private const val DefaultData = """{"temp": 21}"""
 
 /** Below this width the three panels stack into a single scrolling column. */
 private val WideLayoutThreshold = 900.dp
@@ -52,8 +46,10 @@ fun App() {
     // Constructing JsonLogic registers all 34 default operations, so it is built once rather than
     // per keystroke.
     val jsonLogic = remember { JsonLogic() }
-    var rule by remember { mutableStateOf(TextFieldValue(DefaultRule)) }
-    var data by remember { mutableStateOf(TextFieldValue(DefaultData)) }
+    // Opening on the first example rather than an empty page means the first chip reads as selected
+    // and there is something to evaluate immediately.
+    var rule by remember { mutableStateOf(TextFieldValue(Examples.first().rule)) }
+    var data by remember { mutableStateOf(TextFieldValue(Examples.first().data)) }
     var evaluation by remember { mutableStateOf(Evaluation.Blank) }
 
     LaunchedEffect(rule.text, data.text) {
@@ -76,6 +72,18 @@ fun App() {
                         dark = dark,
                         onToggleTheme = { darkOverride = !dark },
                         compact = !wide,
+                    )
+
+                    ExamplesRow(
+                        // Derived rather than tracked, so editing either editor deselects the chip
+                        // without any bookkeeping.
+                        activeLabel = Examples.firstOrNull {
+                            it.rule == rule.text && it.data == data.text
+                        }?.label,
+                        onSelect = { example ->
+                            rule = TextFieldValue(example.rule)
+                            data = TextFieldValue(example.data)
+                        },
                     )
 
                     Editors(

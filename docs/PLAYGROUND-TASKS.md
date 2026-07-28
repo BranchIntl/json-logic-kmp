@@ -24,8 +24,9 @@ Legend: `[ ]` not started · `[~]` in progress · `[x]` complete.
       measured against it.
 - [x] **4 — JSON syntax highlighting.** Partial-input-tolerant lexer feeding a
       `VisualTransformation` with `OffsetMapping.Identity`.
-- [ ] **5 — Curated examples.** Chip row of hand-written rule/data pairs spanning the operation
-      families.
+- [x] **5 — Curated examples.** Chip row of hand-written rule/data pairs spanning the operation
+      families, plus a `commonTest` source set that pins what each one evaluates to. Tests run under
+      `wasmJsBrowserTest`: Compose UI links skiko unconditionally, and skiko cannot load under Node.
 - [ ] **6 — Operations reference.** All 34 operators, collapsible, click-to-insert at the cursor.
 - [ ] **7 — Shareable URL state.** base64url hash round-trip, Share button, clipboard copy. Covers
       [AMP-3995](https://linear.app/branch/issue/AMP-3995/jsonlogic-playground-shareable-url-state).

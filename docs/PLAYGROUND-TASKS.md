@@ -32,7 +32,7 @@ Legend: `[ ]` not started · `[~]` in progress · `[x]` complete.
       unreachable. All 34 operators plus `var`, collapsible, click-to-insert at the cursor;
       base64url hash round-trip with a Share button and clipboard copy. Covers
       [AMP-3995](https://linear.app/branch/issue/AMP-3995/jsonlogic-playground-shareable-url-state).
-- [ ] **8 — CI lanes.** Root-scope the library lanes, add a main-only `playground` lane, qualify
+- [x] **8 — CI lanes.** Root-scope the library lanes, add a main-only `playground` lane, qualify
       `publish.yml`.
 - [ ] **9 — Pages workflow.** `pages.yml` with SHA-pinned actions and least-privilege permissions.
 - [ ] **10 — Docs.** README playground section and CI lane table; CHANGELOG entry.

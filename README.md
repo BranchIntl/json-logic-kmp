@@ -12,6 +12,8 @@ fixture corpus (289 value cases, 46 error cases) and machine-verified to agree o
 [Known deviations & sharp edges](#known-deviations--sharp-edges) below for what to watch for before
 you rely on this library.
 
+**Try it in your browser: [crafted.branch.co/json-logic-kmp](https://crafted.branch.co/json-logic-kmp/)**
+
 ## Supported targets
 
 | Target                | Notes             |
@@ -25,6 +27,30 @@ you rely on this library.
 Values are modeled as `kotlinx.serialization.JsonElement` on every target. A rule crosses the API
 boundary as either a `JsonElement` or a JSON string, but data is always a `JsonElement?` — parse a
 serialized data string with `Json.parseToJsonElement` first (see [Usage](#usage) below).
+
+## Playground
+
+<https://crafted.branch.co/json-logic-kmp/> — two JSON editors and a live result panel, with
+example presets and a reference for every operation. Links are shareable: **Share** puts the
+current rule and data in the URL.
+
+Nothing is evaluated on a server. The playground is a [Compose
+Multiplatform](https://www.jetbrains.com/compose-multiplatform/) app in `playground/`, compiled to
+WebAssembly against this library's own `wasmJs` target, so the engine answering in the browser is
+the one that ships to every other platform. It is deployed from `main` by
+`.github/workflows/pages.yml` and is not part of any published artifact.
+
+To run it locally, with live reload:
+
+```bash
+./gradlew :playground:wasmJsBrowserDevelopmentRun
+```
+
+To build the deployable bundle, into `playground/build/dist/wasmJs/productionExecutable`:
+
+```bash
+./gradlew :playground:wasmJsBrowserDistribution
+```
 
 ## Supported operations
 
@@ -237,9 +263,14 @@ Every pull request runs three lanes, mirrored in `.github/workflows/build.yml`:
 | `wasm`       | `ubuntu-latest` | `./gradlew :lib:wasmJsNodeTest` |
 | `ios`        | `macos-15`      | `./gradlew :lib:iosSimulatorArm64Test :lib:klibApiCheck` |
 
+A fourth lane, `playground`, runs `./gradlew :playground:wasmJsBrowserTest
+:playground:wasmJsBrowserDistribution` on pushes to `main` only — it is a demo app rather than part
+of the library's correctness contract, and its Wasm bundling costs minutes.
+
 The public API is locked with [binary-compatibility-validator](https://github.com/Kotlin/binary-compatibility-validator)
 across both the JVM and KLib (native/wasm) surfaces; a breaking change requires updating the committed
-dumps under `lib/api/`.
+dumps under `lib/api/`. `:playground` is excluded via `apiValidation { ignoredProjects }` — it
+publishes nothing and has no dump.
 
 ### Release process
 
@@ -254,3 +285,7 @@ dumps under `lib/api/`.
 MIT — see [LICENSE](LICENSE). Original work © 2018 Sam Jesso
 ([jamsesso/json-logic-java](https://github.com/jamsesso/json-logic-java)); this repository is a
 Kotlin Multiplatform port of that work.
+
+The playground bundles [JetBrains Mono](https://github.com/JetBrains/JetBrainsMono), under the SIL
+Open Font License 1.1. Its licence travels with it, in
+`playground/src/wasmJsMain/resources/JetBrainsMono-OFL.txt` and on the deployed site.

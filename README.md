@@ -252,5 +252,5 @@ dumps under `api/`.
 ## License
 
 MIT — see [LICENSE](LICENSE). Original work © 2018 Sam Jesso
-([jamsesso/json-logic-java](https://github.com/jamsesso/json-logic-java)); this Kotlin Multiplatform
-port © Branch.
+([jamsesso/json-logic-java](https://github.com/jamsesso/json-logic-java)); this repository is a
+Kotlin Multiplatform port of that work.

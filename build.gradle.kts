@@ -144,9 +144,11 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            // Runtime artifact only: the JSON tree types are used directly, so the
-            // serialization compiler plugin is not applied.
-            implementation(libs.kotlinx.serialization.json)
+            // Exposed as `api`: JsonElement from this dependency appears directly in the
+            // public JsonLogic.apply/parse signatures, so consumers need it on their
+            // compile classpath too. The serialization compiler plugin is not applied,
+            // since the JSON tree types are used directly rather than generated.
+            api(libs.kotlinx.serialization.json)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -198,11 +200,25 @@ publishing {
             name = "json-logic-kmp"
             description = "Kotlin Multiplatform port of jamsesso/json-logic-java"
             url = "https://github.com/BranchIntl/json-logic-kmp"
+            inceptionYear = "2026"
             licenses {
                 license {
                     name = "MIT License"
                     url = "https://github.com/BranchIntl/json-logic-kmp/blob/main/LICENSE"
+                    distribution = "repo"
                 }
+            }
+            developers {
+                developer {
+                    id = "BranchIntl"
+                    name = "Branch International"
+                    url = "https://github.com/BranchIntl"
+                }
+            }
+            scm {
+                url = "https://github.com/BranchIntl/json-logic-kmp"
+                connection = "scm:git:git://github.com/BranchIntl/json-logic-kmp.git"
+                developerConnection = "scm:git:ssh://git@github.com/BranchIntl/json-logic-kmp.git"
             }
         }
     }

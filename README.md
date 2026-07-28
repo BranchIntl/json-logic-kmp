@@ -10,9 +10,8 @@ original closely — before the Java sources were removed from this repository, 
 side by side over the same 335-case fixture corpus (289 value cases, 46 error cases) and
 machine-verified to agree on every one — but where the two disagree, the
 [JsonLogic reference implementation](https://github.com/jwadhams/json-logic-js) wins. See
-[Known deviations & sharp edges](#known-deviations--sharp-edges) below for what to watch for before
-you rely on this library, and [docs/REFERENCE-CONFORMANCE.md](docs/REFERENCE-CONFORMANCE.md) for
-where the two parted ways and why.
+[Known deviations & sharp edges](#known-deviations--sharp-edges) below for where the two parted ways,
+and for what else to watch for before you rely on this library.
 
 **Try it in your browser: [crafted.branch.co/json-logic-kmp](https://crafted.branch.co/json-logic-kmp/)**
 
@@ -161,7 +160,9 @@ jsonLogic.apply(rule, buildJsonObject { put("a", 2) }) // false
 back to text first:
 
 ```kotlin
-val rule = jsonLogic.parse(payload["show_if"]!!)
+val payload = Json.parseToJsonElement("""{"rule": {"===": [{"var": "a"}, 1.0]}}""").jsonObject
+
+val rule = jsonLogic.parse(payload.getValue("rule"))
 ```
 
 The absence of a cache is deliberate. Only you know what identifies a rule — a screen id, a field

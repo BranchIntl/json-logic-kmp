@@ -5,9 +5,7 @@ All notable changes to this project are documented in this file.
 ## [Unreleased]
 
 Where the [JsonLogic reference implementation](https://github.com/jwadhams/json-logic-js) and the
-engine this library ports disagree, the reference now wins. See
-[docs/REFERENCE-CONFORMANCE.md](docs/REFERENCE-CONFORMANCE.md) for the evidence behind each change
-below.
+engine this library ports disagree, the reference now wins.
 
 ### Added
 

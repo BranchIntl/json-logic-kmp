@@ -51,8 +51,8 @@ fixture corpus through it.
 
 ## Tasks
 
-- [~] **T0 — This tracking doc.**
-- [ ] **T1 — ECMAScript number renderer.** `internal fun ecmaDoubleToString` alongside
+- [x] **T0 — This tracking doc.**
+- [x] **T1 — ECMAScript number renderer.** `internal fun ecmaDoubleToString` alongside
       `canonicalDoubleToString` in `internal/CanonicalNumber.kt`. Both Java (JDK 19+) and ECMAScript
       define the same shortest-round-tripping digits, so the digit search is shared; the ES path skips
       the Java-only two-digit tie-break (`Double.MIN_VALUE` is `5e-324`, not `4.9E-324`) and lays the

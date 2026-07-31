@@ -42,6 +42,12 @@ engine this library ports disagree, the reference now wins.
 - `in` also renders a null first argument rather than answering `false` on sight of one, so
   `{"in": [null, "a null value"]}` is `true`, matching the reference's coercion of the needle through
   `String()` and `substr`'s own rendering of a null source.
+- A numeric literal in a rule is read by the same hand-written parser the data side already used,
+  whose result is identical on every target, where the standard library's is documented as
+  platform-dependent. Every literal valid JSON admits parses to the same number as before. A literal
+  that is neither a boolean nor a number — reachable only from a `JsonElement` assembled in code — is
+  now a `JsonLogicParseException` naming where in the rule it sits, rather than a
+  `NumberFormatException` escaping past `parse`'s documented failure modes.
 
 ### Fixed
 

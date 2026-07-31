@@ -1,5 +1,6 @@
 package co.branch.jsonlogic.ast
 
+import co.branch.jsonlogic.internal.parseJavaDouble
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -59,10 +60,19 @@ object JsonLogicParser {
                 return JsonLogicString(element.content)
             }
 
-            return when (element.content) {
+            return when (val content = element.content) {
                 "true" -> JsonLogicBoolean.TRUE
                 "false" -> JsonLogicBoolean.FALSE
-                else -> JsonLogicNumber(element.content.toDouble())
+                // Through the same hand-written parser the data side uses rather than `toDouble`, whose
+                // result the stdlib documents as platform-dependent: a rule literal is the one input a
+                // caller can count on being read identically on every target. It returns null instead
+                // of throwing, which is what keeps a malformed literal inside this parser's contract.
+                else -> JsonLogicNumber(
+                    parseJavaDouble(content) ?: throw JsonLogicParseException(
+                        "not a JSON boolean or number: $content",
+                        jsonPath,
+                    ),
+                )
             }
         }
 

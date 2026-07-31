@@ -3,9 +3,11 @@ package co.branch.jsonlogic.evaluator
 import co.branch.jsonlogic.fixtures.jsonSemanticEquals
 import co.branch.jsonlogic.internal.jsonElementToValue
 import co.branch.jsonlogic.internal.valueToJsonElement
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.JsonUnquotedLiteral
 import kotlinx.serialization.json.jsonPrimitive
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -96,5 +98,23 @@ class JsonInteropTest {
         val failure = kotlin.runCatching { valueToJsonElement(Regex("x")) }.exceptionOrNull()
 
         assertTrue(failure is IllegalArgumentException, "expected a rejection, got $failure")
+    }
+
+    /**
+     * Data holding an unquoted literal that is neither a boolean nor a number is a fault in the code
+     * that built the element, not in a rule, so it is reported as one rather than as a JsonLogic
+     * failure. The literals a result carries for its non-finite numbers do come back in.
+     */
+    @OptIn(ExperimentalSerializationApi::class)
+    @Test
+    fun dataHoldingANonNumericUnquotedLiteralIsRejected() {
+        val failure = kotlin.runCatching {
+            jsonElementToValue(JsonUnquotedLiteral("abc"))
+        }.exceptionOrNull()
+
+        assertTrue(failure is IllegalArgumentException, "expected a rejection, got $failure")
+
+        assertEquals(Double.POSITIVE_INFINITY, jsonElementToValue(JsonUnquotedLiteral("Infinity")))
+        assertEquals(Double.NEGATIVE_INFINITY, jsonElementToValue(JsonUnquotedLiteral("-Infinity")))
     }
 }

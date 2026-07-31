@@ -3,9 +3,14 @@ package co.branch.jsonlogic.internal
 /*
  * Renderings of a domain value as text, one per operator family that needs one.
  *
- * The two differ only in how they render a number. Both render a `List` and a `Map` the way
+ * The two differ only in how they render a number. Both render a collection and a map the way
  * `java.util.AbstractCollection` and `java.util.AbstractMap` do — `[a, b]` and `{k=v}` — where the
  * JsonLogic reference implementation would give `a,b` and `[object Object]`.
+ *
+ * A collection covers more than the `List` every value out of JSON uses, since a custom operation can
+ * return any `Any?` and whatever it returns flows on into the surrounding expression. Rendering one
+ * here keeps its numbers in the form the operator promises instead of leaving them to the platform's
+ * own `toString`.
  */
 
 /**
@@ -43,12 +48,12 @@ private fun stringify(value: Any?, renderNumber: (Double) -> String, enclosing: 
     is Double -> renderNumber(value)
     is Boolean -> value.toString()
     is String -> value
-    is List<*> -> stringifyList(value, renderNumber, enclosing)
+    is Collection<*> -> stringifyCollection(value, renderNumber, enclosing)
     is Map<*, *> -> stringifyMap(value, renderNumber, enclosing)
     else -> value.toString()
 }
 
-private fun stringifyList(value: List<*>, renderNumber: (Double) -> String, enclosing: List<Any>): String {
+private fun stringifyCollection(value: Collection<*>, renderNumber: (Double) -> String, enclosing: List<Any>): String {
     if (enclosing.any { it === value }) {
         return "(this Collection)"
     }

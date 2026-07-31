@@ -54,6 +54,16 @@ class EcmaStringifyTest {
         assertEquals("{a=[1, 2]}", ecmaStringify(mapOf("a" to listOf(1.0, 2.0))))
     }
 
+    /**
+     * A collection a custom operation returned renders its numbers here too, rather than falling
+     * through to a `toString` whose form varies by target.
+     */
+    @Test
+    fun aCollectionThatIsNotAListRendersTheSameWay() {
+        assertEquals("[1, 2]", ecmaStringify(linkedSetOf(1.0, 2.0)))
+        assertEquals("[[1], 2]", ecmaStringify(linkedSetOf(listOf(1.0), 2.0)))
+    }
+
     /** A container reached from inside itself renders as java.util names it instead of being entered. */
     @Test
     fun aContainerThatHoldsItselfRendersTheRepeatWithoutEnteringIt() {

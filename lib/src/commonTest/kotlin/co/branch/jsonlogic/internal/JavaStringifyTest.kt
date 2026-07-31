@@ -57,6 +57,16 @@ class JavaStringifyTest {
         assertEquals("[{a=1.0}]", javaStringify(listOf(mapOf("a" to 1.0))))
     }
 
+    /**
+     * A collection a custom operation returned renders its numbers here too, rather than falling
+     * through to a `toString` whose form varies by target.
+     */
+    @Test
+    fun aCollectionThatIsNotAListRendersTheSameWay() {
+        assertEquals("[1.0, 2.0]", javaStringify(linkedSetOf(1.0, 2.0)))
+        assertEquals("[[1.0], 2.0]", javaStringify(linkedSetOf(listOf(1.0), 2.0)))
+    }
+
     /** A container reached from inside itself renders as java.util names it instead of being entered. */
     @Test
     fun aContainerThatHoldsItselfRendersTheRepeatWithoutEnteringIt() {

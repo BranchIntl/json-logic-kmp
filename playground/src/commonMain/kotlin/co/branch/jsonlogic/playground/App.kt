@@ -24,7 +24,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ClipEntry
 import androidx.compose.ui.platform.LocalClipboard
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import co.branch.jsonlogic.JsonLogic
@@ -145,7 +144,12 @@ fun App(
                     OperationsReference(
                         expanded = referenceExpanded,
                         onToggle = { referenceExpanded = !referenceExpanded },
-                        onInsert = { snippet -> rule = rule.insertAtCursor(snippet) },
+                        onSelect = { snippet ->
+                            // Snippets need no data, and whatever is loaded belongs to the rule
+                            // being replaced.
+                            rule = TextFieldValue(snippet)
+                            data = TextFieldValue("")
+                        },
                     )
 
                     Footnote()
@@ -216,13 +220,6 @@ private fun Editors(
             resultPanel(Modifier.fillMaxWidth().height(220.dp))
         }
     }
-}
-
-private fun TextFieldValue.insertAtCursor(snippet: String): TextFieldValue {
-    val start = selection.min
-    val replaced = text.replaceRange(start, selection.max, snippet)
-
-    return TextFieldValue(replaced, TextRange(start + snippet.length))
 }
 
 @Composable

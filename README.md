@@ -260,6 +260,12 @@ that case behaves.
   operator around it adds 2). `parse(rule, maxDepth)` moves the bound. A `JsonLogicNode` you assemble
   yourself and hand to `apply` has been through no such check, and neither has the *data* a rule runs
   against — converting that into the engine's value domain walks the whole tree recursively.
+- **A value that contains itself is named, not entered.** `reduce` hands its reducer a single context
+  map and mutates it in place, so a reducer returning its own data — or a list built around it —
+  leaves a cycle in the value it returns. `cat`, `substr` and `log` render a container reached from
+  inside itself as `(this Map)` or `(this Collection)`, at whatever depth it recurs. The names are
+  `java.util`'s, but the reach is not: `java.util` compares an entry only against the container
+  directly holding it, and overflows the stack on a cycle closing through two of them.
 - **`truthy` on a Kotlin/Java array differs from upstream.** Values parsed from rules or `JsonElement`
   data are never arrays (only `List`, `Map`, `String`, `Number`, `Boolean`, and `null` ever reach an
   expression that way), so `truthy` has no case for one and it falls through to the default branch,

@@ -36,6 +36,16 @@ engine this library ports disagree, the reference now wins.
 - `cat` and `substr` render a number the same way results do, so `cat` no longer switches to
   scientific notation at `1e7`.
 
+### Fixed
+
+- Rendering a value that contains itself no longer exhausts the stack. `reduce` hands its reducer a
+  single context map and mutates it in place, so a rule whose reducer returns its own data — or a list
+  built around it — leaves a cycle in the value it returns, and `cat`, `substr` and `log` recursed
+  into it until the stack ran out, which no caller can catch on Native or Wasm. A container reached
+  from inside itself now renders as `(this Map)` or `(this Collection)` at whatever depth it recurs;
+  the `java.util` rendering this port follows compares an entry only against the container directly
+  holding it, so a cycle closing through two of them slipped past.
+
 ## [0.1.0] - 2026-07-28
 
 ### Added

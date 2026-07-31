@@ -15,34 +15,63 @@ package co.branch.jsonlogic.internal
  *
  * Used by `log`, whose output is diagnostic text rather than a value any rule can observe.
  */
-internal fun javaStringify(value: Any?): String = when (value) {
-    null -> "null"
-    is Double -> canonicalDoubleToString(value)
-    is Boolean -> value.toString()
-    is String -> value
-    is List<*> -> value.joinToString(prefix = "[", postfix = "]", separator = ", ") { javaStringify(it) }
-    is Map<*, *> -> value.entries.joinToString(prefix = "{", postfix = "}", separator = ", ") {
-        "${javaStringify(it.key)}=${javaStringify(it.value)}"
-    }
-    else -> value.toString()
-}
+internal fun javaStringify(value: Any?): String = stringify(value, ::canonicalDoubleToString, emptyList())
 
 /**
  * Renders [value] the way ECMAScript's `String(value)` would: `null` becomes the literal `"null"`
  * and a number goes through [ecmaDoubleToString], so a whole one carries no decimal point.
  *
- * Used by `cat` and `substr`, whose results are values a rule can go on to compare. `cat` renders a
- * null argument as the empty string instead of calling this, matching the reference's use of
- * `Array.prototype.join`.
+ * Used by `cat`, `substr` and `in`, whose results are values a rule can go on to compare. `cat`
+ * renders a null argument as the empty string instead of calling this, matching the reference's use
+ * of `Array.prototype.join`.
  */
-internal fun ecmaStringify(value: Any?): String = when (value) {
+internal fun ecmaStringify(value: Any?): String = stringify(value, ::ecmaDoubleToString, emptyList())
+
+/**
+ * Renders [value] with [renderNumber] deciding the form a [Double] takes, naming rather than entering
+ * any container in [enclosing] — the ones already being rendered around it.
+ *
+ * A value here can hold a cycle, so the containers have to be tracked: `reduce` mutates a single
+ * context map in place, and a reducer returning a list built around its own data leaves that list and
+ * that map holding each other. The names are java.util's, but the reach is not — java.util compares an
+ * entry only against the container directly holding it, which a cycle closing through two of them
+ * slips past. Only an enclosing container counts, so the same value appearing twice side by side is
+ * rendered twice rather than mistaken for a cycle.
+ */
+private fun stringify(value: Any?, renderNumber: (Double) -> String, enclosing: List<Any>): String = when (value) {
     null -> "null"
-    is Double -> ecmaDoubleToString(value)
+    is Double -> renderNumber(value)
     is Boolean -> value.toString()
     is String -> value
-    is List<*> -> value.joinToString(prefix = "[", postfix = "]", separator = ", ") { ecmaStringify(it) }
-    is Map<*, *> -> value.entries.joinToString(prefix = "{", postfix = "}", separator = ", ") {
-        "${ecmaStringify(it.key)}=${ecmaStringify(it.value)}"
-    }
+    is List<*> -> stringifyList(value, renderNumber, enclosing)
+    is Map<*, *> -> stringifyMap(value, renderNumber, enclosing)
     else -> value.toString()
 }
+
+private fun stringifyList(value: List<*>, renderNumber: (Double) -> String, enclosing: List<Any>): String {
+    if (enclosing.any { it === value }) {
+        return "(this Collection)"
+    }
+
+    val inside = within(enclosing, value)
+
+    return value.joinToString(prefix = "[", postfix = "]", separator = ", ") { stringify(it, renderNumber, inside) }
+}
+
+private fun stringifyMap(value: Map<*, *>, renderNumber: (Double) -> String, enclosing: List<Any>): String {
+    if (enclosing.any { it === value }) {
+        return "(this Map)"
+    }
+
+    val inside = within(enclosing, value)
+
+    return value.entries.joinToString(prefix = "{", postfix = "}", separator = ", ") {
+        "${stringify(it.key, renderNumber, inside)}=${stringify(it.value, renderNumber, inside)}"
+    }
+}
+
+/**
+ * [enclosing] with [container] appended — through a singleton, since `enclosing + container` splices a
+ * container's own elements into the chain rather than adding the container itself.
+ */
+private fun within(enclosing: List<Any>, container: Any): List<Any> = enclosing + listOf(container)

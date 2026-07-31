@@ -49,6 +49,20 @@ class ValueCycleRenderingTest {
     }
 
     @Test
+    fun inSearchesForACyclicNeedle() {
+        assertEquals(false, evaluate("""{"in": [$selfHoldingMap, "nope"]}""", null, expressions))
+        assertEquals(false, evaluate("""{"in": [$mapInsideItsOwnList, "nope"]}""", null, expressions))
+        assertEquals(
+            true,
+            evaluate(
+                """{"in": [$mapInsideItsOwnList, "x[{current=2, accumulator=(this Collection)}]y"]}""",
+                null,
+                expressions,
+            ),
+        )
+    }
+
+    @Test
     fun logWritesACyclicValue() {
         val lines = mutableListOf<String>()
         val logging = expressions + LogExpression(lines::add)

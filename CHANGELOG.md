@@ -35,6 +35,13 @@ engine this library ports disagree, the reference now wins.
   numeric-type checks are unchanged.
 - `cat` and `substr` render a number the same way results do, so `cat` no longer switches to
   scientific notation at `1e7`.
+- The substring test `in` performs against a string renders its first argument the same way too, so
+  `{"in": [1, "a1b"]}` is `true` where it was `false` — the reference looks for `1`, not `1.0`. This was
+  the last value a rule can observe still rendered with Java's `Double.toString`; only `log`'s
+  diagnostic text is.
+- `in` also renders a null first argument rather than answering `false` on sight of one, so
+  `{"in": [null, "a null value"]}` is `true`, matching the reference's coercion of the needle through
+  `String()` and `substr`'s own rendering of a null source.
 
 ### Fixed
 

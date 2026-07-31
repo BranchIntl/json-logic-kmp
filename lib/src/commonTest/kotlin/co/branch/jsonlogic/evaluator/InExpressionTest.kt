@@ -21,20 +21,27 @@ class InExpressionTest {
         assertEquals(false, evaluateArrayOp("""{"in": ["i", "team"]}"""))
         assertEquals(true, evaluateArrayOp("""{"in": ["", "abc"]}"""))
         assertEquals(false, evaluateArrayOp("""{"in": ["a", ""]}"""))
-        assertEquals(false, evaluateArrayOp("""{"in": [null, "null"]}"""))
+    }
+
+    /** A null needle is rendered like any other value rather than never matching. */
+    @Test
+    fun aNullFirstArgumentLooksForTheWordNull() {
+        assertEquals(true, evaluateArrayOp("""{"in": [null, "null"]}"""))
+        assertEquals(true, evaluateArrayOp("""{"in": [null, "xnully"]}"""))
+        assertEquals(false, evaluateArrayOp("""{"in": [null, "abc"]}"""))
     }
 
     @Test
-    fun aNonStringIsRenderedTheWayJavaWouldRenderIt() {
+    fun aNonStringIsRenderedTheWayEcmaScriptWouldRenderIt() {
+        assertEquals(true, evaluateArrayOp("""{"in": [1, "a1b"]}"""))
         assertEquals(true, evaluateArrayOp("""{"in": [1, "a1.0b"]}"""))
-        assertEquals(false, evaluateArrayOp("""{"in": [1, "a1b"]}"""))
         assertEquals(true, evaluateArrayOp("""{"in": [true, "is true here"]}"""))
-        assertEquals(true, evaluateArrayOp("""{"in": [[1, 2], "x[1.0, 2.0]y"]}"""))
+        assertEquals(true, evaluateArrayOp("""{"in": [[1, 2], "x[1, 2]y"]}"""))
         assertEquals(true, evaluateArrayOp("""{"in": [{"merge": []}, "x[]y"]}"""))
     }
 
     @Test
-    fun renderedNumbersFollowJavasDoubleToString() {
+    fun renderedNumbersFollowEcmaScriptsNumberToString() {
         val data = mapOf(
             "big" to 1e8,
             "small" to 0.001,
@@ -44,23 +51,25 @@ class InExpressionTest {
             "negativeZero" to -0.0,
         )
 
-        assertEquals(true, evaluateArrayOp("""{"in": [{"var": "big"}, "x1.0E8y"]}""", data))
+        assertEquals(true, evaluateArrayOp("""{"in": [{"var": "big"}, "x100000000y"]}""", data))
         assertEquals(true, evaluateArrayOp("""{"in": [{"var": "small"}, "x0.001y"]}""", data))
-        assertEquals(true, evaluateArrayOp("""{"in": [{"var": "smaller"}, "x1.0E-4y"]}""", data))
+        assertEquals(true, evaluateArrayOp("""{"in": [{"var": "smaller"}, "x0.0001y"]}""", data))
         assertEquals(true, evaluateArrayOp("""{"in": [{"var": "nan"}, "xNaNy"]}""", data))
         assertEquals(true, evaluateArrayOp("""{"in": [{"var": "infinity"}, "xInfinityy"]}""", data))
-        assertEquals(true, evaluateArrayOp("""{"in": [{"var": "negativeZero"}, "x-0.0y"]}""", data))
+        // A haystack holding "-0.0" would contain "0" too, and so could not tell the two renderings apart.
+        assertEquals(true, evaluateArrayOp("""{"in": [{"var": "negativeZero"}, "x0y"]}""", data))
     }
 
+    /** Only the numbers moved to the ECMAScript form; a container keeps java.util's layout. */
     @Test
-    fun renderedCollectionsAndMapsFollowJavasToString() {
+    fun renderedCollectionsAndMapsKeepJavasContainerLayout() {
         val data = mapOf(
             "nested" to listOf(listOf(1.0), "x"),
             "map" to mapOf("a" to 1.0, "b" to listOf(2.0)),
         )
 
-        assertEquals(true, evaluateArrayOp("""{"in": [{"var": "nested"}, "x[[1.0], x]y"]}""", data))
-        assertEquals(true, evaluateArrayOp("""{"in": [{"var": "map"}, "x{a=1.0, b=[2.0]}y"]}""", data))
+        assertEquals(true, evaluateArrayOp("""{"in": [{"var": "nested"}, "x[[1], x]y"]}""", data))
+        assertEquals(true, evaluateArrayOp("""{"in": [{"var": "map"}, "x{a=1, b=[2]}y"]}""", data))
     }
 
     @Test

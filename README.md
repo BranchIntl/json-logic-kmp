@@ -232,19 +232,21 @@ that case behaves.
   normalized to `Double` inside the engine, so integers beyond 2^53 lose precision. Results cross back
   into JSON through ECMAScript's `Number::toString`, byte-identical on every platform: a whole number
   carries no decimal point (`{"+": [1, 2]}` is `3`), the plain-decimal range is `[1e-6, 1e21)`, and
-  everything outside it is exponential (`1e+21`, `1e-7`). `cat` and `substr` render a number the same
-  way. Two places still render one with Java's `Double.toString`: `log`'s diagnostic text, and the
-  substring test `in` performs against a string — so `{"in": [1, "a1b"]}` is `false` here, where the
-  reference implementation looks for `1` rather than `1.0` and answers `true`.
+  everything outside it is exponential (`1e+21`, `1e-7`). `cat`, `substr` and the substring test `in`
+  performs against a string render a number the same way, so `{"in": [1, "a1b"]}` is `true`. One place
+  still renders one with Java's `Double.toString`: `log`'s diagnostic text, which is not a value a rule
+  can go on to compare.
 - **Infinity and NaN aren't valid JSON.** A result of positive infinity, negative infinity, or NaN
   (e.g. from `{"/": [1, 0]}`) is returned as a `JsonElement` holding that literal, unquoted text, since
   JSON has no token for it. Reading it back out in Kotlin works fine, but re-encoding it through a
   standard JSON writer produces text most JSON parsers reject.
-- **`cat` drops a null argument; `substr` renders one as the text `null`.** The reference joins `cat`'s
-  arguments with `Array.prototype.join`, which renders null as the empty string, and stringifies
-  `substr`'s source with `String()`, which renders it as `"null"` — so `{"substr": [null, 1]}` is
-  `"ull"`. Both diverge from upstream, which throws `NullPointerException` in either case. `substr`
-  clamps every offset into range and likewise never throws for one.
+- **`cat` drops a null argument; `substr` and `in` render one as the text `null`.** The reference joins
+  `cat`'s arguments with `Array.prototype.join`, which renders null as the empty string, and stringifies
+  `substr`'s source and `in`'s needle with `String()`, which renders either as `"null"` — so
+  `{"substr": [null, 1]}` is `"ull"` and `{"in": [null, "a null value"]}` is `true`. `cat` and `substr`
+  diverge from upstream, which throws `NullPointerException` in either case; `in` diverges from it by
+  looking for the text at all rather than answering `false` on sight of a null needle. `substr` clamps
+  every offset into range and likewise never throws for one.
 - **Preserved upstream quirks:** `all`'s error jsonPath always reports `[1]` for the failing element,
   regardless of its actual index; `substr` and `missing_some` type-check their numeric arguments as
   `Double` internally; a `var`'s default-value expression is evaluated twice when its key resolves to
@@ -262,8 +264,8 @@ that case behaves.
   against — converting that into the engine's value domain walks the whole tree recursively.
 - **A value that contains itself is named, not entered.** `reduce` hands its reducer a single context
   map and mutates it in place, so a reducer returning its own data — or a list built around it —
-  leaves a cycle in the value it returns. `cat`, `substr` and `log` render a container reached from
-  inside itself as `(this Map)` or `(this Collection)`, at whatever depth it recurs. The names are
+  leaves a cycle in the value it returns. `cat`, `substr`, `in` and `log` render a container reached
+  from inside itself as `(this Map)` or `(this Collection)`, at whatever depth it recurs. The names are
   `java.util`'s, but the reach is not: `java.util` compares an entry only against the container
   directly holding it, and overflows the stack on a cycle closing through two of them.
 - **`truthy` on a Kotlin/Java array differs from upstream.** Values parsed from rules or `JsonElement`

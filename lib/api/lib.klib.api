@@ -418,6 +418,9 @@ final class co.branch.jsonlogic/JsonLogic { // co.branch.jsonlogic/JsonLogic|nul
     final fun apply(kotlin/String, kotlinx.serialization.json/JsonElement? = ...): kotlinx.serialization.json/JsonElement // co.branch.jsonlogic/JsonLogic.apply|apply(kotlin.String;kotlinx.serialization.json.JsonElement?){}[0]
     final fun apply(kotlinx.serialization.json/JsonElement, kotlinx.serialization.json/JsonElement?): kotlinx.serialization.json/JsonElement // co.branch.jsonlogic/JsonLogic.apply|apply(kotlinx.serialization.json.JsonElement;kotlinx.serialization.json.JsonElement?){}[0]
     final fun parse(kotlin/String): co.branch.jsonlogic.ast/JsonLogicNode // co.branch.jsonlogic/JsonLogic.parse|parse(kotlin.String){}[0]
+    final fun parse(kotlin/String, kotlin/Int): co.branch.jsonlogic.ast/JsonLogicNode // co.branch.jsonlogic/JsonLogic.parse|parse(kotlin.String;kotlin.Int){}[0]
+    final fun parse(kotlinx.serialization.json/JsonElement): co.branch.jsonlogic.ast/JsonLogicNode // co.branch.jsonlogic/JsonLogic.parse|parse(kotlinx.serialization.json.JsonElement){}[0]
+    final fun parse(kotlinx.serialization.json/JsonElement, kotlin/Int): co.branch.jsonlogic.ast/JsonLogicNode // co.branch.jsonlogic/JsonLogic.parse|parse(kotlinx.serialization.json.JsonElement;kotlin.Int){}[0]
 
     final object Companion { // co.branch.jsonlogic/JsonLogic.Companion|null[0]
         final fun truthy(kotlin/Any?): kotlin/Boolean // co.branch.jsonlogic/JsonLogic.Companion.truthy|truthy(kotlin.Any?){}[0]
@@ -440,6 +443,11 @@ final object co.branch.jsonlogic.ast/JsonLogicNull : co.branch.jsonlogic.ast/Jso
 }
 
 final object co.branch.jsonlogic.ast/JsonLogicParser { // co.branch.jsonlogic.ast/JsonLogicParser|null[0]
+    final const val DEFAULT_MAX_DEPTH // co.branch.jsonlogic.ast/JsonLogicParser.DEFAULT_MAX_DEPTH|{}DEFAULT_MAX_DEPTH[0]
+        final fun <get-DEFAULT_MAX_DEPTH>(): kotlin/Int // co.branch.jsonlogic.ast/JsonLogicParser.DEFAULT_MAX_DEPTH.<get-DEFAULT_MAX_DEPTH>|<get-DEFAULT_MAX_DEPTH>(){}[0]
+
     final fun parse(kotlin/String): co.branch.jsonlogic.ast/JsonLogicNode // co.branch.jsonlogic.ast/JsonLogicParser.parse|parse(kotlin.String){}[0]
+    final fun parse(kotlin/String, kotlin/Int): co.branch.jsonlogic.ast/JsonLogicNode // co.branch.jsonlogic.ast/JsonLogicParser.parse|parse(kotlin.String;kotlin.Int){}[0]
     final fun parse(kotlinx.serialization.json/JsonElement): co.branch.jsonlogic.ast/JsonLogicNode // co.branch.jsonlogic.ast/JsonLogicParser.parse|parse(kotlinx.serialization.json.JsonElement){}[0]
+    final fun parse(kotlinx.serialization.json/JsonElement, kotlin/Int): co.branch.jsonlogic.ast/JsonLogicNode // co.branch.jsonlogic.ast/JsonLogicParser.parse|parse(kotlinx.serialization.json.JsonElement;kotlin.Int){}[0]
 }

@@ -17,14 +17,14 @@ class MathExpressionTestPorted {
     fun testAdd() {
         val result = jsonLogic.apply("""{"+":[4,2]}""", null)
 
-        assertEquals("6.0", result.jsonPrimitive.content)
+        assertEquals("6", result.jsonPrimitive.content)
     }
 
     @Test
     fun testMultiAdd() {
         val result = jsonLogic.apply("""{"+":[2,2,2,2,2]}""", null)
 
-        assertEquals("10.0", result.jsonPrimitive.content)
+        assertEquals("10", result.jsonPrimitive.content)
     }
 
     @Test
@@ -38,7 +38,7 @@ class MathExpressionTestPorted {
     fun testAddWithArray() {
         val result = jsonLogic.apply("""{"+":[2,[[3,4],5]]}""", null)
 
-        assertEquals("5.0", result.jsonPrimitive.content) // This matches reference impl at jsonlogic.com
+        assertEquals("5", result.jsonPrimitive.content) // This matches reference impl at jsonlogic.com
     }
 
     @Test
@@ -52,42 +52,42 @@ class MathExpressionTestPorted {
     fun testSubtract() {
         val result = jsonLogic.apply("""{"-":[4,2]}""", null)
 
-        assertEquals("2.0", result.jsonPrimitive.content)
+        assertEquals("2", result.jsonPrimitive.content)
     }
 
     @Test
     fun testSingleSubtract() {
         val result = jsonLogic.apply("""{"-": 2 }""", null)
 
-        assertEquals("-2.0", result.jsonPrimitive.content)
+        assertEquals("-2", result.jsonPrimitive.content)
     }
 
     @Test
     fun testSingleSubtractString() {
         val result = jsonLogic.apply("""{"-": "2" }""", null)
 
-        assertEquals("-2.0", result.jsonPrimitive.content)
+        assertEquals("-2", result.jsonPrimitive.content)
     }
 
     @Test
     fun testMultiply() {
         val result = jsonLogic.apply("""{"*":[4,2]}""", null)
 
-        assertEquals("8.0", result.jsonPrimitive.content)
+        assertEquals("8", result.jsonPrimitive.content)
     }
 
     @Test
     fun testMultiMultiply() {
         val result = jsonLogic.apply("""{"*":[2,2,2,2,2]}""", null)
 
-        assertEquals("32.0", result.jsonPrimitive.content)
+        assertEquals("32", result.jsonPrimitive.content)
     }
 
     @Test
     fun testMultiplyWithArray() {
         val result = jsonLogic.apply("""{"*":[2,[[3, 4], 5]]}""", null)
 
-        assertEquals("6.0", result.jsonPrimitive.content) // This matches reference impl at jsonlogic.com
+        assertEquals("6", result.jsonPrimitive.content) // This matches reference impl at jsonlogic.com
     }
 
     @Test
@@ -101,7 +101,7 @@ class MathExpressionTestPorted {
     fun testDivide() {
         val result = jsonLogic.apply("""{"/":[4,2]}""", null)
 
-        assertEquals("2.0", result.jsonPrimitive.content)
+        assertEquals("2", result.jsonPrimitive.content)
     }
 
     @Test
@@ -115,21 +115,21 @@ class MathExpressionTestPorted {
     fun testModulo() {
         val result = jsonLogic.apply("""{"%": [101,2]}""", null)
 
-        assertEquals("1.0", result.jsonPrimitive.content)
+        assertEquals("1", result.jsonPrimitive.content)
     }
 
     @Test
     fun testMin() {
         val result = jsonLogic.apply("""{"min":[1,2,3]}""", null)
 
-        assertEquals("1.0", result.jsonPrimitive.content)
+        assertEquals("1", result.jsonPrimitive.content)
     }
 
     @Test
     fun testMax() {
         val result = jsonLogic.apply("""{"max":[1,2,3]}""", null)
 
-        assertEquals("3.0", result.jsonPrimitive.content)
+        assertEquals("3", result.jsonPrimitive.content)
     }
 
     @Test

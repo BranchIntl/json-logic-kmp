@@ -33,7 +33,7 @@ class SubstringExpressionTestPorted {
 
     @Test
     fun testSubstringSingleArgOutOfBounds() {
-        assertEquals("", jsonLogic.apply("""{"substr": ["jsonlogic", -40]}""", null).jsonPrimitive.content)
+        assertEquals("jsonlogic", jsonLogic.apply("""{"substr": ["jsonlogic", -40]}""", null).jsonPrimitive.content)
     }
 
     @Test

@@ -1,22 +1,19 @@
 package co.branch.jsonlogic.evaluator.expressions
 
 import co.branch.jsonlogic.evaluator.JsonLogicEvaluationException
-import co.branch.jsonlogic.internal.javaStringify
+import co.branch.jsonlogic.internal.ecmaStringify
 
 /**
- * `substr`: extracts a substring of its first argument, rendered the way [javaStringify] renders any
- * value. Requires 2 or 3 arguments; the second must be a number (specifically a [Double] — every
- * number this engine produces already is one, so this is a type check, not a range check) giving the
- * start offset, and the optional third a length (from the start offset) or, when negative, an offset
- * from the end.
+ * `substr`: extracts part of its first argument, rendered the way [ecmaStringify] renders any value —
+ * so a null source yields the four characters of `"null"`, and `{"substr": [null, 1]}` is `"ull"`.
  *
- * A negative start or length counts back from the end of the string. Upstream clamps only the
- * 2-argument form's start offset to the empty string when it is still negative after that adjustment,
- * and only the 3-argument form's combination of offsets to the empty string when the start is past
- * the end or past the computed end offset; every other out-of-range combination — including a start
- * that is still negative in the 3-argument form — reaches the underlying substring call and throws,
- * exactly as upstream's does. A null first argument likewise reaches, and throws out of, its rendering
- * step, matching upstream's own un-null-checked `toString()` call.
+ * Requires 2 or 3 arguments; the second must be a number giving the start offset, and the optional
+ * third a length, or, when negative, how many characters to drop from the end of what the start
+ * offset left. Both are type-checked as [Double] — every number this engine produces already is one —
+ * and neither is range-checked: a negative start counts back from the end of the string, a fraction
+ * truncates toward zero, and every offset is clamped into range rather than rejected, so no
+ * combination of them fails. A start past the end yields the empty string, and a start still negative
+ * after the end-relative adjustment yields the whole of it.
  */
 class SubstringExpression private constructor() : PreEvaluatedArgumentsExpression {
 
@@ -31,46 +28,41 @@ class SubstringExpression private constructor() : PreEvaluatedArgumentsExpressio
             throw JsonLogicEvaluationException("second argument to substr must be a number", "$jsonPath[1]")
         }
 
-        val value = javaStringify(arguments[0]!!)
-        var startIndex: Int
-        var endIndex: Int
-
-        if (arguments.size == 2) {
-            startIndex = (arguments[1] as Double).toInt()
-            endIndex = value.length
-
-            if (startIndex < 0) {
-                startIndex += endIndex
-            }
-            if (startIndex < 0) {
-                return ""
-            }
-        } else {
-            if (arguments[2] !is Double) {
-                throw JsonLogicEvaluationException("third argument to substr must be an integer", "$jsonPath[2]")
-            }
-
-            startIndex = (arguments[1] as Double).toInt()
-            if (startIndex < 0) {
-                startIndex += value.length
-            }
-
-            endIndex = (arguments[2] as Double).toInt()
-            if (endIndex < 0) {
-                endIndex += value.length
-            } else {
-                endIndex += startIndex
-            }
-
-            if (startIndex > endIndex || endIndex > value.length) {
-                return ""
-            }
+        if (arguments.size == 3 && arguments[2] !is Double) {
+            throw JsonLogicEvaluationException("third argument to substr must be an integer", "$jsonPath[2]")
         }
 
-        return value.substring(startIndex, endIndex)
+        val value = ecmaStringify(arguments[0])
+        val start = arguments[1] as Double
+        val length = if (arguments.size == 3) arguments[2] as Double else null
+
+        // A negative length drops that many characters from the end of what the start offset left,
+        // which the reference reaches by taking the substring twice. The fraction of a negative length
+        // therefore survives into the second call and truncates there, against a length that has
+        // already changed: -1.5 against six characters drops one, not two.
+        if (length != null && length < 0) {
+            val fromStart = substring(value, start, null)
+
+            return substring(fromStart, 0.0, fromStart.length + length)
+        }
+
+        return substring(value, start, length)
     }
 
     companion object {
         val INSTANCE = SubstringExpression()
     }
+}
+
+/**
+ * `String.prototype.substr(start, length)`: each offset truncates toward zero, a negative [start]
+ * counts back from the end and stops at the beginning, a null [length] runs to the end, and both are
+ * clamped into range so the call always returns a string.
+ */
+private fun substring(value: String, start: Double, length: Double?): String {
+    val offset = start.toInt()
+    val from = if (offset < 0) (value.length + offset).coerceAtLeast(0) else offset.coerceAtMost(value.length)
+    val count = (length?.toInt() ?: (value.length - from)).coerceIn(0, value.length - from)
+
+    return value.substring(from, from + count)
 }

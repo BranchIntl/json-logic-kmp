@@ -48,12 +48,13 @@ class JsonInteropTest {
     }
 
     @Test
-    fun numericResultsCarryTheJavaRenderingAsTheirContent() {
-        assertEquals("1.0", valueToJsonElement(1.0).jsonPrimitive.content)
-        assertEquals("1.0", valueToJsonElement(1).jsonPrimitive.content)
-        assertEquals("1.0E21", valueToJsonElement(1e21).jsonPrimitive.content)
-        assertEquals("1.0E-7", valueToJsonElement(1e-7).jsonPrimitive.content)
-        assertEquals("-0.0", valueToJsonElement(-0.0).jsonPrimitive.content)
+    fun numericResultsCarryTheEcmaScriptRenderingAsTheirContent() {
+        assertEquals("1", valueToJsonElement(1.0).jsonPrimitive.content)
+        assertEquals("1", valueToJsonElement(1).jsonPrimitive.content)
+        assertEquals("1e+21", valueToJsonElement(1e21).jsonPrimitive.content)
+        assertEquals("1e-7", valueToJsonElement(1e-7).jsonPrimitive.content)
+        assertEquals("0", valueToJsonElement(-0.0).jsonPrimitive.content)
+        assertEquals("1.5", valueToJsonElement(1.5).jsonPrimitive.content)
         assertFalse(valueToJsonElement(1.0).jsonPrimitive.isString)
     }
 

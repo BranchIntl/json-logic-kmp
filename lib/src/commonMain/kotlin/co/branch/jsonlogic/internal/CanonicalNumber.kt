@@ -1,14 +1,19 @@
 package co.branch.jsonlogic.internal
 
 /*
- * Java-identical conversions between Double and String.
+ * Conversions between Double and String that never consult the platform.
  *
- * The engine this library ports leans on java.lang semantics in both directions: every numeric
- * result is stringified through `Double.toString` (`cat`, `substr`, `in`, `log`, plain result
- * rendering) and every string operand is coerced through `Double.parseDouble` (loose equality,
- * numeric comparison, arithmetic). Kotlin's own `Double.toString()` and `String.toDouble()` are
- * documented as platform-dependent, so both directions are re-implemented here in common code:
- * one implementation, byte-identical on every target.
+ * Kotlin's own `Double.toString()` and `String.toDouble()` are documented as platform-dependent, so
+ * every conversion this engine needs is re-implemented here in common code: one implementation,
+ * byte-identical on every target.
+ *
+ * Two renderings are needed, because the engine this library ports and the JsonLogic reference
+ * implementation lay a number out differently, and this library follows each where its behavior is
+ * the one observed. [canonicalDoubleToString] matches `java.lang.Double.toString` and is what a
+ * number renders as inside `log` and `in`; [ecmaDoubleToString] matches ECMAScript's
+ * `Number::toString` and is what a number renders as in `cat`, `substr`, and every result crossing
+ * back into JSON. Both directions of string coercion — loose equality, numeric comparison,
+ * arithmetic — go through [parseJavaDouble].
  */
 
 private const val EXPONENT_MASK = 0x7FFL
@@ -60,14 +65,51 @@ private const val MAX_SIGNIFICANT_DIGITS = 17
  * it disagrees with a JDK 17 or 18 runtime on exactly those values.
  */
 internal fun canonicalDoubleToString(d: Double): String {
+    if (d.isNaN()) return "NaN"
+    if (d.isInfinite()) return if (d < 0) "-Infinity" else "Infinity"
+    if (d == 0.0) return if (d.toRawBits() < 0) "-0.0" else "0.0"
+
+    return shortestDecimal(d, refineSingleDigit = true, ::renderJava)
+}
+
+/**
+ * Renders [d] exactly as ECMAScript's `Number::toString` does, which is also how `JSON.stringify`
+ * writes a finite number: the shortest decimal that reads back as [d], laid out in plain decimal
+ * while the magnitude is in `[1e-6, 1e21)` and in exponential form outside it, with no digit ever
+ * added after the point — a whole number renders without one at all, and both zeros render as `0`.
+ *
+ * Infinity and NaN render as `Infinity`, `-Infinity`, and `NaN`, the text ECMAScript's own
+ * `String()` produces. `JSON.stringify` writes `null` for all three instead, which discards which
+ * one it was.
+ */
+internal fun ecmaDoubleToString(d: Double): String {
+    if (d.isNaN()) return "NaN"
+    if (d.isInfinite()) return if (d < 0) "-Infinity" else "Infinity"
+    if (d == 0.0) return "0"
+
+    return shortestDecimal(d, refineSingleDigit = false, ::renderEcmaScript)
+}
+
+/**
+ * Finds the shortest decimal that reads back as the finite, non-zero [d] and hands it to [render] as
+ * a sign, a digit string without trailing zeros, and the `decimalExponent` that places the decimal
+ * point: `10^(decimalExponent - 1) <= |d| < 10^decimalExponent`.
+ *
+ * Java and ECMAScript agree on which decimal that is — fewest significant digits, then closest to
+ * [d], then the even significand — except at one step. Java lets two-digit decimals compete when a
+ * single digit already reads back, since one of them can be strictly closer; that is why
+ * `Double.MIN_VALUE` is `4.9E-324` in Java and `5e-324` in ECMAScript. [refineSingleDigit] selects
+ * that step.
+ */
+private inline fun shortestDecimal(
+    d: Double,
+    refineSingleDigit: Boolean,
+    render: (negative: Boolean, digits: String, decimalExponent: Int) -> String,
+): String {
     val bits = d.toRawBits()
     val negative = bits < 0
     val biasedExponent = ((bits ushr 52) and EXPONENT_MASK).toInt()
     val significand = bits and SIGNIFICAND_MASK
-    if (biasedExponent == EXPONENT_MASK.toInt()) {
-        return if (significand != 0L) "NaN" else if (negative) "-Infinity" else "Infinity"
-    }
-    if (biasedExponent == 0 && significand == 0L) return if (negative) "-0.0" else "0.0"
 
     // Integral magnitudes below 2^53 are their own shortest representation: the rounding interval
     // is at most half a unit wide, so it holds no second integer, and a decimal with fewer
@@ -131,7 +173,7 @@ internal fun canonicalDoubleToString(d: Double): String {
             break
         }
     }
-    if (chosenLength == 1) {
+    if (refineSingleDigit && chosenLength == 1) {
         val unit = POWERS_OF_TEN_LONG[MAX_SIGNIFICANT_DIGITS - 2]
         val lower = truncated / unit * unit
         val candidate = pickCandidate(
@@ -574,7 +616,7 @@ private fun readsBack(
  * least one digit on each side of the point while the magnitude is in `[1e-3, 1e7)`, and
  * `d.dddEnn` outside it.
  */
-private fun render(negative: Boolean, digits: String, decimalExponent: Int): String {
+private fun renderJava(negative: Boolean, digits: String, decimalExponent: Int): String {
     val builder = StringBuilder(26)
     if (negative) builder.append('-')
     val length = digits.length
@@ -598,6 +640,42 @@ private fun render(negative: Boolean, digits: String, decimalExponent: Int): Str
         if (length == 1) builder.append('0') else builder.appendRange(digits, 1, length)
         builder.append('E')
         builder.append(decimalExponent - 1)
+    }
+    return builder.toString()
+}
+
+/**
+ * Formats `0.digits * 10^decimalExponent` the way ECMAScript lays a number out: plain decimal while
+ * the magnitude is in `[1e-6, 1e21)`, and `de+nn` outside it. Nothing is ever padded — a whole
+ * number gets no decimal point, and a single significant digit gets no companion.
+ */
+private fun renderEcmaScript(negative: Boolean, digits: String, decimalExponent: Int): String {
+    val builder = StringBuilder(26)
+    if (negative) builder.append('-')
+    val length = digits.length
+    if (decimalExponent in -5..21) {
+        if (decimalExponent >= length) {
+            builder.append(digits)
+            repeat(decimalExponent - length) { builder.append('0') }
+        } else if (decimalExponent > 0) {
+            builder.appendRange(digits, 0, decimalExponent)
+            builder.append('.')
+            builder.appendRange(digits, decimalExponent, length)
+        } else {
+            builder.append("0.")
+            repeat(-decimalExponent) { builder.append('0') }
+            builder.append(digits)
+        }
+    } else {
+        builder.append(digits[0])
+        if (length > 1) {
+            builder.append('.')
+            builder.appendRange(digits, 1, length)
+        }
+        builder.append('e')
+        val exponent = decimalExponent - 1
+        if (exponent > 0) builder.append('+')
+        builder.append(exponent)
     }
     return builder.toString()
 }

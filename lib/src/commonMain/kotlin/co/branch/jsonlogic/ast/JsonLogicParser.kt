@@ -1,5 +1,6 @@
 package co.branch.jsonlogic.ast
 
+import co.branch.jsonlogic.internal.parseJavaDouble
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -62,7 +63,10 @@ object JsonLogicParser {
             return when (element.content) {
                 "true" -> JsonLogicBoolean.TRUE
                 "false" -> JsonLogicBoolean.FALSE
-                else -> JsonLogicNumber(element.content.toDouble())
+                else -> JsonLogicNumber(
+                    parseJavaDouble(element.content)
+                        ?: throw JsonLogicParseException("not a number: ${element.content}", jsonPath),
+                )
             }
         }
 

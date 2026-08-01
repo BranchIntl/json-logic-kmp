@@ -1,5 +1,10 @@
 package co.branch.jsonlogic.ast
 
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.JsonUnquotedLiteral
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -62,6 +67,23 @@ class JsonLogicParserNumberLiteralTest {
         val exception = assertFailsWith<JsonLogicParseException> {
             JsonLogicParser.parse("""{"+": [abc, 1]}""")
         }
+
+        assertEquals("$.+[0]", exception.jsonPath)
+    }
+
+    /**
+     * The two cases above reach the conversion through the JSON reader, which hands a bare token on
+     * as an unquoted primitive. This one hands the parser such a primitive directly, so the branch
+     * stays covered however the reader chooses to treat unquoted input.
+     */
+    @OptIn(ExperimentalSerializationApi::class)
+    @Test
+    fun reportsANonNumericUnquotedPrimitiveAsAParseFailure() {
+        val rule = JsonObject(
+            mapOf("+" to JsonArray(listOf(JsonUnquotedLiteral("abc"), JsonPrimitive(1)))),
+        )
+
+        val exception = assertFailsWith<JsonLogicParseException> { JsonLogicParser.parse(rule) }
 
         assertEquals("$.+[0]", exception.jsonPath)
     }

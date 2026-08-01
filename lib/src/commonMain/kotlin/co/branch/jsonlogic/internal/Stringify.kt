@@ -76,7 +76,8 @@ private fun stringifyMap(value: Map<*, *>, renderNumber: (Double) -> String, enc
 }
 
 /**
- * [enclosing] with [container] appended — through a singleton, since `enclosing + container` splices a
- * container's own elements into the chain rather than adding the container itself.
+ * [enclosing] with [container] appended. Taking the container as [Any] is what makes this an append:
+ * at the call sites it is a `Collection<*>` or a `Map<*, *>`, and adding a collection to a list splices
+ * its elements in rather than adding the collection itself.
  */
-private fun within(enclosing: List<Any>, container: Any): List<Any> = enclosing + listOf(container)
+private fun within(enclosing: List<Any>, container: Any): List<Any> = enclosing + container

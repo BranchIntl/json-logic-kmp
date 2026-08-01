@@ -36,6 +36,24 @@ engine this library ports disagree, the reference now wins.
 - `cat` and `substr` render a number the same way results do, so `cat` no longer switches to
   scientific notation at `1e7`.
 
+### Fixed
+
+- Numeric rule literals convert through the library's own `Double.parseDouble`-faithful parser
+  instead of the platform's `String.toDouble`, which is documented as platform-dependent and, on
+  `wasmJs`, is not correctly rounded: 301 of 20,000 randomly generated JSON numerals came back off
+  by one unit in the last place, `1.797693134862315808e308` yielded the largest finite double where
+  it should overflow to `Infinity`, and `4.4e-323` could not read back a number this library had
+  itself rendered. On Kotlin/Native the same conversion discards digits past roughly 312 characters.
+  Both Java and ECMAScript require the correctly rounded result, so this converged the four
+  targets that can be tested rather than trading one dialect for another. Every literal in the
+  fixture corpus is short enough to convert identically everywhere, which is why the corpus never
+  caught it.
+- A rule literal that is not a number raises `JsonLogicParseException`, carrying the path of the
+  node that failed, rather than letting the platform's `NumberFormatException` escape. `JsonLogic`
+  documents every parse failure as a `JsonLogicParseException`, so `{"+": [abc, 1]}` — which the
+  JSON reader hands over as a bare token — previously threw past a caller catching
+  `JsonLogicException`.
+
 ## [0.1.0] - 2026-07-28
 
 ### Added

@@ -39,7 +39,7 @@ import co.branch.jsonlogic.playground.theme.LocalPlaygroundColors
 fun OperationsReference(
     expanded: Boolean,
     onToggle: () -> Unit,
-    onInsert: (String) -> Unit,
+    onSelect: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val colors = LocalPlaygroundColors.current
@@ -84,7 +84,7 @@ fun OperationsReference(
                         )
                         FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                             group.operations.forEach { operation ->
-                                OperationRow(operation, onInsert)
+                                OperationRow(operation, onSelect)
                             }
                         }
                     }
@@ -95,14 +95,14 @@ fun OperationsReference(
 }
 
 @Composable
-private fun OperationRow(operation: Operation, onInsert: (String) -> Unit) {
+private fun OperationRow(operation: Operation, onSelect: (String) -> Unit) {
     val colors = LocalPlaygroundColors.current
 
     Row(
         modifier = Modifier
             .width(348.dp)
             .clip(RoundedCornerShape(6.dp))
-            .clickable { onInsert(operation.snippet) }
+            .clickable { onSelect(operation.snippet) }
             .padding(horizontal = 6.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),

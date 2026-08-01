@@ -60,18 +60,12 @@ object JsonLogicParser {
                 return JsonLogicString(element.content)
             }
 
-            return when (val content = element.content) {
+            return when (element.content) {
                 "true" -> JsonLogicBoolean.TRUE
                 "false" -> JsonLogicBoolean.FALSE
-                // Through the same hand-written parser the data side uses rather than `toDouble`, whose
-                // result the stdlib documents as platform-dependent: a rule literal is the one input a
-                // caller can count on being read identically on every target. It returns null instead
-                // of throwing, which is what keeps a malformed literal inside this parser's contract.
                 else -> JsonLogicNumber(
-                    parseJavaDouble(content) ?: throw JsonLogicParseException(
-                        "not a JSON boolean or number: $content",
-                        jsonPath,
-                    ),
+                    parseJavaDouble(element.content)
+                        ?: throw JsonLogicParseException("not a number: ${element.content}", jsonPath),
                 )
             }
         }

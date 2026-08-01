@@ -42,22 +42,31 @@ engine this library ports disagree, the reference now wins.
 - `in` also renders a null first argument rather than answering `false` on sight of one, so
   `{"in": [null, "a null value"]}` is `true`, matching the reference's coercion of the needle through
   `String()` and `substr`'s own rendering of a null source.
-- A numeric literal in a rule is read by the same hand-written parser the data side already used,
-  whose result is identical on every target, where the standard library's is documented as
-  platform-dependent. Every literal valid JSON admits parses to the same number as before. A literal
-  that is neither a boolean nor a number — reachable only from a `JsonElement` assembled in code — is
-  now a `JsonLogicParseException` naming where in the rule it sits, rather than a
-  `NumberFormatException` escaping past `parse`'s documented failure modes.
 
 ### Fixed
 
 - Rendering a value that contains itself no longer exhausts the stack. `reduce` hands its reducer a
   single context map and mutates it in place, so a rule whose reducer returns its own data — or a list
-  built around it — leaves a cycle in the value it returns, and `cat`, `substr` and `log` recursed
-  into it until the stack ran out, which no caller can catch on Native or Wasm. A container reached
-  from inside itself now renders as `(this Map)` or `(this Collection)` at whatever depth it recurs;
-  the `java.util` rendering this port follows compares an entry only against the container directly
-  holding it, so a cycle closing through two of them slipped past.
+  built around it — leaves a cycle in the value it returns, and `cat`, `substr`, `in` and `log`
+  recursed into it until the stack ran out, which no caller can catch on Native or Wasm. A container
+  reached from inside itself now renders as `(this Map)` or `(this Collection)` at whatever depth it
+  recurs; the `java.util` rendering this port follows compares an entry only against the container
+  directly holding it, so a cycle closing through two of them slipped past.
+- Numeric rule literals convert through the library's own `Double.parseDouble`-faithful parser
+  instead of the platform's `String.toDouble`, which is documented as platform-dependent and, on
+  `wasmJs`, is not correctly rounded: 301 of 20,000 randomly generated JSON numerals came back off
+  by one unit in the last place, `1.797693134862315808e308` yielded the largest finite double where
+  it should overflow to `Infinity`, and `4.4e-323` could not read back a number this library had
+  itself rendered. On Kotlin/Native the same conversion discards digits past roughly 312 characters.
+  Both Java and ECMAScript require the correctly rounded result, so this converged the four
+  targets that can be tested rather than trading one dialect for another. Every literal in the
+  fixture corpus is short enough to convert identically everywhere, which is why the corpus never
+  caught it.
+- A rule literal that is not a number raises `JsonLogicParseException`, carrying the path of the
+  node that failed, rather than letting the platform's `NumberFormatException` escape. `JsonLogic`
+  documents every parse failure as a `JsonLogicParseException`, so `{"+": [abc, 1]}` — which the
+  JSON reader hands over as a bare token — previously threw past a caller catching
+  `JsonLogicException`.
 
 ## [0.1.0] - 2026-07-28
 

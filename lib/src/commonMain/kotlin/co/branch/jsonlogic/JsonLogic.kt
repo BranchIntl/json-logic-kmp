@@ -51,11 +51,10 @@ import kotlinx.serialization.json.JsonElement
  * exception that every caller must declare or catch, nothing here needs a `throws` clause or a
  * `try` block to compile.
  *
- * A `JsonElement` assembled in code rather than parsed from text can hold an unquoted literal that is
- * neither a boolean nor a number, or — as data — a value with no JSON form at all. Passing one as the
- * rule is a [JsonLogicParseException] like any other malformed rule; passing one as the data, or
- * receiving one back from a custom operation, raises [IllegalArgumentException], since the value never
- * came from JSON and the fault is in the calling code rather than in the rule.
+ * Two boundaries report outside that pair, having no position in a rule to name: data holding an
+ * unquoted literal that is not a number, and a result with no JSON form — which only a custom
+ * operation can return — each raise [IllegalArgumentException]. Either value reached the engine from
+ * the calling code rather than from a rule.
  *
  * **The depth bound.** Parsing and evaluating both recurse, so an arbitrarily deep rule would
  * exhaust the stack. Every overload that takes a rule as JSON therefore bounds its nesting, and

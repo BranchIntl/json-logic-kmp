@@ -55,6 +55,18 @@ class JsonLogicParserNumberLiteralTest {
         assertParsesToBits(1.0000000000000002, tie + "0".repeat(600) + "1")
     }
 
+    /**
+     * `Infinity`, `-Infinity` and `NaN` are what a result carries when it has no JSON form, so a
+     * result fed back in as a rule reaches this same conversion and has to keep parsing. Any move to
+     * gate the branch on the JSON number grammar has to carve these three out.
+     */
+    @Test
+    fun theLiteralsAResultCarriesForItsNonFiniteNumbersStillParse() {
+        assertParsesToBits(Double.POSITIVE_INFINITY, "Infinity")
+        assertParsesToBits(Double.NEGATIVE_INFINITY, "-Infinity")
+        assertParsesToBits(Double.NaN, "NaN")
+    }
+
     @Test
     fun reportsANonNumericLiteralAsAParseFailure() {
         val exception = assertFailsWith<JsonLogicParseException> { JsonLogicParser.parse("[abc]") }

@@ -51,6 +51,11 @@ import kotlinx.serialization.json.JsonElement
  * exception that every caller must declare or catch, nothing here needs a `throws` clause or a
  * `try` block to compile.
  *
+ * Two boundaries report outside that pair, having no position in a rule to name: data holding an
+ * unquoted literal that is not a number, and a result with no JSON form — which only a custom
+ * operation can return — each raise [IllegalArgumentException]. Either value reached the engine from
+ * the calling code rather than from a rule.
+ *
  * **The depth bound.** Parsing and evaluating both recurse, so an arbitrarily deep rule would
  * exhaust the stack. Every overload that takes a rule as JSON therefore bounds its nesting, and
  * those taking a `maxDepth` move that bound. A [JsonLogicNode] built by hand and handed to [apply]

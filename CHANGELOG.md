@@ -35,9 +35,23 @@ engine this library ports disagree, the reference now wins.
   numeric-type checks are unchanged.
 - `cat` and `substr` render a number the same way results do, so `cat` no longer switches to
   scientific notation at `1e7`.
+- The substring test `in` performs against a string renders its first argument the same way too, so
+  `{"in": [1, "a1b"]}` is `true` where it was `false` — the reference looks for `1`, not `1.0`. This was
+  the last value a rule can observe still rendered with Java's `Double.toString`; only `log`'s
+  diagnostic text is.
+- `in` also renders a null first argument rather than answering `false` on sight of one, so
+  `{"in": [null, "a null value"]}` is `true`, matching the reference's coercion of the needle through
+  `String()` and `substr`'s own rendering of a null source.
 
 ### Fixed
 
+- Rendering a value that contains itself no longer exhausts the stack. `reduce` hands its reducer a
+  single context map and mutates it in place, so a rule whose reducer returns its own data — or a list
+  built around it — leaves a cycle in the value it returns, and `cat`, `substr`, `in` and `log`
+  recursed into it until the stack ran out, which no caller can catch on Native or Wasm. A container
+  reached from inside itself now renders as `(this Map)` or `(this Collection)` at whatever depth it
+  recurs; the `java.util` rendering this port follows compares an entry only against the container
+  directly holding it, so a cycle closing through two of them slipped past.
 - Numeric rule literals convert through the library's own `Double.parseDouble`-faithful parser
   instead of the platform's `String.toDouble`, which is documented as platform-dependent and, on
   `wasmJs`, is not correctly rounded: 301 of 20,000 randomly generated JSON numerals came back off

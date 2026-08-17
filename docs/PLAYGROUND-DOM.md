@@ -35,7 +35,7 @@ through the overlay; both need a human and are scheduled for the commit-12 matri
 ## Tasks
 
 - [x] **0 tracking doc** — this file, including the probe result above.
-- [ ] **1 add the DOM module** — the spike's sources with `playground-shared` folded into its own src
+- [x] **1 add the DOM module** — the spike's sources with `playground-shared` folded into its own src
   tree, the library consumed as a `srcDir` rather than a project dependency, `include` +
   `ignoredProjects`, regenerated yarn lock, and every declaration a test will reach widened from
   file-`private` to `internal`.

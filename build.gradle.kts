@@ -21,6 +21,7 @@ plugins {
 apiValidation {
     // :playground is a demo app with no published API to validate.
     ignoredProjects.add("playground")
+    ignoredProjects.add("playground-js-plain")
 
     @OptIn(kotlinx.validation.ExperimentalBCVApi::class)
     klib {

@@ -39,9 +39,9 @@ through the overlay; both need a human and are scheduled for the commit-12 matri
   tree, the library consumed as a `srcDir` rather than a project dependency, `include` +
   `ignoredProjects`, regenerated yarn lock, and every declaration a test will reach widened from
   file-`private` to `internal`.
-- [ ] **2 carry the playground's tests onto the DOM build** — the four existing tests copied into
+- [x] **2 carry the playground's tests onto the DOM build** — the four existing tests copied into
   `jsTest` (the originals stay until the swap, or the Compose module's test task finds none and
-  fails). First time they run on Kotlin/JS.
+  fails). First time they run on Kotlin/JS: 18 tests, all green.
 - [ ] **3 run the engine's numeric tests on Kotlin/JS** — mount the fixture-free number-literal and
   stringify tests from the library's `commonTest` as a `jsTest` source directory. `CanonicalNumber`
   and `BigUInt` are `Long`-heavy bit code that has never executed on Kotlin/JS `Long` emulation.

@@ -34,5 +34,8 @@ kotlin {
             // here makes it this module's to declare.
             implementation(libs.kotlinx.serialization.json)
         }
+        jsTest.dependencies {
+            implementation(libs.kotlin.test)
+        }
     }
 }

@@ -2,6 +2,27 @@ plugins {
     alias(libs.plugins.kotlin.multiplatform)
 }
 
+/**
+ * Stages the library's own tests for its number handling, so they run on Kotlin/JS as well.
+ *
+ * `CanonicalNumber` and `BigUInt` do their work in `Long` bit patterns, and Kotlin/JS is the only
+ * target that emulates `Long` instead of having one, so this is the target most able to disagree
+ * with the others and the one with no coverage. Named file by file because the rest of the
+ * library's `commonTest` either needs the generated fixture corpus or asserts `is Double` guards
+ * that Kotlin/JS cannot satisfy, having one runtime type for both `Int` and `Double`.
+ *
+ * A copy, because a Kotlin source directory is a directory and these are three files inside a
+ * tree of a hundred.
+ */
+val stageEngineNumberTests by tasks.registering(Sync::class) {
+    from(rootProject.layout.projectDirectory.dir("lib/src/commonTest/kotlin")) {
+        include("co/branch/jsonlogic/ast/JsonLogicParserNumberLiteralTest.kt")
+        include("co/branch/jsonlogic/internal/EcmaStringifyTest.kt")
+        include("co/branch/jsonlogic/internal/JavaStringifyTest.kt")
+    }
+    into(layout.buildDirectory.dir("engine-number-tests"))
+}
+
 kotlin {
     js(IR) {
         outputModuleName = "playground-js-plain"
@@ -33,6 +54,10 @@ kotlin {
             // :lib declares this `api`, which its own consumers inherit; compiling its sources
             // here makes it this module's to declare.
             implementation(libs.kotlinx.serialization.json)
+        }
+        jsTest {
+            // The Provider registers the staged dir and its task dependency together.
+            kotlin.srcDir(stageEngineNumberTests.map { it.destinationDir })
         }
         jsTest.dependencies {
             implementation(libs.kotlin.test)

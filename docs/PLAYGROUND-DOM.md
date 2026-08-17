@@ -42,9 +42,10 @@ through the overlay; both need a human and are scheduled for the commit-12 matri
 - [x] **2 carry the playground's tests onto the DOM build** — the four existing tests copied into
   `jsTest` (the originals stay until the swap, or the Compose module's test task finds none and
   fails). First time they run on Kotlin/JS: 18 tests, all green.
-- [ ] **3 run the engine's numeric tests on Kotlin/JS** — mount the fixture-free number-literal and
+- [x] **3 run the engine's numeric tests on Kotlin/JS** — mount the fixture-free number-literal and
   stringify tests from the library's `commonTest` as a `jsTest` source directory. `CanonicalNumber`
-  and `BigUInt` are `Long`-heavy bit code that has never executed on Kotlin/JS `Long` emulation.
+  and `BigUInt` are `Long`-heavy bit code that had never executed on Kotlin/JS `Long` emulation.
+  All 30 pass: 48 tests in the module, up from 18, with no divergence to report.
 - [ ] **4 absorb the operation-pick behaviour** — picking an operation replaces the rule and clears
   the data; the at-cursor insert path goes away with it.
 - [ ] **5 undo across programmatic edits** — chips and operation rows write through an edit command

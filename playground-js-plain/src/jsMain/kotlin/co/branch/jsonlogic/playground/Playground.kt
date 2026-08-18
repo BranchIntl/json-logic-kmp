@@ -5,9 +5,13 @@ import co.branch.jsonlogic.playground.editor.Editor
 import co.branch.jsonlogic.playground.editor.highlightInto
 import co.branch.jsonlogic.playground.share.ShareLink
 import co.branch.jsonlogic.playground.share.SharedState
+import co.branch.jsonlogic.playground.ui.ChevronIcon
+import co.branch.jsonlogic.playground.ui.MoonIcon
+import co.branch.jsonlogic.playground.ui.SunIcon
 import co.branch.jsonlogic.playground.ui.button
 import co.branch.jsonlogic.playground.ui.clear
 import co.branch.jsonlogic.playground.ui.el
+import co.branch.jsonlogic.playground.ui.icon
 import co.branch.jsonlogic.playground.ui.withText
 import kotlinx.browser.document
 import kotlinx.browser.window
@@ -94,7 +98,8 @@ internal class Playground {
         }
         header.appendChild(shareButton)
 
-        themeButton = button("icon-button", themeGlyph()) {
+        // Empty until applyTheme, which is what decides which of the two icons it holds.
+        themeButton = button("icon-button", "") {
             darkOverride = !dark
             applyTheme()
         }
@@ -134,11 +139,10 @@ internal class Playground {
 
     private val dark: Boolean get() = darkOverride ?: systemDark.matches
 
-    private fun themeGlyph() = if (dark) "☀" else "☽"
-
     private fun applyTheme() {
         document.documentElement?.setAttribute("data-theme", if (dark) "dark" else "light")
-        themeButton.textContent = themeGlyph()
+        themeButton.clear()
+        themeButton.appendChild(icon(if (dark) SunIcon else MoonIcon))
     }
 
     private fun shareUrl(state: SharedState): String =
@@ -269,7 +273,7 @@ internal class Playground {
         opsBody = el("div", "ops-body")
 
         opsToggle = el("button", "ops-toggle")
-        opsToggle.appendChild(el("span", "chevron").withText("▶"))
+        opsToggle.appendChild(icon(ChevronIcon))
         opsToggle.appendChild(el("span", "label").withText("Operations"))
         opsToggle.addEventListener("click", {
             referenceExpanded = !referenceExpanded

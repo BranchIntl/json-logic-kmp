@@ -61,7 +61,7 @@ through the overlay; both need a human and are scheduled for the commit-12 matri
 - [x] **10 bundle the JetBrains Mono subset** — subset the repo's own face, ship it with its OFL, and
   apply the stack to everything monospaced rather than only the editors. 4,888 bytes over the wire;
   the module's live gzip goes 94,407 → 101,990 against the 110,000 ceiling.
-- [ ] **11 draw the theme and disclosure icons** — inline SVG in place of the text glyphs.
+- [x] **11 draw the theme and disclosure icons** — inline SVG in place of the text glyphs.
 - [ ] **12 verification gate** — run the full IME, mobile and wrap matrix and record the results here.
 - [ ] **13 the swap** — the DOM module becomes `playground/`, the Compose module and its catalog
   entries are deleted, Pages deploys the new output, and the README and CHANGELOG land in the same
@@ -80,3 +80,13 @@ IME, mobile and wrap columns task 12 already covers.
   there and the text does come back, which is what the task was for; how many presses it takes is
   the engine's own grouping of a select-all and an insertion. Confirm it is a press count and not a
   lost entry on each engine, and leave it alone if so.
+- **The rule read aloud, once.** The highlighted layer carries `aria-hidden`, and it is a sibling of
+  the field rather than its parent, so pruning it leaves the field exposed. That is as far as
+  reading the markup goes; whether a screen reader announces the rule once, and announces the field
+  as "Rule" and "Data", wants VoiceOver and a person listening.
+- **Focusing an editor on a real iPhone.** The narrow layout raises the editors to 16px because
+  Safari zooms into a smaller field and does not zoom back out. Emulation cannot show that; tap into
+  both editors on a device and watch the page stay where it is.
+- **The font arriving late.** The face is allowed to swap in after first paint. On a throttled
+  connection, check that the swap moves both editor layers together and leaves the caret on its
+  glyph — the claim is that nothing here is measured, and this is the cheapest test of it.

@@ -36,7 +36,8 @@ internal class Playground {
     private val shared = ShareLink.decode(window.location.hash)
     private var ruleText = shared?.rule ?: Examples.first().rule
     private var dataText = shared?.data ?: Examples.first().data
-    private var dark = window.matchMedia("(prefers-color-scheme: dark)").matches
+    private val systemDark = window.matchMedia("(prefers-color-scheme: dark)")
+    private var darkOverride: Boolean? = null
     private var referenceExpanded = false
     private var debounce = 0
     private var shareReset = 0
@@ -56,7 +57,6 @@ internal class Playground {
     fun mount() {
         val root = document.getElementById("playground") ?: return
         root.clear()
-        applyTheme()
 
         val app = el("div", "app")
         app.appendChild(header())
@@ -65,6 +65,12 @@ internal class Playground {
         app.appendChild(operationsReference())
         app.appendChild(el("div", "footnote").withText(FootnoteText))
         root.appendChild(app)
+
+        applyTheme()
+        // Someone who changes their appearance setting at sundown has said what they want, and a
+        // page left open since morning should hear it. Until they say otherwise here: a reader who
+        // has used the toggle has said something more specific, which the system does not override.
+        systemDark.addEventListener("change", { if (darkOverride == null) applyTheme() })
 
         ruleEditor.setInitialText(ruleText)
         dataEditor.setInitialText(dataText)
@@ -82,20 +88,15 @@ internal class Playground {
 
         shareButton = button("chip selected", "Share") {
             val url = shareUrl(SharedState(ruleText, dataText))
+            // Not pushState: sharing is not navigation, and would litter the back button.
             window.history.replaceState(null, "", url)
-            // navigator.clipboard only exists in a secure context; the link is in the address bar
-            // either way.
-            runCatching { window.navigator.clipboard.writeText(url) }
-            shareButton.textContent = "Copied"
-            window.clearTimeout(shareReset)
-            shareReset = window.setTimeout({ shareButton.textContent = "Share" }, 1600)
+            copyShareLink(url)
         }
         header.appendChild(shareButton)
 
         themeButton = button("icon-button", themeGlyph()) {
-            dark = !dark
+            darkOverride = !dark
             applyTheme()
-            themeButton.textContent = themeGlyph()
         }
         themeButton.setAttribute("aria-label", "Toggle theme")
         header.appendChild(themeButton)
@@ -110,10 +111,34 @@ internal class Playground {
         return header
     }
 
+    /**
+     * The clipboard is a courtesy here and the address bar is the guarantee, so the button says
+     * which of the two the reader got. `navigator.clipboard` is absent outside a secure context,
+     * where reaching for it throws; where it is present the write can still be refused, and a
+     * refusal arrives only as a rejected promise.
+     */
+    private fun copyShareLink(url: String) {
+        val write = runCatching { window.navigator.clipboard.writeText(url) }.getOrNull()
+        if (write == null) {
+            reportShare("In the URL")
+        } else {
+            write.then({ reportShare("Copied") }, { reportShare("In the URL") })
+        }
+    }
+
+    private fun reportShare(outcome: String) {
+        shareButton.textContent = outcome
+        window.clearTimeout(shareReset)
+        shareReset = window.setTimeout({ shareButton.textContent = "Share" }, 1600)
+    }
+
+    private val dark: Boolean get() = darkOverride ?: systemDark.matches
+
     private fun themeGlyph() = if (dark) "☀" else "☽"
 
     private fun applyTheme() {
         document.documentElement?.setAttribute("data-theme", if (dark) "dark" else "light")
+        themeButton.textContent = themeGlyph()
     }
 
     private fun shareUrl(state: SharedState): String =

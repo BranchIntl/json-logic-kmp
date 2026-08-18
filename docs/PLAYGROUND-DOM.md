@@ -56,7 +56,7 @@ through the overlay; both need a human and are scheduled for the commit-12 matri
   layers; the sticky gutter and its horizontal-scroll machinery go away.
 - [x] **8 composition, mobile and accessibility input handling** — input attributes, aria, and the
   16 px floor that stops Safari zooming on focus. 64 tests, up from 61.
-- [ ] **9 restore the parity details the spike dropped** — pre-boot dark background, live OS-theme
+- [x] **9 restore the parity details the spike dropped** — pre-boot dark background, live OS-theme
   listener, and the Share button's two-state message.
 - [ ] **10 bundle the JetBrains Mono subset** — subset the repo's own face, ship it with its OFL, and
   apply the stack to everything monospaced rather than only the editors.

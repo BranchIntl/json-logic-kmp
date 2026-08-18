@@ -7,6 +7,9 @@
     <meta name="description" content="Try JsonLogic expressions in your browser, evaluated by json-logic-kmp compiled to JavaScript.">
     <style>
         :root {
+            /* Named per theme rather than left as `light dark`, so the reader's own choice reaches
+               the scrollbars and the caret too and not only the parts painted here. */
+            color-scheme: light;
             --primary: #5B5BD6;
             --on-primary: #ffffff;
             --background: #F7F7FA;
@@ -28,7 +31,19 @@
             --syn-invalid: #CF222E;
         }
 
+        /* The theme is an attribute the app writes, so until the bundle runs there is none, and a
+           dark-mode reader would watch a white page for the length of the download. Only the two
+           colours the boot screen paints are needed here; the app sets the rest a frame later. */
+        @media (prefers-color-scheme: dark) {
+            html:not([data-theme]) {
+                color-scheme: dark;
+                --background: #131519;
+                --on-background: #E8EAEF;
+            }
+        }
+
         html[data-theme="dark"] {
+            color-scheme: dark;
             --primary: #9B9BF5;
             --on-primary: #1B1B33;
             --background: #131519;
@@ -333,6 +348,7 @@
 <noscript>
     <p style="padding: 2rem; color: #8b8f9a">This playground needs JavaScript enabled.</p>
 </noscript>
+<!-- Relative on purpose: the site is served from the /json-logic-kmp/ project subpath. -->
 <script src="playground.js"></script>
 </body>
 </html>

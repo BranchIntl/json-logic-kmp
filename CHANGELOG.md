@@ -4,8 +4,20 @@ All notable changes to this project are documented in this file.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-08-18
+
 Where the [JsonLogic reference implementation](https://github.com/jwadhams/json-logic-js) and the
 engine this library ports disagree, the reference now wins.
+
+**Upgrading from 0.1.0 changes what rules return.** The public API only grew — every 0.1.0 call
+site still compiles and still links — so nothing in a build flags this; the differences surface at
+evaluation time. A whole number renders without its decimal point (`{"+": [1, 2]}` is `3`, not
+`3.0`), and the plain-decimal range moves from `[1e-3, 1e7)` to `[1e-6, 1e21)`. `cat` and `substr`
+return a value where they threw `NullPointerException`. `{"in": [1, "a1b"]}` and
+`{"in": [null, "a null value"]}` are both `true` where they were `false`. A rule nested deeper than
+128 containers is now rejected, as is a rule literal that is not a number. Each is detailed under
+Changed and Fixed below; if results computed by 0.1.0 are stored anywhere, or assertions are pinned
+to its rendering, re-check them against this release first.
 
 ### Added
 

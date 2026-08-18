@@ -7,6 +7,7 @@ import kotlinx.browser.document
 import org.w3c.dom.Element
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.HTMLTextAreaElement
+import org.w3c.dom.Node
 
 /**
  * A transparent textarea laid exactly over a highlighted `<pre>` of the same text. The `<pre>` is
@@ -106,25 +107,16 @@ private fun gutterText(text: String): String {
 }
 
 /**
- * Appends [text] as one styled span per token, leaving the characters themselves untouched. The
- * result panel colours its output through the same walk, which is why this is not the editor's own.
+ * Appends [text] to [host] as one node per painted run, leaving the characters themselves
+ * untouched. The result panel colours its output the same way, which is why this is not the
+ * editor's own.
  */
 internal fun highlightInto(host: Element, text: String) {
-    var cursor = 0
-
-    JsonTokenizer.tokenize(text).forEach { token ->
-        // Whitespace produces no token, so the gaps between them are appended unstyled.
-        if (token.start > cursor) {
-            host.appendChild(document.createTextNode(text.substring(cursor, token.start)))
-        }
-        host.appendChild(el("span", token.kind.cssClass).withText(text.substring(token.start, token.endExclusive)))
-        cursor = token.endExclusive
-    }
-
-    if (cursor < text.length) {
-        host.appendChild(document.createTextNode(text.substring(cursor)))
-    }
+    highlightSpans(text).forEach { host.appendChild(it.node()) }
 }
+
+private fun HighlightSpan.node(): Node =
+    kind?.let { el("span", it.cssClass).withText(text) } ?: document.createTextNode(text)
 
 private val JsonTokenKind.cssClass: String
     get() = when (this) {

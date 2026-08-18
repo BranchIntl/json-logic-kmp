@@ -46,23 +46,9 @@ class JsonTokenizerTest {
         assertEquals(1, tokens.count { it.kind == JsonTokenKind.StringValue })
     }
 
-    /** Tokenizing on every keystroke makes half-typed text the common case, not the edge case. */
     @Test
     fun survivesPartialInput() {
-        val partials = listOf(
-            "",
-            "{",
-            """{"a""",
-            """{"a"”""",
-            """{"a": tru""",
-            """{"a": 1e""",
-            "\\",
-            """["a\""",
-            "{\"a\": \"unterminated",
-            "@#$%",
-        )
-
-        partials.forEach { partial ->
+        PartialInputs.forEach { partial ->
             val tokens = JsonTokenizer.tokenize(partial)
 
             // Ranges must stay inside the input, or building the AnnotatedString throws.
@@ -87,3 +73,17 @@ class JsonTokenizerTest {
         assertEquals(JsonTokenKind.Unknown, tokens.last().kind)
     }
 }
+
+/** Tokenizing on every keystroke makes half-typed text the common case, not the edge case. */
+internal val PartialInputs = listOf(
+    "",
+    "{",
+    """{"a""",
+    """{"a"”""",
+    """{"a": tru""",
+    """{"a": 1e""",
+    "\\",
+    """["a\""",
+    "{\"a\": \"unterminated",
+    "@#$%",
+)

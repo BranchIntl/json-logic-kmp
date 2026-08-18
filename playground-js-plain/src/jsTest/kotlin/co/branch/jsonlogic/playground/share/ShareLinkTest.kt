@@ -19,14 +19,7 @@ class ShareLinkTest {
 
     @Test
     fun roundTripsAwkwardContent() {
-        val awkward = listOf(
-            SharedState("", ""),
-            SharedState("""{"cat": ["a&b=c", "#d"]}""", """{"x": "%20+/="}"""),
-            SharedState("""{"var": "ünïcøde ✓ 日本語"}""", """{"ünïcøde": "✓"}"""),
-            SharedState("{\n  \"a\": 1\n}", "{\r\n\t\"b\": 2\n}"),
-        )
-
-        awkward.forEach { state ->
+        AwkwardStates.forEach { state ->
             assertEquals(state, ShareLink.decode(ShareLink.encode(state)))
         }
     }
@@ -72,3 +65,11 @@ class ShareLinkTest {
         assertEquals(SharedState("""{"==": [1, 1]}""", ""), ShareLink.decode(encoded))
     }
 }
+
+/** Text that survives a shared link intact: URL separators, escapes, CRLF, tabs, non-Latin. */
+internal val AwkwardStates = listOf(
+    SharedState("", ""),
+    SharedState("""{"cat": ["a&b=c", "#d"]}""", """{"x": "%20+/="}"""),
+    SharedState("""{"var": "ünïcøde ✓ 日本語"}""", """{"ünïcøde": "✓"}"""),
+    SharedState("{\n  \"a\": 1\n}", "{\r\n\t\"b\": 2\n}"),
+)

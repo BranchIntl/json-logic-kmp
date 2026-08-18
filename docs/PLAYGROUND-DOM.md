@@ -50,7 +50,7 @@ through the overlay; both need a human and are scheduled for the commit-12 matri
   the data; the at-cursor insert path goes away with it.
 - [x] **5 undo across programmatic edits** — chips and operation rows write through an edit command
   so the browser's own undo stack survives them.
-- [ ] **6 extract the highlight span model** — a pure `text → spans → lines` mapping, property-tested,
+- [x] **6 extract the highlight span model** — a pure `text → spans → lines` mapping, property-tested,
   with the DOM rendering still flat.
 - [ ] **7 soft wrap** — per-line blocks with in-line numbers and break-parity CSS between the two
   layers; the sticky gutter and its horizontal-scroll machinery go away.

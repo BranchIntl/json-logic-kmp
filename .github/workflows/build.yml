@@ -65,4 +65,4 @@ jobs:
           java-version: 21
       - uses: gradle/actions/setup-gradle@v5
       - name: Playground tests and web bundle
-        run: ./gradlew :playground:wasmJsBrowserTest :playground:wasmJsBrowserDistribution
+        run: ./gradlew :playground:jsBrowserTest :playground:jsBrowserDistribution

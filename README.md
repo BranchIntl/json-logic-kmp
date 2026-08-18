@@ -25,6 +25,10 @@ and for what else to watch for before you rely on this library.
 | `iosSimulatorArm64`    |                   |
 | `wasmJs`               | Node.js runtime   |
 
+That is the whole list. The playground runs in a browser on Kotlin/JS, but it compiles the
+library's sources itself rather than resolving a coordinate — there is no `js` publication, and
+adding one is a support commitment a browser demo does not justify.
+
 Values are modeled as `kotlinx.serialization.JsonElement` on every target. A rule crosses the API
 boundary as either a `JsonElement` or a JSON string, but data is always a `JsonElement?` — parse a
 serialized data string with `Json.parseToJsonElement` first (see [Usage](#usage) below).
@@ -35,23 +39,26 @@ serialized data string with `Json.parseToJsonElement` first (see [Usage](#usage)
 example presets and a reference for every operation. Links are shareable: **Share** puts the
 current rule and data in the URL.
 
-Nothing is evaluated on a server. The playground is a [Compose
-Multiplatform](https://www.jetbrains.com/compose-multiplatform/) app in `playground/`, compiled to
-WebAssembly against this library's own `wasmJs` target, so the engine answering in the browser is
-the one that ships to every other platform. It is deployed from `main` by
-`.github/workflows/pages.yml` and is not part of any published artifact.
+Nothing is evaluated on a server. The playground is a Kotlin/JS app in `playground/` that builds
+the page out of DOM elements, with no UI framework under it. It adds
+`lib/src/commonMain/kotlin` as a source directory of its own, so the browser runs the same engine
+sources that ship to every other platform without a `js` coordinate existing to resolve. It is
+deployed from `main` by `.github/workflows/pages.yml` and is not part of any published artifact.
 
 To run it locally, with live reload:
 
 ```bash
-./gradlew :playground:wasmJsBrowserDevelopmentRun
+./gradlew :playground:jsBrowserDevelopmentRun
 ```
 
-To build the deployable bundle, into `playground/build/dist/wasmJs/productionExecutable`:
+To build the deployable bundle, into `playground/build/dist/js/productionExecutable`:
 
 ```bash
-./gradlew :playground:wasmJsBrowserDistribution
+./gradlew :playground:jsBrowserDistribution
 ```
+
+The tests run in a real browser (`./gradlew :playground:jsBrowserTest`) because most of them are
+about layout and input handling, which a DOM emulation would answer for rather than measure.
 
 ## Supported operations
 
@@ -286,6 +293,42 @@ that case behaves.
 - Android SDK, with `sdk.dir` set in `local.properties` (or `ANDROID_HOME` exported)
 - Xcode with its command line tools, only needed to build or test the `iosArm64` /
   `iosSimulatorArm64` targets
+- Chrome, for the playground's browser tests. Karma finds a standard install itself; point
+  `CHROME_BIN` at anything else
+- fontTools with woff2 support (`pip install 'fonttools[woff]' brotli`), only needed to re-cut the
+  playground's bundled font — see [The bundled font](#the-bundled-font)
+
+### The bundled font
+
+The playground ships a subset of JetBrains Mono. The full face lives in `playground/fonts/`, which
+is outside the source tree because it is the input to the cut and is never served. Re-cut it with:
+
+```bash
+pyftsubset playground/fonts/JetBrainsMono-Regular.ttf \
+  --output-file=playground/src/jsMain/resources/fonts/JetBrainsMono-Regular-subset.woff2 \
+  --flavor=woff2 --unicodes="U+0020-007E,U+00A0,U+2013-2014,U+2018-2019,U+201C-201D,U+2026" \
+  --layout-features='' --no-hinting --drop-tables+=DSIG --name-IDs='*'
+```
+
+That reproduces the committed file byte for byte. The `unicode-range` on the page's `@font-face`
+names the same codepoints and has to move with it, since anything outside the range is drawn by the
+system monospace instead. `--layout-features=''` is what leaves the ligature tables behind:
+JetBrains Mono draws `>=` as a single `≥` and `!=` as `≠`, and those are operator names the reader
+has to be able to type back after reading them.
+
+A subsetter passes over a codepoint the source face does not have without saying so, so check the
+cut rather than assuming it:
+
+```bash
+python3 -c "
+from fontTools.ttLib import TTFont
+wanted = set(range(0x20, 0x7F)) | {0xA0, 0x2013, 0x2014, 0x2018, 0x2019, 0x201C, 0x201D, 0x2026}
+cut = set(TTFont('playground/src/jsMain/resources/fonts/JetBrainsMono-Regular-subset.woff2').getBestCmap())
+print(len(wanted), 'requested;', len(wanted - cut), 'missing')
+"
+```
+
+103 requested, 0 missing, 4,888 bytes on disk.
 
 ### CI lanes
 
@@ -297,9 +340,9 @@ Every pull request runs three lanes, mirrored in `.github/workflows/build.yml`:
 | `wasm`       | `ubuntu-latest` | `./gradlew :lib:wasmJsNodeTest` |
 | `ios`        | `macos-15`      | `./gradlew :lib:iosSimulatorArm64Test :lib:klibApiCheck` |
 
-A fourth lane, `playground`, runs `./gradlew :playground:wasmJsBrowserTest
-:playground:wasmJsBrowserDistribution` on pushes to `main` only — it is a demo app rather than part
-of the library's correctness contract, and its Wasm bundling costs minutes.
+A fourth lane, `playground`, runs `./gradlew :playground:jsBrowserTest
+:playground:jsBrowserDistribution` on pushes to `main` only — it is a demo app rather than part of
+the library's correctness contract.
 
 The public API is locked with [binary-compatibility-validator](https://github.com/Kotlin/binary-compatibility-validator)
 across both the JVM and KLib (native/wasm) surfaces; a breaking change requires updating the committed
@@ -331,4 +374,4 @@ Kotlin Multiplatform port of that work.
 
 The playground bundles [JetBrains Mono](https://github.com/JetBrains/JetBrainsMono), under the SIL
 Open Font License 1.1. Its licence travels with it, in
-`playground/src/wasmJsMain/resources/JetBrainsMono-OFL.txt` and on the deployed site.
+`playground/src/jsMain/resources/fonts/JetBrainsMono-OFL.txt` and on the deployed site.

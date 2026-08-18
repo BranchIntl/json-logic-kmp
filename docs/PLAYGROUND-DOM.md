@@ -64,7 +64,7 @@ through the overlay; both need a human and are scheduled for the commit-12 matri
 - [x] **11 draw the theme and disclosure icons** — inline SVG in place of the text glyphs.
 - [x] **12 verification gate** — run every column of the IME, mobile and wrap matrix that can be run
   without a person at a keyboard, and record below what was and was not exercised.
-- [ ] **13 the swap** — the DOM module becomes `playground/`, the Compose module and its catalog
+- [x] **13 the swap** — the DOM module becomes `playground/`, the Compose module and its catalog
   entries are deleted, Pages deploys the new output, and the README and CHANGELOG land in the same
   commit so no doc is false at any boundary.
 - [ ] **14 run the playground lane on pull requests** — the only lane that compiles the library's
@@ -73,7 +73,7 @@ through the overlay; both need a human and are scheduled for the commit-12 matri
 
 ## Verification matrix
 
-Run against `playground-js-plain/build/dist/js` served over plain HTTP from the `/productionExecutable/`
+Run against the module's `build/dist/js` served over plain HTTP from the `/productionExecutable/`
 subpath, which is the path shape the site is deployed under. Three engines were reachable:
 
 - **Blink 148** — Chromium 148.0.7778.280, embedded in the Claude app's browser pane (Electron 42),

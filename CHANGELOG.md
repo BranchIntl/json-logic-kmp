@@ -21,6 +21,16 @@ engine this library ports disagree, the reference now wins.
 
 ### Changed
 
+- The playground is a plain Kotlin/JS app drawing to the DOM, where it was a Compose Multiplatform
+  app rendering through skiko on `wasmJs`. It carries the same two editors, live result panel,
+  example presets, operation reference and shareable links, and it still answers with this
+  library's own engine: it compiles `lib/src/commonMain/kotlin` as a source directory of its own,
+  so no `js` publication stands behind it. The page is **102,182 bytes over the wire against the
+  Compose build's 4,543,654**, it renders on a device with no WebGL rather than showing a blank
+  page, the editors soft-wrap instead of scrolling sideways, undo reaches the edits the examples
+  and operation rows make, and the code is drawn in a bundled subset of JetBrains Mono rather than
+  in whatever the machine answers "monospace" with. `./gradlew :playground:jsBrowserDistribution`
+  builds it, into `playground/build/dist/js/productionExecutable`.
 - Numeric results render the way ECMAScript's `Number::toString` does, which is what the reference
   implementation serializes: `{"+": [1, 2]}` now returns the JSON token `3` rather than `3.0`, and
   the plain-decimal range widens from `[1e-3, 1e7)` to `[1e-6, 1e21)`. Numbers are still normalized

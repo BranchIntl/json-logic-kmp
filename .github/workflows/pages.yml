@@ -34,10 +34,14 @@ jobs:
       # Only here to fail legibly, at this step, when Pages has not been enabled.
       - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
       - name: Build the playground distribution
-        run: ./gradlew :playground:wasmJsBrowserDistribution
+        run: ./gradlew :playground:jsBrowserDistribution
+      # A wrong-but-existing directory — the development bundle, say — would upload and deploy
+      # without a word, so the page the site is served from is confirmed before it is uploaded.
+      - name: Check the distribution is the one we mean to publish
+        run: test -f playground/build/dist/js/productionExecutable/index.html
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
-          path: playground/build/dist/wasmJs/productionExecutable
+          path: playground/build/dist/js/productionExecutable
 
   deploy:
     needs: build

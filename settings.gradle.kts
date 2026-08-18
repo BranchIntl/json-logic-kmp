@@ -17,4 +17,3 @@ rootProject.name = "json-logic-kmp"
 
 include(":lib")
 include(":playground")
-include(":playground-js-plain")

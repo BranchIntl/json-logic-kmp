@@ -1,6 +1,7 @@
 package co.branch.jsonlogic.playground.editor
 
 import kotlinx.browser.document
+import org.w3c.dom.HTMLElement
 import org.w3c.dom.HTMLTextAreaElement
 import org.w3c.dom.asList
 import org.w3c.dom.events.Event
@@ -8,6 +9,7 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 
 class EditorTest {
 
@@ -17,17 +19,24 @@ class EditorTest {
     private lateinit var editor: Editor
     private lateinit var field: HTMLTextAreaElement
 
+    /** Stands in for an example chip, the kind of control that asks for a replacement. */
+    private lateinit var chip: HTMLElement
+
     @BeforeTest
     fun mountEditor() {
         editor = Editor("Rule") { changes.add(it) }
         document.body?.appendChild(editor.root)
         field = editor.root.querySelector("textarea") as HTMLTextAreaElement
         field.addEventListener("input", { inputTypes.add(it.inputType) })
+        chip = document.createElement("button") as HTMLElement
+        document.body?.appendChild(chip)
     }
 
+    /** Removing both focusable elements hands focus back to `<body>` for the next test. */
     @AfterTest
     fun unmountEditor() {
         editor.root.remove()
+        chip.remove()
     }
 
     @Test
@@ -85,15 +94,64 @@ class EditorTest {
         assertEquals("ltr", field.getAttribute("dir"))
     }
 
+    /**
+     * A reader undoes with Cmd-Z, and Karma cannot deliver one: a key event built in script is
+     * untrusted, so it runs no editing command, and the command a real Cmd-Z carries is attached
+     * to the event by the browser outside the page. What is reachable is the stack that shortcut
+     * pops, so this covers the entry being on it and the edit coming back — not the shortcut
+     * itself, and not that the two agree, which is true on Blink and false on WebKit and was
+     * measured against the built page rather than here.
+     *
+     * The replacement drops the focus it borrowed, so undoing from here also covers the entry
+     * surviving that.
+     */
     @Test
     fun theReplacementCanBeUndone() {
         editor.setInitialText("before")
+        (document.activeElement as? HTMLElement)?.blur()
 
         editor.setText("after")
-        field.focus()
+        assertNotEquals<Any?>(field, document.activeElement, "the field kept focus, so nothing is blurred")
         document.execCommand("undo", false, "")
 
         assertEquals("before", field.value)
+        // The model and the highlighted copy follow an undo only because the command fires input.
+        assertEquals("before", changes.last())
+    }
+
+    /**
+     * An engine that does not focus a button when one is tapped leaves `<body>` holding focus, and
+     * focus cannot be moved onto a `<body>`, so a field that kept what it borrowed for the command
+     * would raise a phone's keyboard on every chip and every operation row.
+     */
+    @Test
+    fun theReplacementLeavesAnUnfocusedFieldUnfocused() {
+        editor.setInitialText("before")
+        (document.activeElement as? HTMLElement)?.blur()
+
+        editor.setText("after")
+
+        assertNotEquals<Any?>(field, document.activeElement)
+    }
+
+    @Test
+    fun theReplacementPutsFocusBackOnTheControlThatAskedForIt() {
+        editor.setInitialText("before")
+        chip.focus()
+
+        editor.setText("after")
+
+        assertEquals<Any?>(chip, document.activeElement)
+    }
+
+    @Test
+    fun theReplacementKeepsFocusInAFieldThatHadIt() {
+        editor.setInitialText("before")
+        field.focus()
+
+        editor.setText("after")
+
+        assertEquals<Any?>(field, document.activeElement)
     }
 
     private fun lineNumbers(): List<String> =

@@ -68,12 +68,16 @@ internal class Editor(label: String, private val onChange: (String) -> Unit) {
      * would make each example chip and each operation row a one-way door out of whatever the
      * reader had typed. Any later editing feature — Tab-to-indent is the obvious one — has to come
      * through here for the same reason, never through `preventDefault` and an assignment.
+     *
+     * Focus ends where the call found it, so a replacement never puts a reader into a field they
+     * were not already in.
      */
     fun setText(text: String) {
         if (textArea.value == text) return
 
-        // Whether a button takes focus when it is clicked differs by engine, so focus is put back
-        // where it was; that is what keeps a chip tap from raising the keyboard on a phone.
+        // The command edits whatever holds focus, so the field has to hold it for the length of
+        // the edit and hand it back afterwards — a reader who reached a chip by keyboard keeps
+        // their place in the tab order.
         val focused = document.activeElement as? HTMLElement
         textArea.focus()
         textArea.setSelectionRange(0, textArea.value.length)
@@ -92,7 +96,13 @@ internal class Editor(label: String, private val onChange: (String) -> Unit) {
 
         textArea.setSelectionRange(0, 0)
         root.scrollTop = 0.0
+
+        // Handing it back is not enough on its own. An engine that does not focus a button when
+        // one is tapped leaves `activeElement` reporting the `<body>`, and `focus()` on a `<body>`
+        // does nothing, so the field would keep what it borrowed — on a phone, the keyboard rising
+        // over the result on every chip and every operation row.
         focused?.focus()
+        if (focused != textArea && document.activeElement == textArea) textArea.blur()
     }
 
     /**

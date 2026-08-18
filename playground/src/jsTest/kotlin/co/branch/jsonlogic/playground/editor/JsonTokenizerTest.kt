@@ -51,7 +51,8 @@ class JsonTokenizerTest {
         PartialInputs.forEach { partial ->
             val tokens = JsonTokenizer.tokenize(partial)
 
-            // Ranges must stay inside the input, or building the AnnotatedString throws.
+            // Every range is cut out of the input with substring, which throws on one that runs
+            // past the end.
             tokens.forEach { token ->
                 assertTrue(
                     token.start in 0..partial.length && token.endExclusive in token.start..partial.length,

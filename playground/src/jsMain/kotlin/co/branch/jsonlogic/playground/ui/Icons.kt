@@ -24,8 +24,9 @@ internal const val SunIcon =
 
 /**
  * One closed crescent: the long way round a disc of radius 6.72, then back along the arc of the
- * circle that bites it. Not two circles filled even-odd — the biting circle is centred outside
- * the disc and reaches well past it, so even-odd would fill that outside part as well.
+ * circle that bites it. Not two circles filled even-odd — the biting circle reaches about 11.2
+ * from the disc's centre, well past its rim, and even-odd would fill that overhang as a region of
+ * its own, hanging a lens off the back of the crescent.
  */
 internal const val MoonIcon =
     """<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">""" +

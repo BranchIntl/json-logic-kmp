@@ -57,8 +57,9 @@ To build the deployable bundle, into `playground/build/dist/js/productionExecuta
 ./gradlew :playground:jsBrowserDistribution
 ```
 
-The tests run in a real browser (`./gradlew :playground:jsBrowserTest`) because most of them are
-about layout and input handling, which a DOM emulation would answer for rather than measure.
+The tests run in a real browser (`./gradlew :playground:jsBrowserTest`). A handful measure layout
+and input, which a DOM emulation would answer for rather than measure; the rest are ordinary Kotlin
+and run there because the target declares `browser()` alone, leaving no Node lane to put them on.
 
 ## Supported operations
 

@@ -39,11 +39,7 @@ data class Evaluation(
     val outcome: EvalOutcome,
     val ruleValid: Boolean,
     val dataValid: Boolean,
-) {
-    companion object {
-        val Blank = Evaluation(EvalOutcome.Empty, ruleValid = true, dataValid = true)
-    }
-}
+)
 
 fun evaluate(jsonLogic: JsonLogic, ruleText: String, dataText: String): Evaluation {
     var rule: JsonLogicNode? = null

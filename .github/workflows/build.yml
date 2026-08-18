@@ -51,11 +51,10 @@ jobs:
       - name: iOS simulator tests
         run: ./gradlew :lib:iosSimulatorArm64Test :lib:klibApiCheck
 
-  # Main only: bundling Wasm costs minutes, and the playground is a demo rather than part of the
-  # library's correctness contract. Browser rather than Node because Compose UI links skiko, which
-  # cannot load under Node.
+  # The playground compiles lib/src/commonMain/kotlin as a source directory of its own rather than
+  # resolving a publication, so this is the only lane that builds the library for a browser. A
+  # library change that does not compile on Kotlin/JS would reach main unnoticed without it.
   playground:
-    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -65,4 +64,4 @@ jobs:
           java-version: 21
       - uses: gradle/actions/setup-gradle@v5
       - name: Playground tests and web bundle
-        run: ./gradlew :playground:wasmJsBrowserTest :playground:wasmJsBrowserDistribution
+        run: ./gradlew :playground:jsBrowserTest :playground:jsBrowserDistribution

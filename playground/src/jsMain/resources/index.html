@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>JsonLogic Playground</title>
+    <meta name="description" content="Try JsonLogic expressions in your browser, evaluated by json-logic-kmp compiled to JavaScript.">
+    <!-- crossorigin is not optional here: a font is fetched in CORS mode whatever origin it is on,
+         and without the attribute the preload fetches a second copy the @font-face cannot use. -->
+    <link rel="preload" href="fonts/JetBrainsMono-Regular-subset.woff2" as="font" type="font/woff2" crossorigin>
+    <style>
+        /* Subset to what JSON and this page put on screen. A character from outside that range
+           has no glyph here and falls through to the system monospace, which is a character
+           rather than a box. Swapping the face in late costs a reflow and nothing else, because
+           nothing in this layout is measured: the editor's two layers are laid out by the same
+           declarations and reflow together, and the line numbers ride inside the lines they
+           number. */
+        @font-face {
+            font-family: "JetBrains Mono";
+            src: url("fonts/JetBrainsMono-Regular-subset.woff2") format("woff2");
+            font-weight: 400;
+            font-style: normal;
+            font-display: swap;
+            unicode-range: U+0020-007E, U+00A0, U+2013-2014, U+2018-2019, U+201C-201D, U+2026;
+        }
+
+        :root {
+            /* Named per theme rather than left as `light dark`, so the reader's own choice reaches
+               the scrollbars too and not only the parts painted here. */
+            color-scheme: light;
+            --primary: #5B5BD6;
+            --on-primary: #ffffff;
+            --background: #F7F7FA;
+            --on-background: #16181D;
+            --on-surface: #16181D;
+            --on-surface-variant: #6B6F7B;
+            --error: #C7283A;
+            --panel: #ffffff;
+            --panel-border: #E3E4EA;
+            --gutter: #AFB3BE;
+            --chip: #EFEFF4;
+            --ok: #14895D;
+            --syn-key: #0550AE;
+            --syn-string: #0A7B4B;
+            --syn-number: #953800;
+            --syn-literal: #8250DF;
+            --syn-punctuation: #57606A;
+            --syn-invalid: #CF222E;
+        }
+
+        /* The theme is an attribute the app writes, so until the bundle runs there is none, and a
+           dark-mode reader would watch a white page for the length of the download. Only the two
+           colours the boot screen paints are needed here; the app sets the rest a frame later. */
+        @media (prefers-color-scheme: dark) {
+            html:not([data-theme]) {
+                color-scheme: dark;
+                --background: #131519;
+                --on-background: #E8EAEF;
+            }
+        }
+
+        html[data-theme="dark"] {
+            color-scheme: dark;
+            --primary: #9B9BF5;
+            --on-primary: #1B1B33;
+            --background: #131519;
+            --on-background: #E8EAEF;
+            --on-surface: #E8EAEF;
+            --on-surface-variant: #9AA0AC;
+            --error: #FF8A93;
+            --panel: #1B1E24;
+            --panel-border: #2B2F37;
+            --gutter: #565C68;
+            --chip: #23272E;
+            --ok: #3FC98E;
+            --syn-key: #79C0FF;
+            --syn-string: #7EE787;
+            --syn-number: #FFA657;
+            --syn-literal: #D2A8FF;
+            --syn-punctuation: #8B949E;
+            --syn-invalid: #FF7B72;
+        }
+
+        * { box-sizing: border-box; }
+
+        /* Text inflation is applied per block, so it can scale an editor's two layers by different
+           amounts and pull them apart. */
+        html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background: var(--background);
+            color: var(--on-background);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 13px;
+        }
+
+        #playground { height: 100%; }
+
+        .app {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            height: 100%;
+            padding: 16px 22px;
+        }
+
+        /* ---- header ---- */
+        .header { display: flex; align-items: center; gap: 4px; }
+        .header .titles { flex: 1; min-width: 0; }
+        .header h1 {
+            margin: 0;
+            font-size: 19px;
+            font-weight: 600;
+            letter-spacing: -0.2px;
+            color: var(--on-background);
+        }
+        .header .subtitle { font-size: 12px; color: var(--on-surface-variant); }
+
+        .icon-button {
+            width: 34px; height: 34px;
+            display: inline-flex; align-items: center; justify-content: center;
+            border: 0; border-radius: 50%;
+            background: transparent; color: var(--on-surface-variant);
+            cursor: pointer;
+        }
+        .icon-button:hover { background: var(--chip); }
+
+        .text-button {
+            border: 0; background: transparent; cursor: pointer;
+            color: var(--primary); font-size: 12px; font-family: inherit;
+            padding: 8px 12px; border-radius: 7px; text-decoration: none;
+        }
+        .text-button:hover { background: var(--chip); }
+
+        /* ---- chips ---- */
+        .label {
+            font-size: 11px; font-weight: 500; letter-spacing: 0.7px;
+            color: var(--on-surface-variant); text-transform: uppercase;
+        }
+        .examples { display: flex; align-items: center; gap: 7px; overflow-x: auto; }
+        .examples .label { padding-right: 4px; flex: 0 0 auto; }
+
+        .chip {
+            flex: 0 0 auto;
+            border: 0; border-radius: 7px;
+            padding: 6px 11px;
+            background: var(--chip); color: var(--on-surface);
+            font-family: inherit; font-size: 12px; white-space: nowrap;
+            cursor: pointer;
+        }
+        .chip.selected { background: var(--primary); color: var(--on-primary); }
+
+        /* ---- panels ---- */
+        .editors { display: flex; gap: 16px; flex: 1; min-height: 0; }
+        .editors .left { display: flex; flex-direction: column; gap: 14px; flex: 1; min-width: 0; }
+        .editors .left .panel:nth-child(1) { flex: 3; }
+        .editors .left .panel:nth-child(2) { flex: 2; }
+        .editors > .panel { flex: 1; min-width: 0; }
+
+        .panel { display: flex; flex-direction: column; min-height: 0; }
+        .panel-head {
+            display: flex; align-items: center; gap: 8px;
+            padding-bottom: 6px;
+        }
+        .panel-head .label { flex: 1; }
+        .panel-body {
+            flex: 1; min-height: 0;
+            border-radius: 10px;
+            background: var(--panel);
+            border: 1px solid var(--panel-border);
+            overflow: hidden;
+        }
+
+        .status { display: flex; align-items: center; gap: 5px; }
+        .status .dot { width: 6px; height: 6px; border-radius: 50%; }
+        .status .text {
+            font-size: 11px; font-weight: 500; letter-spacing: 0.7px;
+            color: var(--on-surface-variant); text-transform: uppercase; white-space: nowrap;
+        }
+        .type-name {
+            font-size: 11px; font-weight: 500; letter-spacing: 0.7px;
+            color: var(--on-surface-variant); text-transform: uppercase;
+        }
+
+        /* ---- editor: a transparent textarea over a highlighted list of lines ---- */
+        .editor {
+            --gutter-digits: 2;
+            --gutter-width: calc(var(--gutter-digits) * 1ch);
+            --code-inset: calc(var(--gutter-width) + 24px);
+            /* A custom property because a line's minimum height and its used line-height have to
+               be the same number by construction, not by two declarations agreeing. */
+            --line-height: 21px;
+            height: 100%;
+            overflow: auto;
+            /* Hold the scrollbar's width open: letting it appear narrows the wrap width, which can
+               remove the line that summoned it, which removes the scrollbar. */
+            scrollbar-gutter: stable;
+            padding: 10px 0;
+            font-size: 13px;
+            line-height: var(--line-height);
+        }
+
+        .mono { font-size: 13px; line-height: 21px; }
+
+        /* Everything monospaced takes the same face: the result body, the failure detail and path
+           and the operation pills all read as one column of code with the editors, and a face that
+           reached only the editors would make the panels visibly disagree. */
+        .mono, .editor {
+            font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+                         "Liberation Mono", monospace;
+            /* JetBrains Mono draws >= as ≥ and != as ≠, and those are operator names the reader
+               has to be able to type back. The subset carries no feature tables, so this is here
+               for the faces underneath it in the stack. */
+            font-variant-ligatures: none;
+            font-feature-settings: "liga" 0, "calt" 0;
+            tab-size: 2;
+        }
+
+        .code {
+            position: relative;
+            min-height: 100%;
+            padding: 0 12px 0 var(--code-inset);
+        }
+
+        /* The two layers have to break the same text in the same places, and they start from
+           different user-agent defaults, so everything that can move a break point is declared for
+           both of them here. The font shorthand resets the ligature and kerning properties, which
+           is why those come after it. */
+        .code .line, .code textarea {
+            font: inherit;
+            font-variant-ligatures: none;
+            font-feature-settings: "liga" 0, "calt" 0;
+            font-kerning: none;
+            line-height: var(--line-height);
+            letter-spacing: 0;
+            word-spacing: 0;
+            tab-size: 2;
+            white-space: pre-wrap;
+            overflow-wrap: break-word;
+            word-break: normal;
+            hyphens: none;
+            text-wrap: wrap;
+            direction: ltr;
+        }
+
+        .code .highlight { margin: 0; color: var(--on-surface); pointer-events: none; }
+
+        /* An empty line still occupies one, which is how a trailing newline keeps this layer the
+           same height as the textarea. */
+        .code .line { position: relative; min-height: var(--line-height); }
+
+        /* Each number rides inside its own line's box, pulled out into the code column's padding.
+           The browser puts it at the top of that box and lets a wrapped line grow underneath it,
+           so nothing has to be measured — and nothing has to be re-measured after a font swap, a
+           zoom, a rotation or a resize. */
+        .code .ln {
+            position: absolute;
+            left: calc(-1 * var(--code-inset));
+            width: var(--gutter-width);
+            text-align: right;
+            color: var(--gutter);
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .code textarea {
+            position: absolute;
+            inset: 0;
+            /* inset: 0 sizes this to .code's padding box, so repeating .code's padding lands the
+               two content boxes exactly on top of each other. Equal content widths are what make
+               both layers wrap in the same places. */
+            padding: inherit;
+            margin: 0;
+            border: 0; outline: 0; resize: none;
+            overflow: hidden;
+            background: transparent;
+            color: transparent;
+            caret-color: var(--primary);
+            -webkit-text-fill-color: transparent;
+        }
+        /* The field's own text is transparent, so this tint is the whole of what a selection
+           looks like, and it has to follow the theme the rest of the page follows. */
+        .code textarea::selection { background: color-mix(in srgb, var(--primary) 28%, transparent); }
+
+        .tok-key { color: var(--syn-key); }
+        .tok-string { color: var(--syn-string); }
+        .tok-number { color: var(--syn-number); }
+        .tok-literal { color: var(--syn-literal); }
+        .tok-punctuation { color: var(--syn-punctuation); }
+        .tok-invalid { color: var(--syn-invalid); }
+
+        /* ---- result ---- */
+        .result { height: 100%; overflow: auto; padding: 10px 14px; }
+        .result .placeholder {
+            height: 100%; display: flex; align-items: center; justify-content: center;
+            color: var(--on-surface-variant); font-size: 12px; text-align: center;
+        }
+        .result pre { margin: 0; white-space: pre; color: var(--on-surface); }
+        .failure { display: flex; flex-direction: column; gap: 8px; padding: 2px 0; }
+        .failure .kind {
+            font-size: 11px; font-weight: 500; letter-spacing: 0.7px;
+            color: var(--error); text-transform: uppercase;
+        }
+        .failure .detail { color: var(--on-surface); white-space: pre-wrap; }
+        .failure .path { color: var(--on-surface-variant); }
+
+        /* ---- operations reference ---- */
+        .ops-toggle {
+            display: inline-flex; align-items: center; gap: 7px;
+            border: 0; background: transparent; cursor: pointer;
+            padding: 5px 6px; border-radius: 7px;
+        }
+        .ops-toggle:hover { background: var(--chip); }
+        .ops-toggle .chevron {
+            color: var(--on-surface-variant);
+            transition: transform 120ms ease;
+        }
+        .ops-toggle.expanded .chevron { transform: rotate(90deg); }
+
+        .ops-body { max-height: 260px; overflow-y: auto; padding: 4px 0; }
+        .ops-group { margin-bottom: 10px; }
+        /* Sentence case: these are phrases — "Logic and boolean", "Data access" — and a phrase set
+           in caps reads as a banner rather than as the name of the group under it. */
+        .ops-group > .name {
+            display: block; padding: 0 6px 2px;
+            font-size: 11px; font-weight: 500; letter-spacing: 0.7px;
+            color: var(--gutter);
+        }
+        .ops-rows { display: flex; flex-wrap: wrap; gap: 4px; }
+        .op-row {
+            width: 348px; display: flex; align-items: center; gap: 8px;
+            border: 0; background: transparent; cursor: pointer; text-align: left;
+            padding: 4px 6px; border-radius: 6px; font-family: inherit;
+        }
+        .op-row:hover { background: var(--chip); }
+        .op-row .symbol-cell { width: 112px; flex: 0 0 auto; }
+        .op-row .symbol {
+            display: inline-block; border-radius: 4px; padding: 2px 6px;
+            background: var(--chip); color: var(--syn-key);
+        }
+        .op-row .summary { font-size: 12px; color: var(--on-surface-variant); }
+
+        .footnote { font-size: 12px; color: var(--on-surface-variant); }
+
+        @media (max-width: 899px) {
+            .app { height: auto; min-height: 100%; padding: 16px 14px; }
+            .header .subtitle { display: none; }
+            .editors { flex-direction: column; flex: none; }
+            .editors .left { display: contents; }
+            .editors .left .panel:nth-child(1) { flex: none; height: 230px; }
+            .editors .left .panel:nth-child(2) { flex: none; height: 150px; }
+            .editors > .panel { flex: none; height: 220px; }
+
+            /* Safari zooms the page when a field it is focusing has text under 16px, and it does
+               not zoom back out. Only the editors are focusable, so only they grow; the result
+               panel and the operation pills are read, not typed into. */
+            .editor { font-size: 16px; --line-height: 26px; }
+        }
+
+        .boot {
+            display: flex; align-items: center; justify-content: center;
+            height: 100%; color: #8b8f9a; font-size: 15px;
+        }
+    </style>
+</head>
+<body>
+<div id="playground">
+    <div class="boot">Loading the JsonLogic playground&hellip;</div>
+</div>
+<noscript>
+    <p style="padding: 2rem; color: #8b8f9a">This playground needs JavaScript enabled.</p>
+</noscript>
+<!-- Relative on purpose: the site is served from the /json-logic-kmp/ project subpath. -->
+<script src="playground.js"></script>
+</body>
+</html>

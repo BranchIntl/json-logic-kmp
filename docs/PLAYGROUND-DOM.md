@@ -67,7 +67,7 @@ through the overlay; both need a human and are scheduled for the commit-12 matri
 - [x] **13 the swap** — the DOM module becomes `playground/`, the Compose module and its catalog
   entries are deleted, Pages deploys the new output, and the README and CHANGELOG land in the same
   commit so no doc is false at any boundary.
-- [ ] **14 run the playground lane on pull requests** — the only lane that compiles the library's
+- [x] **14 run the playground lane on pull requests** — the only lane that compiles the library's
   sources for a browser, so it is the guard against source-directory drift.
 - [ ] **15 remove this doc**.
 

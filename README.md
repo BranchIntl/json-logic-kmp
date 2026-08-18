@@ -332,17 +332,19 @@ print(len(wanted), 'requested;', len(wanted - cut), 'missing')
 
 ### CI lanes
 
-Every pull request runs three lanes, mirrored in `.github/workflows/build.yml`:
+Every pull request runs four lanes, mirrored in `.github/workflows/build.yml`:
 
 | Lane         | Runner       | Command(s) |
 |--------------|--------------|------------|
 | `jvm-android`| `ubuntu-latest` | `./gradlew :lib:jvmTest :lib:testAndroidHostTest :lib:assemble :lib:apiCheck` |
 | `wasm`       | `ubuntu-latest` | `./gradlew :lib:wasmJsNodeTest` |
 | `ios`        | `macos-15`      | `./gradlew :lib:iosSimulatorArm64Test :lib:klibApiCheck` |
+| `playground` | `ubuntu-latest` | `./gradlew :playground:jsBrowserTest :playground:jsBrowserDistribution` |
 
-A fourth lane, `playground`, runs `./gradlew :playground:jsBrowserTest
-:playground:jsBrowserDistribution` on pushes to `main` only — it is a demo app rather than part of
-the library's correctness contract.
+The `playground` lane earns its place by compiling the library rather than by exercising the demo:
+the playground takes `lib/src/commonMain/kotlin` as a source directory of its own, so it is the
+only lane that builds the library for a browser, and a change that does not compile on Kotlin/JS
+would reach `main` unnoticed without it.
 
 The public API is locked with [binary-compatibility-validator](https://github.com/Kotlin/binary-compatibility-validator)
 across both the JVM and KLib (native/wasm) surfaces; a breaking change requires updating the committed

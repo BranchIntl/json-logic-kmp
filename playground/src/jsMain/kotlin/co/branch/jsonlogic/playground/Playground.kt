@@ -17,6 +17,7 @@ import kotlinx.browser.document
 import kotlinx.browser.window
 import org.w3c.dom.HTMLAnchorElement
 import org.w3c.dom.HTMLElement
+import org.w3c.dom.events.Event
 import org.w3c.dom.get
 
 private const val RepositoryUrl = "https://github.com/BranchIntl/json-logic-kmp"
@@ -46,6 +47,11 @@ internal class Playground {
     private var debounce = 0
     private var shareReset = 0
 
+    // Someone who changes their appearance setting at sundown has said what they want, and a page
+    // left open since morning should hear it. Until they say otherwise here: a reader who has used
+    // the toggle has said something more specific, which the system does not override.
+    private val followSystemAppearance: (Event) -> Unit = { if (darkOverride == null) applyTheme() }
+
     private lateinit var ruleEditor: Editor
     private lateinit var dataEditor: Editor
     private lateinit var ruleStatus: HTMLElement
@@ -71,10 +77,7 @@ internal class Playground {
         root.appendChild(app)
 
         applyTheme()
-        // Someone who changes their appearance setting at sundown has said what they want, and a
-        // page left open since morning should hear it. Until they say otherwise here: a reader who
-        // has used the toggle has said something more specific, which the system does not override.
-        systemDark.addEventListener("change", { if (darkOverride == null) applyTheme() })
+        systemDark.addEventListener("change", followSystemAppearance)
 
         ruleEditor.setInitialText(ruleText)
         dataEditor.setInitialText(dataText)
@@ -88,6 +91,15 @@ internal class Playground {
         // things that handler keeps current are brought up to date here instead.
         syncExampleChips()
         evaluateNow()
+    }
+
+    /**
+     * Detaches the appearance listener, which sits on the system setting rather than on anything
+     * this class built and so outlives the removal of the host element. The mounted DOM is left
+     * standing, for whoever owns that element to clear.
+     */
+    fun unmount() {
+        systemDark.removeEventListener("change", followSystemAppearance)
     }
 
     // ---- header ----
@@ -280,8 +292,10 @@ internal class Playground {
     private fun operationsReference(): HTMLElement {
         val host = el("div")
         opsBody = el("div", "ops-body")
+        opsBody.id = "operations-reference"
 
         opsToggle = el("button", "ops-toggle")
+        opsToggle.setAttribute("aria-controls", opsBody.id)
         opsToggle.appendChild(icon(ChevronIcon))
         opsToggle.appendChild(el("span", "label").withText("Operations"))
         opsToggle.addEventListener("click", {

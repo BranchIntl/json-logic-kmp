@@ -20,6 +20,7 @@ internal fun HTMLElement.withText(text: String): HTMLElement {
 
 internal fun button(className: String, label: String, onClick: () -> Unit): HTMLElement {
     val element = document.createElement("button") as HTMLButtonElement
+    element.type = "button"
     element.className = className
     element.textContent = label
     element.addEventListener("click", { onClick() })

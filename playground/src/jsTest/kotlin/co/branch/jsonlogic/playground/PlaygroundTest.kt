@@ -17,6 +17,7 @@ import kotlin.test.assertTrue
 class PlaygroundTest {
 
     private lateinit var host: HTMLElement
+    private var playground: Playground? = null
 
     @BeforeTest
     fun addHost() {
@@ -25,9 +26,13 @@ class PlaygroundTest {
         document.body?.appendChild(host)
     }
 
-    /** The fragment outlives the page Karma runs every suite on, so it is cleared rather than left. */
+    /**
+     * Karma runs every suite on one page, so what a mount leaves outside the host — its listener on
+     * the appearance setting, the fragment — is taken back rather than left for the next test.
+     */
     @AfterTest
-    fun removeHost() {
+    fun unmountApp() {
+        playground?.unmount()
         host.remove()
         window.location.hash = ""
     }
@@ -68,9 +73,14 @@ class PlaygroundTest {
     }
 
     @Test
-    fun theOperationsDisclosureSaysWhetherItIsOpen() {
+    fun theOperationsDisclosureSaysWhatItOpensAndWhetherItIsOpen() {
         mount()
         val toggle = host.querySelector(".ops-toggle") as HTMLElement
+        assertEquals(
+            host.querySelector(".ops-body"),
+            document.getElementById(toggle.getAttribute("aria-controls").orEmpty()),
+            "aria-controls names no element, or not the panel",
+        )
         assertEquals("false", toggle.getAttribute("aria-expanded"))
 
         toggle.click()
@@ -78,7 +88,9 @@ class PlaygroundTest {
         assertEquals("true", toggle.getAttribute("aria-expanded"))
     }
 
-    private fun mount() = Playground().mount()
+    private fun mount() {
+        playground = Playground().apply { mount() }
+    }
 
     private fun selectedChipLabels(): List<String> =
         host.querySelectorAll(".examples .chip.selected").asList().map { it.textContent.orEmpty() }

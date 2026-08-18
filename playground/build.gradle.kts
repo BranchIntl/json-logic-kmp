@@ -45,8 +45,16 @@ val generateStylesheetSource by tasks.registering {
     outputs.dir(sourceDir)
 
     doLast {
+        val markup = page.asFile.readText()
+        // substringAfter and substringBefore return their whole input when the delimiter is
+        // absent, so without this a marker that moved would emit the page itself as the
+        // stylesheet, and the first sign of it would be the layout suite measuring against markup.
+        listOf("<style>", "</style>").forEach { marker ->
+            check(marker in markup) { "${page.asFile} holds no $marker to slice the stylesheet at" }
+        }
+
         val inlined = "data:font/woff2;base64," + Base64.getEncoder().encodeToString(face.asFile.readBytes())
-        val css = page.asFile.readText()
+        val css = markup
             .substringAfter("<style>")
             .substringBefore("</style>")
             .replace(faceUrl, inlined)

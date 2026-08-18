@@ -6,15 +6,21 @@ import kotlinx.browser.document
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.HTMLStyleElement
 import org.w3c.dom.HTMLTextAreaElement
+import kotlin.js.Promise
 import kotlin.math.abs
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
+/** The face the stylesheet declares, at the size the editors set. */
+private const val MonospaceFace = """13px "JetBrains Mono""""
+
 /**
  * The editor's whole design rests on the browser breaking the same text at the same places in two
  * elements, which only the shipped declarations decide, so this suite installs them and measures.
+ * The face is one of those declarations and the one every measurement is made of, so its bytes
+ * travel inside the stylesheet and nothing here measures until it has loaded.
  */
 class EditorLayoutTest {
 
@@ -45,7 +51,7 @@ class EditorLayoutTest {
     }
 
     @Test
-    fun theLayersAgreeOnTheHeightOfAWrappedLine() {
+    fun theLayersAgreeOnTheHeightOfAWrappedLine(): Promise<Unit> = withTheFaceLoaded {
         editor.setInitialText("x")
         val oneLine = highlightHeight()
 
@@ -56,6 +62,24 @@ class EditorLayoutTest {
             abs(highlightHeight() - fieldHeight()) <= 1.0,
             "highlight ${highlightHeight()} against textarea ${fieldHeight()}",
         )
+    }
+
+    /**
+     * A face that does not arrive is substituted rather than reported, and the measurements above
+     * would go on passing about some other font.
+     */
+    @Test
+    fun theFaceTheStylesheetDeclaresIsTheOneLoaded(): Promise<Unit> = withTheFaceLoaded {
+        val loaded: Boolean = document.asDynamic().fonts.check(MonospaceFace)
+
+        assertTrue(loaded, "the stylesheet's own face is not the one being measured")
+    }
+
+    /** Fonts load asynchronously even with their bytes at hand, and a fallback measures differently. */
+    private fun withTheFaceLoaded(measure: () -> Unit): Promise<Unit> {
+        val loading: Promise<Array<Any?>> = document.asDynamic().fonts.load(MonospaceFace)
+
+        return loading.then { measure() }
     }
 
     private fun highlightHeight(): Double =

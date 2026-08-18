@@ -1,3 +1,5 @@
+import java.util.Base64
+
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
 }
@@ -27,15 +29,27 @@ val stageEngineNumberTests by tasks.registering(Sync::class) {
  * Hands the shipped stylesheet to the browser tests, which run on a page Karma assembles rather
  * than on `index.html`. A layout test needs the real declarations: one that carried its own copy
  * of them would keep passing while the stylesheet moved out from under it.
+ *
+ * The monospace face rides along as its own bytes. Karma serves the tests from a directory that
+ * holds no `fonts/`, so the relative URL the page uses resolves to nothing there, and a face that
+ * does not arrive is not an error — it is the fallback face, quietly measured instead, in the one
+ * suite whose numbers are made of text metrics.
  */
 val generateStylesheetSource by tasks.registering {
     val page = layout.projectDirectory.file("src/jsMain/resources/index.html")
+    val faceUrl = "fonts/JetBrainsMono-Regular-subset.woff2"
+    val face = layout.projectDirectory.file("src/jsMain/resources/$faceUrl")
     val sourceDir = layout.buildDirectory.dir("generated-stylesheet")
     inputs.file(page)
+    inputs.file(face)
     outputs.dir(sourceDir)
 
     doLast {
-        val css = page.asFile.readText().substringAfter("<style>").substringBefore("</style>")
+        val inlined = "data:font/woff2;base64," + Base64.getEncoder().encodeToString(face.asFile.readBytes())
+        val css = page.asFile.readText()
+            .substringAfter("<style>")
+            .substringBefore("</style>")
+            .replace(faceUrl, inlined)
         val file = sourceDir.get().asFile.resolve("co/branch/jsonlogic/playground/Stylesheet.kt")
         file.parentFile.mkdirs()
         file.writeText(

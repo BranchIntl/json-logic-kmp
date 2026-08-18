@@ -34,10 +34,15 @@ class ShareLinkTest {
 
     @Test
     fun encodingIsUrlSafeAndUnpadded() {
-        // '+', '/' and '=' would all have to be percent-escaped again inside a URL.
         val encoded = ShareLink.encode(SharedState("""{"substr": ["????>>>>", 0]}""", """{"a": "~~~~"}"""))
+        // The keys carry the only '=' the fragment is allowed, so they come off before the scan.
+        val payloads = encoded.split('&').map { it.substringAfter('=') }
 
-        assertTrue(encoded.none { it in "+/=" || it.isWhitespace() } || encoded.count { it == '=' } == 2, encoded)
+        assertEquals(2, payloads.size, encoded)
+        // '+', '/' and '=' would all have to be percent-escaped again inside a URL.
+        payloads.forEach { payload ->
+            assertTrue(payload.none { it in "+/=" || it.isWhitespace() }, payload)
+        }
         assertTrue(encoded.startsWith("r="), encoded)
     }
 

@@ -354,8 +354,10 @@ publishes nothing and has no dump.
 
 ### Release process
 
-1. On `main`, bump `version` in `lib/build.gradle.kts`, date the release's heading in
-   `CHANGELOG.md`, and update the coordinates in [Installation](#installation).
+1. On `main`, bump `version` in `lib/build.gradle.kts`, rename the `## [Unreleased]` heading in
+   `CHANGELOG.md` to the version being released and its date, open a fresh empty `## [Unreleased]`
+   above it, and update the coordinates in [Installation](#installation). The empty heading is what
+   gives the next change somewhere to land without deciding a version number for it.
 2. From the `main` branch, dispatch the **Publish** workflow (`.github/workflows/publish.yml`) —
    either from the Actions tab or with `gh workflow run publish.yml --ref main`.
 3. The workflow builds and tests every macOS-buildable lane, then publishes all publications to

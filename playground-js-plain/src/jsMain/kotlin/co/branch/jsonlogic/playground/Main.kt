@@ -269,10 +269,7 @@ internal class Playground {
                 cell.appendChild(el("span", "symbol mono").withText(operation.symbol))
                 row.appendChild(cell)
                 row.appendChild(el("span", "summary").withText(operation.summary))
-                row.addEventListener("click", {
-                    ruleText = ruleEditor.insertAtCursor(operation.snippet)
-                    onTextChanged()
-                })
+                row.addEventListener("click", { selectOperation(operation.snippet) })
                 rows.appendChild(row)
             }
             groupBox.appendChild(rows)
@@ -283,6 +280,19 @@ internal class Playground {
         host.appendChild(opsBody)
 
         return host
+    }
+
+    /**
+     * Every snippet is written to evaluate against no data, so the data editor is emptied rather
+     * than left holding values that belong to the rule being replaced: at best they are ignored, at
+     * worst a `var` inside the snippet reads them and the result looks like the snippet's own.
+     */
+    private fun selectOperation(snippet: String) {
+        ruleText = snippet
+        dataText = ""
+        ruleEditor.render(ruleText)
+        dataEditor.render(dataText)
+        onTextChanged()
     }
 }
 
@@ -327,20 +337,6 @@ internal class Editor(onChange: (String) -> Unit) {
         // <pre> generates no line box for a trailing newline; the textarea does. A zero-width
         // character on the last line keeps the two the same height.
         highlight.appendChild(document.createTextNode("​"))
-    }
-
-    fun insertAtCursor(snippet: String): String {
-        val text = textArea.value
-        val start = textArea.selectionStart ?: text.length
-        val end = (textArea.selectionEnd ?: start).coerceAtLeast(start).coerceAtMost(text.length)
-        val replaced = text.replaceRange(start, end, snippet)
-        val caret = start + snippet.length
-
-        render(replaced)
-        textArea.focus()
-        textArea.setSelectionRange(caret, caret)
-
-        return replaced
     }
 }
 

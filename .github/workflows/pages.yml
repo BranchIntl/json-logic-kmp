@@ -7,6 +7,10 @@ on:
       - docs/KMP-MIGRATION.md
       - README.md
       - CHANGELOG.md
+      - CONTRIBUTING.md
+      - PUBLISHING.md
+      - AGENTS.md
+      - CLAUDE.md
   # Redeploys the current main without an empty commit, needed once after Pages is enabled.
   workflow_dispatch:
 

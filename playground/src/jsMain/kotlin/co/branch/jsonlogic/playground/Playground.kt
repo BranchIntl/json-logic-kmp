@@ -78,6 +78,15 @@ internal class Playground {
 
         ruleEditor.setInitialText(ruleText)
         dataEditor.setInitialText(dataText)
+        // The fields, not the strings handed to them, are what everything downstream reads: a
+        // textarea normalises the line endings it is given, so a shared link carrying CRLF would
+        // otherwise leave this holding text the reader cannot see, and Share handing it back out.
+        ruleText = ruleEditor.text
+        dataText = dataEditor.text
+
+        // The load path writes the fields without going through their input handler, so the two
+        // things that handler keeps current are brought up to date here instead.
+        syncExampleChips()
         evaluateNow()
     }
 
@@ -277,10 +286,9 @@ internal class Playground {
         opsToggle.appendChild(el("span", "label").withText("Operations"))
         opsToggle.addEventListener("click", {
             referenceExpanded = !referenceExpanded
-            opsToggle.className = if (referenceExpanded) "ops-toggle expanded" else "ops-toggle"
-            opsBody.style.display = if (referenceExpanded) "block" else "none"
+            syncReference()
         })
-        opsBody.style.display = "none"
+        syncReference()
 
         OperationGroups.forEach { group ->
             val groupBox = el("div", "ops-group")
@@ -303,6 +311,13 @@ internal class Playground {
         host.appendChild(opsBody)
 
         return host
+    }
+
+    /** The three faces of one piece of state: the chevron's angle, the panel, and what is announced. */
+    private fun syncReference() {
+        opsToggle.className = if (referenceExpanded) "ops-toggle expanded" else "ops-toggle"
+        opsToggle.setAttribute("aria-expanded", referenceExpanded.toString())
+        opsBody.style.display = if (referenceExpanded) "block" else "none"
     }
 
     /**

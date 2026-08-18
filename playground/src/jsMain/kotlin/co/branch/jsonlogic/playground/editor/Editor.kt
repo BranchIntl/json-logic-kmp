@@ -23,6 +23,12 @@ internal class Editor(label: String, private val onChange: (String) -> Unit) {
 
     val root: HTMLElement = el("div", "editor")
 
+    /**
+     * What the field holds, which is not always what was written to it: a textarea normalises the
+     * line endings of anything given to it, so text that arrived with CRLF is read back with LF.
+     */
+    val text: String get() = textArea.value
+
     private val highlight = el("div", "highlight")
     private val textArea = document.createElement("textarea") as HTMLTextAreaElement
 

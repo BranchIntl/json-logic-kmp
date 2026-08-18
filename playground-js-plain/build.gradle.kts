@@ -23,6 +23,28 @@ val stageEngineNumberTests by tasks.registering(Sync::class) {
     into(layout.buildDirectory.dir("engine-number-tests"))
 }
 
+/**
+ * Hands the shipped stylesheet to the browser tests, which run on a page Karma assembles rather
+ * than on `index.html`. A layout test needs the real declarations: one that carried its own copy
+ * of them would keep passing while the stylesheet moved out from under it.
+ */
+val generateStylesheetSource by tasks.registering {
+    val page = layout.projectDirectory.file("src/jsMain/resources/index.html")
+    val sourceDir = layout.buildDirectory.dir("generated-stylesheet")
+    inputs.file(page)
+    outputs.dir(sourceDir)
+
+    doLast {
+        val css = page.asFile.readText().substringAfter("<style>").substringBefore("</style>")
+        val file = sourceDir.get().asFile.resolve("co/branch/jsonlogic/playground/Stylesheet.kt")
+        file.parentFile.mkdirs()
+        file.writeText(
+            "package co.branch.jsonlogic.playground\n\n" +
+                "internal val Stylesheet: String = \"\"\"" + css.replace("$", "\${'$'}") + "\"\"\"\n",
+        )
+    }
+}
+
 kotlin {
     js(IR) {
         outputModuleName = "playground-js-plain"
@@ -58,6 +80,7 @@ kotlin {
         jsTest {
             // The Provider registers the staged dir and its task dependency together.
             kotlin.srcDir(stageEngineNumberTests.map { it.destinationDir })
+            kotlin.srcDir(generateStylesheetSource.map { it.outputs.files.singleFile })
         }
         jsTest.dependencies {
             implementation(libs.kotlin.test)

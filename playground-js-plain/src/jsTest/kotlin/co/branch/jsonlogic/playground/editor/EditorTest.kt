@@ -2,6 +2,7 @@ package co.branch.jsonlogic.playground.editor
 
 import kotlinx.browser.document
 import org.w3c.dom.HTMLTextAreaElement
+import org.w3c.dom.asList
 import org.w3c.dom.events.Event
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
@@ -53,6 +54,13 @@ class EditorTest {
     }
 
     @Test
+    fun everyLogicalLineIsNumbered() {
+        editor.setInitialText("a\nbb\n")
+
+        assertEquals(listOf("1", "2", "3"), lineNumbers())
+    }
+
+    @Test
     fun theReplacementCanBeUndone() {
         editor.setInitialText("before")
 
@@ -62,6 +70,9 @@ class EditorTest {
 
         assertEquals("before", field.value)
     }
+
+    private fun lineNumbers(): List<String> =
+        editor.root.querySelectorAll(".line .ln").asList().map { it.textContent.orEmpty() }
 }
 
 private val Event.inputType: String

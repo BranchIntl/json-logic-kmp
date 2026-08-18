@@ -10,33 +10,33 @@ import org.w3c.dom.HTMLTextAreaElement
 import org.w3c.dom.Node
 
 /**
- * A transparent textarea laid exactly over a highlighted `<pre>` of the same text. The `<pre>` is
- * the only element in flow, so it sizes the pair together and the caret always lands on the glyph
- * under it. One shared scroll container holds the gutter as well, so nothing needs scroll sync.
+ * A transparent textarea laid exactly over a highlighted copy of the same text. The highlighted
+ * copy is the only thing in flow, so it sizes the pair together and the caret always lands on the
+ * glyph under it. Both layers soft-wrap at the same width, so neither one scrolls sideways.
+ *
+ * One block per logical line carries that line's number as an out-of-flow child, which puts the
+ * number wherever the browser put the top of the line and asks nothing of this code.
  */
 internal class Editor(private val onChange: (String) -> Unit) {
 
     val root: HTMLElement = el("div", "editor")
 
-    private val gutter = el("div", "gutter")
-    private val highlight = el("pre", "highlight")
+    private val highlight = el("div", "highlight")
     private val textArea = document.createElement("textarea") as HTMLTextAreaElement
+
+    private var painted: String? = null
+    private var gutterDigits = 0
 
     init {
         textArea.spellcheck = false
         textArea.setAttribute("autocapitalize", "off")
         textArea.setAttribute("autocomplete", "off")
-        textArea.setAttribute("wrap", "off")
         textArea.addEventListener("input", { handleInput() })
 
         val code = el("div", "code")
         code.appendChild(highlight)
         code.appendChild(textArea)
-
-        val row = el("div", "editor-row")
-        row.appendChild(gutter)
-        row.appendChild(code)
-        root.appendChild(row)
+        root.appendChild(code)
     }
 
     /** Loads the first text, where there is no history to keep and no reason to take focus. */
@@ -88,22 +88,34 @@ internal class Editor(private val onChange: (String) -> Unit) {
         onChange(textArea.value)
     }
 
+    /** Repaints from the field, the one text both layers are certain to agree on. */
     private fun render() {
         val text = textArea.value
-        gutter.textContent = gutterText(text)
+        if (text == painted) return
+        painted = text
+
+        val lines = highlightLines(text)
+        sizeGutterFor(lines.size)
+
+        val fragment = document.createDocumentFragment()
+        lines.forEachIndexed { index, spans ->
+            val line = el("div", "line")
+            line.appendChild(el("span", "ln").withText((index + 1).toString()))
+            spans.forEach { line.appendChild(it.node()) }
+            fragment.appendChild(line)
+        }
+
         highlight.clear()
-        highlightInto(highlight, text)
-        // <pre> generates no line box for a trailing newline; the textarea does. A zero-width
-        // character on the last line keeps the two the same height.
-        highlight.appendChild(document.createTextNode("​"))
+        highlight.appendChild(fragment)
     }
-}
 
-private fun gutterText(text: String): String {
-    val lines = text.count { it == '\n' } + 1
-    val width = lines.toString().length
+    private fun sizeGutterFor(lines: Int) {
+        val digits = lines.toString().length
+        if (digits == gutterDigits) return
 
-    return (1..lines).joinToString("\n") { it.toString().padStart(width) }
+        gutterDigits = digits
+        root.style.setProperty("--gutter-digits", digits.toString())
+    }
 }
 
 /**

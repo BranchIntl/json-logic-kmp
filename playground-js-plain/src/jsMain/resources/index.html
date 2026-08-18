@@ -26,6 +26,9 @@
             --syn-literal: #8250DF;
             --syn-punctuation: #57606A;
             --syn-invalid: #CF222E;
+            /* A custom property because a line's minimum height and its used line-height have to
+               be the same number by construction, not by two declarations agreeing. */
+            --line-height: 21px;
         }
 
         html[data-theme="dark"] {
@@ -51,6 +54,10 @@
         }
 
         * { box-sizing: border-box; }
+
+        /* Text inflation is applied per block, so it can scale an editor's two layers by different
+           amounts and pull them apart. */
+        html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 
         html, body {
             margin: 0;
@@ -150,56 +157,86 @@
             color: var(--on-surface-variant); text-transform: uppercase;
         }
 
-        /* ---- editor: textarea over a highlighted <pre> ---- */
+        /* ---- editor: a transparent textarea over a highlighted list of lines ---- */
         .editor {
+            --gutter-digits: 2;
+            --gutter-width: calc(var(--gutter-digits) * 1ch);
+            --code-inset: calc(var(--gutter-width) + 24px);
             height: 100%;
             overflow: auto;
+            /* Hold the scrollbar's width open: letting it appear narrows the wrap width, which can
+               remove the line that summoned it, which removes the scrollbar. */
+            scrollbar-gutter: stable;
             padding: 10px 0;
         }
-        .editor-row { display: flex; min-width: min-content; min-height: 100%; }
 
-        .mono, .editor-row {
+        .mono, .editor {
             font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
                          "Liberation Mono", monospace;
             font-size: 13px;
-            line-height: 21px;
+            line-height: var(--line-height);
             font-variant-ligatures: none;
             font-feature-settings: "liga" 0, "calt" 0;
             tab-size: 2;
         }
 
-        .gutter {
-            position: sticky; left: 0; z-index: 2;
-            flex: 0 0 auto;
-            padding: 0 12px;
-            background: var(--panel);
-            color: var(--gutter);
-            white-space: pre;
-            text-align: right;
-            user-select: none;
+        .code {
+            position: relative;
+            min-height: 100%;
+            padding: 0 12px 0 var(--code-inset);
         }
 
-        .code { position: relative; flex: 1 0 auto; padding-right: 12px; }
-
-        .code .highlight {
-            margin: 0;
-            white-space: pre;
+        /* The two layers have to break the same text in the same places, and they start from
+           different user-agent defaults, so everything that can move a break point is declared for
+           both of them here. The font shorthand resets the ligature and kerning properties, which
+           is why those come after it. */
+        .code .line, .code textarea {
             font: inherit;
-            line-height: inherit;
-            color: var(--on-surface);
-            pointer-events: none;
+            font-variant-ligatures: none;
+            font-feature-settings: "liga" 0, "calt" 0;
+            font-kerning: none;
+            line-height: var(--line-height);
+            letter-spacing: 0;
+            word-spacing: 0;
+            tab-size: 2;
+            white-space: pre-wrap;
+            overflow-wrap: break-word;
+            word-break: normal;
+            hyphens: none;
+            text-wrap: wrap;
+            direction: ltr;
+        }
+
+        .code .highlight { margin: 0; color: var(--on-surface); pointer-events: none; }
+
+        /* An empty line still occupies one, which is how a trailing newline keeps this layer the
+           same height as the textarea. */
+        .code .line { position: relative; min-height: var(--line-height); }
+
+        /* Each number rides inside its own line's box, pulled out into the code column's padding.
+           The browser puts it at the top of that box and lets a wrapped line grow underneath it,
+           so nothing has to be measured — and nothing has to be re-measured after a font swap, a
+           zoom, a rotation or a resize. */
+        .code .ln {
+            position: absolute;
+            left: calc(-1 * var(--code-inset));
+            width: var(--gutter-width);
+            text-align: right;
+            color: var(--gutter);
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         .code textarea {
             position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            margin: 0; padding: 0 12px 0 0;
+            inset: 0;
+            /* inset: 0 sizes this to .code's padding box, so repeating .code's padding lands the
+               two content boxes exactly on top of each other. Equal content widths are what make
+               both layers wrap in the same places. */
+            padding: inherit;
+            margin: 0;
             border: 0; outline: 0; resize: none;
             overflow: hidden;
-            font: inherit;
-            line-height: inherit;
-            white-space: pre;
             background: transparent;
             color: transparent;
             caret-color: var(--primary);

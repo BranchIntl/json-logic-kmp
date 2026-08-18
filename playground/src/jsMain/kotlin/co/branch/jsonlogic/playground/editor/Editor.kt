@@ -75,8 +75,8 @@ internal class Editor(label: String, private val onChange: (String) -> Unit) {
      * reader had typed. Any later editing feature — Tab-to-indent is the obvious one — has to come
      * through here for the same reason, never through `preventDefault` and an assignment.
      *
-     * Focus ends where the call found it, so a replacement never puts a reader into a field they
-     * were not already in.
+     * A replacement never leaves a reader in a field they were not already in: focus goes back to
+     * whatever held it, and is dropped rather than kept when that hand-back does not take.
      */
     fun setText(text: String) {
         if (textArea.value == text) return

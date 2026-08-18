@@ -26,15 +26,20 @@ engine this library ports disagree, the reference now wins.
   example presets, operation reference and shareable links, and it still answers with this
   library's own engine: it compiles `lib/src/commonMain/kotlin` as a source directory of its own,
   so no `js` publication stands behind it. Opening it fetches three files — the page, the bundle
-  and the font — coming to **100,350 bytes over the wire against the Compose build's 4,543,654**,
-  the first two gzipped as a server sends them and the woff2 at its own size, being compressed
-  already; the licence notice and the source map are deployed beside them and requested by nobody.
-  It renders on a device with no WebGL rather than showing a blank page, and its monospace face is
-  a 4,888-byte subset of JetBrains Mono where the Compose build bundled the whole 270,224-byte
-  file. Undo reaches the edits the examples and operation rows make: Cmd-Z reverts a chip press or
-  an operation row on both Blink and WebKit, and on Blink a second press brings back the reader's
-  own typing, where WebKit's undo is coarse enough that one press returns a field to the text it
-  was loaded with. `./gradlew :playground:jsBrowserDistribution` builds it, into
+  and the font — coming to **about 100,300 bytes over the wire against the Compose build's
+  4.54 MB**: the first two gzipped as a server would send them and the woff2 at its own size,
+  being compressed already, where the Compose figure is what the deployed site sends for its five
+  files. Neither total is exact to the byte, the minifier ordering its identifier names differently
+  on every build and a CDN compressing to its own settings. The licence notice and the source map
+  are deployed beside the three and requested by nobody. It renders on a device with no WebGL
+  rather than showing a blank page, and its monospace face is a 4,888-byte subset of JetBrains Mono
+  where the Compose build bundled the whole 270,224-byte file. Undo reaches the edits the examples
+  and operation rows make: the rule and the data are separate text controls, and Blink gives each
+  its own undo entry, so a chip press or an operation row takes two presses of Cmd-Z to walk back
+  to what the reader had, the state in between pairing the new rule with the old data. WebKit
+  coalesces the two entries into one, and a single press returns both fields to the text they were
+  loaded with — the reader's own typing along with the replacement — after which further presses do
+  nothing. `./gradlew :playground:jsBrowserDistribution` builds it, into
   `playground/build/dist/js/productionExecutable`.
 - Numeric results render the way ECMAScript's `Number::toString` does, which is what the reference
   implementation serializes: `{"+": [1, 2]}` now returns the JSON token `3` rather than `3.0`, and

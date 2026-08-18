@@ -99,8 +99,7 @@ class EditorTest {
      * untrusted, so it runs no editing command, and the command a real Cmd-Z carries is attached
      * to the event by the browser outside the page. What is reachable is the stack that shortcut
      * pops, so this covers the entry being on it and the edit coming back — not the shortcut
-     * itself, and not that the two agree, which is true on Blink and false on WebKit and was
-     * measured against the built page rather than here.
+     * itself, which was measured against the built page rather than here.
      *
      * The replacement drops the focus it borrowed, so undoing from here also covers the entry
      * surviving that.

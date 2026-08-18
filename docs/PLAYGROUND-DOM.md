@@ -58,8 +58,9 @@ through the overlay; both need a human and are scheduled for the commit-12 matri
   16 px floor that stops Safari zooming on focus. 64 tests, up from 61.
 - [x] **9 restore the parity details the spike dropped** — pre-boot dark background, live OS-theme
   listener, and the Share button's two-state message.
-- [ ] **10 bundle the JetBrains Mono subset** — subset the repo's own face, ship it with its OFL, and
-  apply the stack to everything monospaced rather than only the editors.
+- [x] **10 bundle the JetBrains Mono subset** — subset the repo's own face, ship it with its OFL, and
+  apply the stack to everything monospaced rather than only the editors. 4,888 bytes over the wire;
+  the module's live gzip goes 94,407 → 101,990 against the 110,000 ceiling.
 - [ ] **11 draw the theme and disclosure icons** — inline SVG in place of the text glyphs.
 - [ ] **12 verification gate** — run the full IME, mobile and wrap matrix and record the results here.
 - [ ] **13 the swap** — the DOM module becomes `playground/`, the Compose module and its catalog

@@ -5,7 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>JsonLogic Playground</title>
     <meta name="description" content="Try JsonLogic expressions in your browser, evaluated by json-logic-kmp compiled to JavaScript.">
+    <!-- crossorigin is not optional here: a font is fetched in CORS mode whatever origin it is on,
+         and without the attribute the preload fetches a second copy the @font-face cannot use. -->
+    <link rel="preload" href="fonts/JetBrainsMono-Regular-subset.woff2" as="font" type="font/woff2" crossorigin>
     <style>
+        /* Subset to what JSON and this page put on screen. A character from outside that range
+           has no glyph here and falls through to the system monospace, which is a character
+           rather than a box. Swapping the face in late costs a reflow and nothing else, because
+           nothing in this layout is measured: the editor's two layers are laid out by the same
+           declarations and reflow together, and the line numbers ride inside the lines they
+           number. */
+        @font-face {
+            font-family: "JetBrains Mono";
+            src: url("fonts/JetBrainsMono-Regular-subset.woff2") format("woff2");
+            font-weight: 400;
+            font-style: normal;
+            font-display: swap;
+            unicode-range: U+0020-007E, U+00A0, U+2013-2014, U+2018-2019, U+201C-201D, U+2026;
+        }
+
         :root {
             /* Named per theme rather than left as `light dark`, so the reader's own choice reaches
                the scrollbars and the caret too and not only the parts painted here. */
@@ -189,9 +207,15 @@
 
         .mono { font-size: 13px; line-height: 21px; }
 
+        /* Everything monospaced takes the same face: the result body, the failure detail and path
+           and the operation pills all read as one column of code with the editors, and a face that
+           reached only the editors would make the panels visibly disagree. */
         .mono, .editor {
-            font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+            font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
                          "Liberation Mono", monospace;
+            /* JetBrains Mono draws >= as ≥ and != as ≠, and those are operator names the reader
+               has to be able to type back. The subset carries no feature tables, so this is here
+               for the faces underneath it in the stack. */
             font-variant-ligatures: none;
             font-feature-settings: "liga" 0, "calt" 0;
             tab-size: 2;

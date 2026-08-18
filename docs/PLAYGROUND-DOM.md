@@ -54,8 +54,8 @@ through the overlay; both need a human and are scheduled for the commit-12 matri
   with the DOM rendering still flat.
 - [x] **7 soft wrap** — per-line blocks with in-line numbers and break-parity CSS between the two
   layers; the sticky gutter and its horizontal-scroll machinery go away.
-- [ ] **8 composition, mobile and accessibility input handling** — input attributes, aria, and the
-  16 px floor that stops Safari zooming on focus.
+- [x] **8 composition, mobile and accessibility input handling** — input attributes, aria, and the
+  16 px floor that stops Safari zooming on focus. 64 tests, up from 61.
 - [ ] **9 restore the parity details the spike dropped** — pre-boot dark background, live OS-theme
   listener, and the Share button's two-state message.
 - [ ] **10 bundle the JetBrains Mono subset** — subset the repo's own face, ship it with its OFL, and
@@ -68,3 +68,14 @@ through the overlay; both need a human and are scheduled for the commit-12 matri
 - [ ] **14 run the playground lane on pull requests** — the only lane that compiles the library's
   sources for a browser, so it is the guard against source-directory drift.
 - [ ] **15 remove this doc**.
+
+## For the verification matrix
+
+Things noticed while building that a human at a real keyboard should settle, over and above the
+IME, mobile and wrap columns task 12 already covers.
+
+- **Undo can need a second press.** After typing into the rule editor and then clicking an example
+  chip, the first ⌘Z restored the selection and the second restored the text. The undo entry is
+  there and the text does come back, which is what the task was for; how many presses it takes is
+  the engine's own grouping of a select-all and an insertion. Confirm it is a press count and not a
+  lost entry on each engine, and leave it alone if so.

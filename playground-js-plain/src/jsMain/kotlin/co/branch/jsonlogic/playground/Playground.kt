@@ -150,11 +150,11 @@ internal class Playground {
         val editors = el("div", "editors")
         val left = el("div", "left")
 
-        ruleEditor = Editor { text ->
+        ruleEditor = Editor("Rule") { text ->
             ruleText = text
             onTextChanged()
         }
-        dataEditor = Editor { text ->
+        dataEditor = Editor("Data") { text ->
             dataText = text
             onTextChanged()
         }

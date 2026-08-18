@@ -16,8 +16,10 @@ import org.w3c.dom.Node
  *
  * One block per logical line carries that line's number as an out-of-flow child, which puts the
  * number wherever the browser put the top of the line and asks nothing of this code.
+ *
+ * @param label what a screen reader announces the field as.
  */
-internal class Editor(private val onChange: (String) -> Unit) {
+internal class Editor(label: String, private val onChange: (String) -> Unit) {
 
     val root: HTMLElement = el("div", "editor")
 
@@ -29,9 +31,24 @@ internal class Editor(private val onChange: (String) -> Unit) {
 
     init {
         textArea.spellcheck = false
-        textArea.setAttribute("autocapitalize", "off")
         textArea.setAttribute("autocomplete", "off")
+        // A phone keyboard would otherwise capitalise the first word of a line and curl the
+        // quotes, and neither a capital nor a typographic quote is JSON.
+        textArea.setAttribute("autocorrect", "off")
+        textArea.setAttribute("autocapitalize", "none")
+        // The highlighted copy is laid out left to right; a field that took the reader's own
+        // direction instead would break its lines somewhere else.
+        textArea.setAttribute("dir", "ltr")
+        textArea.setAttribute("aria-label", label)
+
         textArea.addEventListener("input", { handleInput() })
+        // Insurance against an engine that ends a composition without a final input event. The
+        // handler reads the field rather than the event, so a second run changes nothing.
+        textArea.addEventListener("compositionend", { handleInput() })
+
+        // This layer holds a copy of what the field holds, and a reader who is being read to
+        // wants the rule once.
+        highlight.setAttribute("aria-hidden", "true")
 
         val code = el("div", "code")
         code.appendChild(highlight)

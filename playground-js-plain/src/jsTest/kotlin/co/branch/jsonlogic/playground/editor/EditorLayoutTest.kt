@@ -34,7 +34,7 @@ class EditorLayoutTest {
         host.style.width = "320px"
         document.body?.appendChild(host)
 
-        editor = Editor {}
+        editor = Editor("Rule") {}
         host.appendChild(editor.root)
     }
 

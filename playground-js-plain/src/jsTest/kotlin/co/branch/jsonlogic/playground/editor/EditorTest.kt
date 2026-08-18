@@ -19,7 +19,7 @@ class EditorTest {
 
     @BeforeTest
     fun mountEditor() {
-        editor = Editor { changes.add(it) }
+        editor = Editor("Rule") { changes.add(it) }
         document.body?.appendChild(editor.root)
         field = editor.root.querySelector("textarea") as HTMLTextAreaElement
         field.addEventListener("input", { inputTypes.add(it.inputType) })
@@ -58,6 +58,31 @@ class EditorTest {
         editor.setInitialText("a\nbb\n")
 
         assertEquals(listOf("1", "2", "3"), lineNumbers())
+    }
+
+    /** A composition can end without a final input event, and the layers still have to agree. */
+    @Test
+    fun endingACompositionRepaintsFromTheField() {
+        editor.setInitialText("")
+
+        field.value = "あ"
+        field.dispatchEvent(Event("compositionend"))
+
+        assertEquals(listOf("あ"), changes)
+        assertEquals(listOf("1"), lineNumbers())
+    }
+
+    @Test
+    fun onlyTheFieldIsReadToAScreenReader() {
+        assertEquals("Rule", field.getAttribute("aria-label"))
+        assertEquals("true", editor.root.querySelector(".highlight")?.getAttribute("aria-hidden"))
+    }
+
+    @Test
+    fun theFieldOptsOutOfTheKeyboardsCorrections() {
+        assertEquals("off", field.getAttribute("autocorrect"))
+        assertEquals("none", field.getAttribute("autocapitalize"))
+        assertEquals("ltr", field.getAttribute("dir"))
     }
 
     @Test

@@ -26,9 +26,6 @@
             --syn-literal: #8250DF;
             --syn-punctuation: #57606A;
             --syn-invalid: #CF222E;
-            /* A custom property because a line's minimum height and its used line-height have to
-               be the same number by construction, not by two declarations agreeing. */
-            --line-height: 21px;
         }
 
         html[data-theme="dark"] {
@@ -162,19 +159,24 @@
             --gutter-digits: 2;
             --gutter-width: calc(var(--gutter-digits) * 1ch);
             --code-inset: calc(var(--gutter-width) + 24px);
+            /* A custom property because a line's minimum height and its used line-height have to
+               be the same number by construction, not by two declarations agreeing. */
+            --line-height: 21px;
             height: 100%;
             overflow: auto;
             /* Hold the scrollbar's width open: letting it appear narrows the wrap width, which can
                remove the line that summoned it, which removes the scrollbar. */
             scrollbar-gutter: stable;
             padding: 10px 0;
+            font-size: 13px;
+            line-height: var(--line-height);
         }
+
+        .mono { font-size: 13px; line-height: 21px; }
 
         .mono, .editor {
             font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
                          "Liberation Mono", monospace;
-            font-size: 13px;
-            line-height: var(--line-height);
             font-variant-ligatures: none;
             font-feature-settings: "liga" 0, "calt" 0;
             tab-size: 2;
@@ -311,6 +313,11 @@
             .editors .left .panel:nth-child(1) { flex: none; height: 230px; }
             .editors .left .panel:nth-child(2) { flex: none; height: 150px; }
             .editors > .panel { flex: none; height: 220px; }
+
+            /* Safari zooms the page when a field it is focusing has text under 16px, and it does
+               not zoom back out. Only the editors are focusable, so only they grow; the result
+               panel and the operation pills are read, not typed into. */
+            .editor { font-size: 16px; --line-height: 26px; }
         }
 
         .boot {

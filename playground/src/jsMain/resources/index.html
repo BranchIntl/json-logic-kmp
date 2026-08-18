@@ -283,7 +283,9 @@
             caret-color: var(--primary);
             -webkit-text-fill-color: transparent;
         }
-        .code textarea::selection { background: rgba(91, 91, 214, 0.28); }
+        /* The field's own text is transparent, so this tint is the whole of what a selection
+           looks like, and it has to follow the theme the rest of the page follows. */
+        .code textarea::selection { background: color-mix(in srgb, var(--primary) 28%, transparent); }
 
         .tok-key { color: var(--syn-key); }
         .tok-string { color: var(--syn-string); }
@@ -322,10 +324,12 @@
 
         .ops-body { max-height: 260px; overflow-y: auto; padding: 4px 0; }
         .ops-group { margin-bottom: 10px; }
+        /* Sentence case: these are phrases — "Logic and boolean", "Data access" — and a phrase set
+           in caps reads as a banner rather than as the name of the group under it. */
         .ops-group > .name {
             display: block; padding: 0 6px 2px;
             font-size: 11px; font-weight: 500; letter-spacing: 0.7px;
-            color: var(--gutter); text-transform: uppercase;
+            color: var(--gutter);
         }
         .ops-rows { display: flex; flex-wrap: wrap; gap: 4px; }
         .op-row {

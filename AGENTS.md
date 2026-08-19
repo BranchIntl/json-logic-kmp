@@ -6,18 +6,20 @@ files do not say: the things that have cost someone an afternoon and are written
 
 ## Toolchain traps
 
-- The local default JDK is Temurin 17; CI runs 21. Neither is the target: `lib/build.gradle.kts`
-  pins `jvmTarget = JVM_11`, so the difference between the two is in the toolchain, not in what it
-  emits.
+- The JDK you build with is not the JDK the library targets: `lib/build.gradle.kts` pins
+  `jvmTarget = JVM_11`, and CI builds on 21. Whichever version you run Gradle under
+  ([17 or later](CONTRIBUTING.md#prerequisites)), the difference is in the toolchain, not in
+  what it emits.
 - Any Gradle task that links or runs an iOS test binary — `:lib:iosSimulatorArm64Test`,
-  `linkDebugTestIosSimulatorArm64` — needs `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`
-  in front of it, because `xcode-select` points at CommandLineTools. Compiling the main klibs does
-  not need it, which is why `:lib:assemble` and `:lib:apiDump` work without it. Without the prefix
-  nothing in the failure names Xcode: Gradle reports `An error occurred during an xcrun execution`
-  against `/usr/bin/xcrun xcodebuild -version`, a command that on its own exits 72.
-- The Android SDK is found through `sdk.dir` in `local.properties`, which is gitignored, and
-  `ANDROID_HOME` is usually unset. A fresh worktree therefore starts with no way to find the SDK and
-  needs a `local.properties` of its own before any Android task will run.
+  `linkDebugTestIosSimulatorArm64` — needs `DEVELOPER_DIR` pointing at a full Xcode
+  (`/Applications/Xcode.app/Contents/Developer` for a default install) whenever `xcode-select`
+  resolves to CommandLineTools. Compiling the main klibs does not need it, which is why
+  `:lib:assemble` and `:lib:apiDump` work without it. Without it nothing in the failure names Xcode:
+  Gradle reports `An error occurred during an xcrun execution` against
+  `/usr/bin/xcrun xcodebuild -version`, a command that on its own exits 72.
+- The Android SDK is found through `sdk.dir` in `local.properties`, which is gitignored. A fresh
+  clone or worktree therefore starts with no way to find the SDK, and needs a `local.properties` of
+  its own — or `ANDROID_HOME` exported — before any Android task will run.
 - Never run the iOS simulator test lane in two worktrees at once: `simctl` flakes when two runs
   reach for a simulator together.
 
@@ -56,5 +58,5 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer ./gradlew :lib:iosSimul
 ./gradlew :playground:jsBrowserTest :playground:jsBrowserDistribution
 ```
 
-The third is the only one that needs the prefix, and the only one that must not be running in
-another worktree at the same time.
+The third carries the Xcode prefix, redundant when `xcode-select` already resolves to a full
+Xcode, and is the only lane that must not be running in another worktree at the same time.

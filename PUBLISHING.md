@@ -38,7 +38,7 @@ metadata resolves the per-target artifact behind it. See
    ```bash
    sha=$(gh run list --workflow publish.yml --branch main --status success \
      --limit 1 --json headSha --jq '.[0].headSha')
-   git show "${sha}:lib/build.gradle.kts" | grep '^version'   # the version just published
+   git show "${sha}:lib/build.gradle.kts" | grep '^version ='   # the version just published
    git tag -a v<version> -m v<version> "$sha" && git push origin v<version>
    ```
 

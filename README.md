@@ -290,8 +290,8 @@ that case behaves.
 ## Contributing
 
 Contributions are welcome. Building and testing this repository — prerequisites, the playground's
-bundled font, and the four CI lanes — is [CONTRIBUTING.md](CONTRIBUTING.md). Cutting a release is
-[PUBLISHING.md](PUBLISHING.md).
+bundled font, and the four CI lanes — is in [CONTRIBUTING.md](CONTRIBUTING.md). Cutting a release
+is in [PUBLISHING.md](PUBLISHING.md).
 
 ## License
 

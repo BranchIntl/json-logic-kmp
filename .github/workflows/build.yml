@@ -9,6 +9,10 @@ on:
       - docs/KMP-MIGRATION.md
       - README.md
       - CHANGELOG.md
+      - CONTRIBUTING.md
+      - PUBLISHING.md
+      - AGENTS.md
+      - CLAUDE.md
 
 concurrency:
   group: build-${{ github.head_ref || github.ref }}

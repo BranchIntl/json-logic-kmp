@@ -9,8 +9,8 @@ permissions:
 
 jobs:
   publish:
-    # macos-15 so the iOS klib and wasmJs publications (which cannot be built on ubuntu) are
-    # published alongside jvm/android in the same run; free for public GitHub repos.
+    # macos-15 so the iOS klib publications (which cannot be built on ubuntu) are published
+    # alongside jvm/android/wasmJs in the same run; free for public GitHub repos.
     runs-on: macos-15
     # This workflow only ever fires via workflow_dispatch, but a dispatch can be run against any
     # ref. Restricting to main keeps a dispatch from a feature branch a no-op instead of a publish.

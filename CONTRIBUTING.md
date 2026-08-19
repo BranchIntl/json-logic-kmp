@@ -10,8 +10,10 @@ What follows is what building and testing the repository itself needs.
 - Android SDK, with `sdk.dir` set in `local.properties` (or `ANDROID_HOME` exported)
 - Xcode with its command line tools, only needed to build or test the `iosArm64` /
   `iosSimulatorArm64` targets
-- Chrome, for the playground's browser tests. Karma finds a standard install itself; point
-  `CHROME_BIN` at anything else
+- Chrome, for the playground's browser tests. Karma runs them in `ChromeHeadless` and the build
+  declares no other launcher, so the engine is not interchangeable — Firefox or Safari will not
+  stand in. Karma finds a standard install itself; point `CHROME_BIN` at any other Chromium-family
+  binary
 - fontTools with woff2 support (`pip install 'fonttools[woff]' brotli`), only needed to re-cut the
   playground's bundled font — see [The bundled font](#the-bundled-font)
 

@@ -31,10 +31,21 @@ metadata resolves the per-target artifact behind it. See
    either from the Actions tab or with `gh workflow run publish.yml --ref main`.
 3. The workflow builds and tests every macOS-buildable lane, then publishes all publications to
    GitHub Packages. It only runs against `main`; dispatching it against any other ref is a no-op.
-4. Tag the published commit and cut a GitHub Release from that tag, using the version just
-   published: `git tag -a v<version> -m v<version> && git push origin v<version>`. GitHub Packages
-   records no source revision alongside a version, so the tag is what ties a published artifact to
-   the commit it was built from.
+4. Tag the commit the run published, and cut a GitHub Release from that tag. The workflow builds
+   whatever `main` pointed at when it was dispatched, which is not necessarily where local `main`
+   sits once it finishes, so take the revision from the run rather than from `HEAD`:
+
+   ```bash
+   sha=$(gh run list --workflow publish.yml --branch main --status success \
+     --limit 1 --json headSha --jq '.[0].headSha')
+   git show "${sha}:lib/build.gradle.kts" | grep '^version'   # the version just published
+   git tag -a v<version> -m v<version> "$sha" && git push origin v<version>
+   ```
+
+   Brace `${sha}` in that path: zsh reads an unbraced `$sha:l` as its lowercase modifier and eats
+   the `l` of `lib`. GitHub Packages records no source revision alongside a version, so the tag is
+   what ties a published artifact to the commit it was built from, and a tag on the wrong commit is
+   worse than no tag — by the time it is noticed the version cannot be republished to correct it.
 
 GitHub Packages will not overwrite a version that already exists, so a bad publish cannot be
 re-pushed under the same coordinates — delete that version from the repository's Packages page, or

@@ -24,7 +24,7 @@ plugins {
 }
 
 group = "co.branch.jsonlogic"
-version = "0.2.0"
+version = "0.3.0"
 
 // The name consumers see. Gradle and Kotlin would otherwise derive published coordinates and
 // module identity from the Gradle project name, which is an internal detail of this build.

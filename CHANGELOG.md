@@ -4,6 +4,8 @@ All notable changes to this project are documented in this file.
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-09-07
+
 ### Changed
 
 - Published coordinates move from `co.branch:json-logic-kmp` to `co.branch.jsonlogic:json-logic-kmp`.

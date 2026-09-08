@@ -106,7 +106,7 @@ target picks it up:
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation("co.branch.jsonlogic:json-logic-kmp:0.2.0")
+            implementation("co.branch.jsonlogic:json-logic-kmp:0.3.0")
         }
     }
 }
@@ -120,7 +120,7 @@ works:
 
 ```kotlin
 dependencies {
-    implementation("co.branch.jsonlogic:json-logic-kmp:0.2.0")
+    implementation("co.branch.jsonlogic:json-logic-kmp:0.3.0")
 }
 ```
 

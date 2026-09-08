@@ -2,8 +2,9 @@
 
 This repository is a fork of [`jamsesso/json-logic-java`](https://github.com/jamsesso/json-logic-java)
 (MIT, © 2018 Sam Jesso) being migrated **in place** to a Kotlin Multiplatform library:
-package `co.branch.jsonlogic`, coordinates `co.branch:json-logic-kmp`, targets `jvm`, `android`,
-`iosArm64`, `iosSimulatorArm64`, `wasmJs` (Node), value model `kotlinx.serialization.JsonElement`.
+package `co.branch.jsonlogic`, coordinates `co.branch.jsonlogic:json-logic-kmp`, targets `jvm`,
+`android`, `iosArm64`, `iosSimulatorArm64`, `wasmJs` (Node), value model
+`kotlinx.serialization.JsonElement`.
 Goal: **bug-for-bug parity** with the Java original at upstream `main@49995a7` (the oracle), proven
 mechanically by a temporary `:parity` subproject that runs both engines over the 289 value fixtures and
 46 error fixtures on the JVM and diffs the results. The Java sources stay in the tree (as `:parity`)

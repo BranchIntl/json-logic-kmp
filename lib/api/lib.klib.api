@@ -5,7 +5,7 @@
 // - Show manifest properties: true
 // - Show declarations: true
 
-// Library unique name: <co.branch:json-logic-kmp>
+// Library unique name: <co.branch.jsonlogic:json-logic-kmp>
 abstract interface co.branch.jsonlogic.evaluator.expressions/PreEvaluatedArgumentsExpression : co.branch.jsonlogic.evaluator/JsonLogicExpression { // co.branch.jsonlogic.evaluator.expressions/PreEvaluatedArgumentsExpression|null[0]
     abstract fun evaluate(kotlin.collections/List<kotlin/Any?>, kotlin/Any?, kotlin/String): kotlin/Any? // co.branch.jsonlogic.evaluator.expressions/PreEvaluatedArgumentsExpression.evaluate|evaluate(kotlin.collections.List<kotlin.Any?>;kotlin.Any?;kotlin.String){}[0]
     open fun evaluate(co.branch.jsonlogic.evaluator/JsonLogicEvaluator, co.branch.jsonlogic.ast/JsonLogicArray, kotlin/Any?, kotlin/String): kotlin/Any? // co.branch.jsonlogic.evaluator.expressions/PreEvaluatedArgumentsExpression.evaluate|evaluate(co.branch.jsonlogic.evaluator.JsonLogicEvaluator;co.branch.jsonlogic.ast.JsonLogicArray;kotlin.Any?;kotlin.String){}[0]

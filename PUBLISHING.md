@@ -50,7 +50,3 @@ metadata resolves the per-target artifact behind it. See
 GitHub Packages will not overwrite a version that already exists, so a bad publish cannot be
 re-pushed under the same coordinates — delete that version from the repository's Packages page, or
 release the next patch version instead.
-
-GitHub Packages also keys listings on coordinates, not on what the repository currently publishes,
-so the six `co.branch:json-logic-kmp*` packages published up to 0.2.0 stay listed until someone
-deletes them from the repository's Packages page.

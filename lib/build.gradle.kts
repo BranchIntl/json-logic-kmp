@@ -23,7 +23,7 @@ plugins {
     `maven-publish`
 }
 
-group = "co.branch"
+group = "co.branch.jsonlogic"
 version = "0.2.0"
 
 // The name consumers see. Gradle and Kotlin would otherwise derive published coordinates and

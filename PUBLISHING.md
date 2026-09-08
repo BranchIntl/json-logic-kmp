@@ -1,6 +1,6 @@
 # Publishing
 
-Releases are published to GitHub Packages as `co.branch:json-logic-kmp`, by
+Releases are published to GitHub Packages as `co.branch.jsonlogic:json-logic-kmp`, by
 `.github/workflows/publish.yml`. That workflow fires only on `workflow_dispatch`. A dispatch can be
 run against any ref, so it is also guarded to `main`: dispatching it from a feature branch is a
 no-op rather than a publish.
@@ -8,14 +8,14 @@ no-op rather than a publish.
 One run produces six Maven publications. It runs on macOS so that the iOS publications, which
 cannot be built anywhere else, go out alongside the rest in the same run:
 
-| Publication           | Coordinates                                  |
-|-----------------------|----------------------------------------------|
-| `kotlinMultiplatform` | `co.branch:json-logic-kmp`                   |
-| `jvm`                 | `co.branch:json-logic-kmp-jvm`               |
-| `android`             | `co.branch:json-logic-kmp-android`           |
-| `iosArm64`            | `co.branch:json-logic-kmp-iosarm64`          |
-| `iosSimulatorArm64`   | `co.branch:json-logic-kmp-iossimulatorarm64` |
-| `wasmJs`              | `co.branch:json-logic-kmp-wasm-js`           |
+| Publication           | Coordinates                                            |
+|-----------------------|--------------------------------------------------------|
+| `kotlinMultiplatform` | `co.branch.jsonlogic:json-logic-kmp`                   |
+| `jvm`                 | `co.branch.jsonlogic:json-logic-kmp-jvm`               |
+| `android`             | `co.branch.jsonlogic:json-logic-kmp-android`           |
+| `iosArm64`            | `co.branch.jsonlogic:json-logic-kmp-iosarm64`          |
+| `iosSimulatorArm64`   | `co.branch.jsonlogic:json-logic-kmp-iossimulatorarm64` |
+| `wasmJs`              | `co.branch.jsonlogic:json-logic-kmp-wasm-js`           |
 
 The first is the coordinate a consumer writes, and the only one: Gradle's Kotlin Multiplatform
 metadata resolves the per-target artifact behind it. See
@@ -50,3 +50,7 @@ metadata resolves the per-target artifact behind it. See
 GitHub Packages will not overwrite a version that already exists, so a bad publish cannot be
 re-pushed under the same coordinates — delete that version from the repository's Packages page, or
 release the next patch version instead.
+
+GitHub Packages also keys listings on coordinates, not on what the repository currently publishes,
+so the six `co.branch:json-logic-kmp*` packages published up to 0.2.0 stay listed until someone
+deletes them from the repository's Packages page.

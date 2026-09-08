@@ -7,7 +7,7 @@ All notable changes to this project are documented in this file.
 ### Changed
 
 - Published coordinates move from `co.branch:json-logic-kmp` to `co.branch.jsonlogic:json-logic-kmp`.
-  The `co.branch` artifacts stop at 0.2.0; upgrading consumers change the group in their dependency
+  The `co.branch` artifacts stop at 0.2.0; upgrading consumers must change the group in their dependency
   declaration to pick up this and later versions.
 
 ## [0.2.0] - 2026-08-18

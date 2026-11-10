@@ -271,9 +271,9 @@ that case behaves.
   operator around it adds 2). `parse(rule, maxDepth)` moves the bound. A `JsonLogicNode` you assemble
   yourself and hand to `apply` has been through no such check, and neither has the *data* a rule runs
   against — converting that into the engine's value domain walks the whole tree recursively.
-- **A value that contains itself is named, not entered.** `reduce` hands its reducer a single context
-  map and mutates it in place, so a reducer returning its own data — or a list built around it —
-  leaves a cycle in the value it returns. `cat`, `substr`, `in` and `log` render a container reached
+- **A value that contains itself is named, not entered.** No built-in operation builds one, but a
+  custom operation can return one. Return values without cycles from custom operations: converting
+  a cyclic result back into a `JsonElement` overflows the stack. `cat`, `substr`, `in` and `log` render a container reached
   from inside itself as `(this Map)` or `(this Collection)`, at whatever depth it recurs. The names are
   `java.util`'s, but the reach is not: `java.util` compares an entry only against the container
   directly holding it, and overflows the stack on a cycle closing through two of them.
@@ -286,6 +286,79 @@ that case behaves.
   returns flows straight into any surrounding expression. Return domain values from custom
   operations — `List` rather than an array, plus `Double`/`String`/`Boolean`/`null`/`Map` — or an
   array result will reach a nested expression unconverted and hit this same truthiness divergence.
+
+### Where results differ from json-logic-js
+
+Each item gives a rule whose result here differs from the
+[reference implementation](https://github.com/jwadhams/json-logic-js) (2.0.5) on the same data, so
+a rule tested on [jsonlogic.com](https://jsonlogic.com) can answer differently here. Number rendering
+is not one of them: it matches the reference, as described above.
+
+- **A single list argument is spread into the arguments.** Every operation that evaluates its
+  arguments first reads `{"op": [[a, b]]}`, and `{"op": [{"var": "list"}]}` when `list` holds a list,
+  as `{"op": [a, b]}`. `{"!!": [[0]]}` is `false` (reference `true`), `{"cat": [{"var": "l"}]}` with
+  `l` = `["a", "b"]` is `"ab"` (reference `"a,b"`), and `{"merge": [[[1]]]}` is `[1]` (reference
+  `[[1]]`).
+- **Arithmetic answers `null` for an operand that is not a number.** `+`, `-`, `*`, `/`, `%`, `min`
+  and `max` answer `null` when an operand is `null`, a boolean, a list, or a string that does not
+  read as a number, and when they get no operands. The reference converts such operands to numbers
+  and can answer NaN: `{"-": [5, null]}` is `null` (reference `5`), `{"+": ["1a", 2]}` is `null`
+  (reference `3`), `{"+": []}` is `null` (reference `0`), and `{"%": [7]}` is `7` (reference NaN).
+- **Ordering comparisons need numbers.** `<`, `<=`, `>` and `>=` are `false` when an argument is
+  neither a number nor a numeric string, and compare two strings as numbers: `{"<": [null, 2]}` is
+  `false` (reference `true`), `{"<": ["a", "b"]}` is `false` (reference `true`), and
+  `{">": ["10", "9"]}` is `true` (reference `false`). `>` and `>=` with three arguments test a
+  range, so `{">": [3, 2, 5]}` is `false` (the reference ignores the third and answers `true`).
+  Fewer than two arguments throw (reference `false`).
+- **`==` and `!=` convert differently.** A boolean against a string compares truthiness, so
+  `{"==": [false, "0"]}` is `false` (reference `true`). A list or a map equals only another falsy
+  value, so `{"==": [1, [1]]}` is `false` (reference `true`) and `{"==": [[], []]}` is `true`
+  (reference `false`). A string reads as a number by Java's grammar, here and wherever else a string
+  is read as one: `{"==": [" 1", 1]}` and `{"==": ["0x10", 16]}` are `false`, and
+  `{"==": ["1d", 1]}` is `true`, the opposite of the reference in each case.
+- **Equality takes exactly two arguments.** `==`, `!=`, `===` and `!==` with one or three arguments
+  throw; the reference compares the first two.
+- **`===`, `!==` and `in` compare lists and maps by content.** `{"===": [[1], [1]]}` and
+  `{"in": [[1], [[1]]]}` are `true`; the reference compares by identity and answers `false`.
+- **Lists and maps render in Java's format.** `cat`, `substr` and `in` render a list as `[1, 2]`, a
+  null element as `null` and a map as `{a=1}`, where the reference renders `1,2`, the empty string
+  and `[object Object]`: `{"cat": [[1, 2], "x"]}` is `"[1, 2]x"` (reference `"1,2x"`).
+- **`in` against a string.** The empty string is found in the empty string (`{"in": ["", ""]}` is
+  `true`, reference `false`), and a list needle is rendered as above, so `{"in": [["a"], "a"]}` is
+  `false` (reference `true`).
+- **`substr` arguments.** An offset or length that is a string or `null`, a missing offset, or a
+  string in place of the argument list throws, where the reference converts it:
+  `{"substr": ["jsonlogic", "2"]}` is `"onlogic"` there.
+- **`missing` and `missing_some`.**
+  - A key holding a map counts as missing, even a non-empty one: `{"missing": ["a"]}` with
+    `{"a": {"b": 1}}` is `["a"]` (reference `[]`).
+  - A key never reaches into a list, so `"a.0"` is missing with `{"a": [1]}` (reference present).
+  - Repeated keys are reported once, so `{"missing_some": [1, ["a", "a"]]}` with `{}` is `[]`
+    (reference `["a", "a"]`).
+  - Data that is not a map reports every key, a key that is not a string is never found, and a dotted
+    key also matches a key with that literal dot in it.
+  - A list as the first of several arguments is a key, not the key list.
+  - `missing_some`'s threshold must be a number and is truncated (1.5 counts as 1), and its keys must
+    be a list; anything else throws.
+- **Array operations over a value that is not a list throw.** `filter` throws on any value that is
+  not a list, `null` included, and `all`, `some` and `none` on any such value other than `null`. The
+  reference reads the value as an empty list: `{"filter": [{"var": "x"}, true]}` with `x` absent is
+  `[]` there.
+- **Argument counts are strict.** `map`, `filter`, `all`, `some`, `none` and `reduce` throw unless
+  they get exactly their arguments, and `and`, `or` and `log` throw with none. The reference ignores
+  extra arguments and fills missing ones (`reduce` without a starting value starts from `null`).
+- **`var`.**
+  - A path through `null` or through a value that is not a list or a map answers `null`, not the
+    default: `{"var": ["a.b", "d"]}` with `{"a": null}` is `null` (reference `"d"`).
+  - The default is evaluated without the data, so `{"var": ["a", {"var": "b"}]}` cannot read `b`.
+  - A number key indexes lists only, truncated, so `{"var": 1}` with `{"1": "one"}` is `null`
+    (reference `"one"`).
+  - A path segment that is not a whole number throws against a list (`{"var": "a.x"}` with
+    `{"a": [1, 2]}`), and `"01"` reads index 1 (reference `null` for both).
+  - A boolean or list key throws, a trailing dot is dropped (`"a."` reads `a`), and a string's
+    characters and a list's `length` are not readable.
+- **An object that is not an operation does not parse.** `{}` or `{"a": 1, "b": 2}` inside a rule is
+  rejected with `JsonLogicParseException`; the reference treats it as a literal value.
 
 ## Contributing
 

@@ -333,6 +333,11 @@ is not one of them: it matches the reference, as described above.
   a number by Java's grammar, here and wherever else a string is read as one:
   `{"==": ["0x10", 16]}` is `false`, and `{"==": ["1d", 1]}` and `{"==": ["1f", 1]}` are `true`, the
   opposite of the reference in each case.
+- **`==`, `!=` and `in` compare two numbers by their bits.** NaN equals NaN and `0` does not equal
+  `-0`: `{"==": [0, {"-": [0]}]}` is `false` (reference `true`), and two `{"/": [0, 0]}` results are
+  equal under `==` (reference not equal). `in` with a list does the same, so it finds NaN in a list
+  holding NaN but not `0` in a list holding only `-0`, the opposite of the reference. `===` and `!==`
+  compare numbers the way the reference does.
 - **Equality takes exactly two arguments.** `==`, `!=`, `===` and `!==` with one or three arguments
   throw; the reference compares the first two.
 - **`===`, `!==` and `in` compare lists and maps by content.** `{"===": [[1], [1]]}` and

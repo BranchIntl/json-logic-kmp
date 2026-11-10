@@ -60,8 +60,8 @@ import kotlinx.serialization.json.JsonElement
  * exhaust the stack. Every overload that takes a rule as JSON therefore bounds its nesting, and
  * those taking a `maxDepth` move that bound. A [JsonLogicNode] built by hand and handed to [apply]
  * has been through no such check, and neither has a result: a `reduce` that wraps its accumulator
- * nests once per element, and converting, rendering or comparing that result by content recurses as
- * deep as the list is long.
+ * nests once per element, and converting, rendering, comparing by content or checking with `missing`
+ * that result recurses as deep as the list is long.
  *
  * **Thread safety.** Finish configuring an instance — the default registrations plus any
  * [addOperation] calls — on a single thread before sharing it with others. Once configuration is

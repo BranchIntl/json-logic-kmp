@@ -274,10 +274,10 @@ that case behaves.
   against — converting that into the engine's value domain walks the whole tree recursively. Nor has
   a result: a `reduce` whose reducer wraps the accumulator (returns its own data, or
   `[{"var": "accumulator"}]`) nests once per element, so its result is as deep as the list is long.
-  Converting it back to JSON, rendering it with `cat`, `substr`, `in` or `log`, or comparing it by
-  content with `===`, `!==` or `in` against a list, recurses that deep. How long a list overflows the
-  stack depends on the thread's stack size, the operation and the JIT's state, so treat a few hundred
-  elements as the point where it can start; a rule can hold such a list, or read it from data,
+  Converting it back to JSON, rendering it with `cat`, `substr`, `in` or `log`, comparing it by
+  content with `===`, `!==` or `in` against a list, or running `missing` against it, recurses that
+  deep. How long a list overflows the stack depends on the thread's stack size, the operation and the
+  JIT's state; on a small thread stack it can be under a hundred elements; a rule can hold such a list, or read it from data,
   without nesting past the bound. The overflow is a `StackOverflowError`, not a
   `JsonLogicException`, and Native and Wasm cannot catch it.
 - **A value that contains itself is named, not entered.** No built-in operation builds one, but a
@@ -350,7 +350,8 @@ is not one of them: it matches the reference, as described above.
 - **`missing` and `missing_some`.**
   - A key holding a map counts as missing, even a non-empty one: `{"missing": ["a"]}` with
     `{"a": {"b": 1}}` is `["a"]` (reference `[]`).
-  - A key never reaches into a list, so `"a.0"` is missing with `{"a": [1]}` (reference present).
+  - A key never reaches into a list or a string, so `"a.0"` is missing with `{"a": [1]}` and `"s.0"`
+    with `{"s": "abc"}` (reference present for both).
   - With map data, `missing` reports a repeated key once (`{"missing": ["a", "a"]}` with `{}` is
     `["a"]`, reference
     `["a", "a"]`), and `missing_some` counts each repeat toward its threshold as present, so

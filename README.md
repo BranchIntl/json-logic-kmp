@@ -9,7 +9,8 @@ This library is a fork of [jamsesso/json-logic-java](https://github.com/jamsesso
 original closely — before the Java sources were removed from this repository, both engines were run
 side by side over the same 335-case fixture corpus (289 value cases, 46 error cases) and
 machine-verified to agree on every one — but where the two disagree, the
-[JsonLogic reference implementation](https://github.com/jwadhams/json-logic-js) wins. See
+[JsonLogic reference implementation](https://github.com/jwadhams/json-logic-js) wins, except as
+listed under [Where results differ from json-logic-js](#where-results-differ-from-json-logic-js). See
 [Known deviations & sharp edges](#known-deviations--sharp-edges) below for where the two parted ways,
 and for what else to watch for before you rely on this library.
 
@@ -274,15 +275,17 @@ that case behaves.
   a result: a `reduce` whose reducer wraps the accumulator (returns its own data, or
   `[{"var": "accumulator"}]`) nests once per element, so its result is as deep as the list is long.
   Converting it back to JSON, rendering it with `cat`, `substr`, `in` or `log`, or comparing it by
-  content with `===`, `!==` or `in` against a list, recurses that deep. On the JVM that overflows the
-  stack for a list of a few hundred elements on a 512 KB or 1 MB thread stack, and of 10,000 to
-  20,000 on an 8 MB one; a rule can hold such a list, or read it from data, without nesting past the
-  bound. The overflow is a `StackOverflowError`, not a `JsonLogicException`, and Native and Wasm
-  cannot catch it.
+  content with `===`, `!==` or `in` against a list, recurses that deep. How long a list overflows the
+  stack depends on the thread's stack size, the operation and the JIT's state, so treat a few hundred
+  elements as the point where it can start; a rule can hold such a list, or read it from data,
+  without nesting past the bound. The overflow is a `StackOverflowError`, not a
+  `JsonLogicException`, and Native and Wasm cannot catch it.
 - **A value that contains itself is named, not entered.** No built-in operation builds one, but a
   custom operation can return one. Return values without cycles from custom operations: converting
-  a cyclic result back into a `JsonElement` overflows the stack. `cat`, `substr`, `in` and `log` render a container reached
-  from inside itself as `(this Map)` or `(this Collection)`, at whatever depth it recurs. The names are
+  a cyclic result back into a `JsonElement`, comparing it by content with `===`, `!==` or `in`
+  against a list, or running `missing` against it overflows the stack. `cat`, `substr`, `in` against
+  a string and `log` render a container reached from inside itself as `(this Map)` or
+  `(this Collection)`, at whatever depth it recurs. The names are
   `java.util`'s, but the reach is not: `java.util` compares an entry only against the container
   directly holding it, and overflows the stack on a cycle closing through two of them.
 - **`truthy` on a Kotlin/Java array differs from upstream.** Values parsed from rules or `JsonElement`
@@ -326,9 +329,10 @@ is not one of them: it matches the reference, as described above.
 - **`==` and `!=` convert differently.** A boolean against a string compares truthiness, so
   `{"==": [false, "0"]}` is `false` (reference `true`). An empty list equals `false`, `0`, `""` and
   another empty list, and a non-empty list or any map equals nothing, so `{"==": [1, [1]]}` is
-  `false` (reference `true`) and `{"==": [[], []]}` is `true` (reference `false`). A string reads as a number by Java's grammar, here and wherever else a string
-  is read as one: `{"==": ["0x10", 16]}` is `false`, and `{"==": ["1d", 1]}` and
-  `{"==": ["1f", 1]}` are `true`, the opposite of the reference in each case.
+  `false` (reference `true`) and `{"==": [[], []]}` is `true` (reference `false`). A string reads as
+  a number by Java's grammar, here and wherever else a string is read as one:
+  `{"==": ["0x10", 16]}` is `false`, and `{"==": ["1d", 1]}` and `{"==": ["1f", 1]}` are `true`, the
+  opposite of the reference in each case.
 - **Equality takes exactly two arguments.** `==`, `!=`, `===` and `!==` with one or three arguments
   throw; the reference compares the first two.
 - **`===`, `!==` and `in` compare lists and maps by content.** `{"===": [[1], [1]]}` and
@@ -347,7 +351,8 @@ is not one of them: it matches the reference, as described above.
   - A key holding a map counts as missing, even a non-empty one: `{"missing": ["a"]}` with
     `{"a": {"b": 1}}` is `["a"]` (reference `[]`).
   - A key never reaches into a list, so `"a.0"` is missing with `{"a": [1]}` (reference present).
-  - `missing` reports a repeated key once (`{"missing": ["a", "a"]}` with `{}` is `["a"]`, reference
+  - With map data, `missing` reports a repeated key once (`{"missing": ["a", "a"]}` with `{}` is
+    `["a"]`, reference
     `["a", "a"]`), and `missing_some` counts each repeat toward its threshold as present, so
     `{"missing_some": [2, ["a", "a", "b"]]}` with `{"b": 1}` is `[]` (reference `["a", "a"]`).
   - The empty key is a key like any other, so `{"missing": [""]}` with `{"a": 1}` is `[""]`; the

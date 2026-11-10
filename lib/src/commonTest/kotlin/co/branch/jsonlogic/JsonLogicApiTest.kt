@@ -243,4 +243,23 @@ class JsonLogicApiTest {
         assertEquals("Undefined operation 'nope'", exception.message)
         assertEquals("$", exception.jsonPath)
     }
+
+    @Test
+    fun missingCountsAJsonNullOrEmptyStringValueAsMissing() {
+        val data = Json.parseToJsonElement("""{"a": null, "b": "", "c": "x"}""")
+
+        val result = JsonLogic().apply("""{"missing": ["a", "b", "c"]}""", data)
+
+        assertEquals(Json.parseToJsonElement("""["a", "b"]"""), result)
+    }
+
+    @Test
+    fun reduceReturningItsOwnContextConvertsToNestedJson() {
+        val result = JsonLogic().apply("""{"reduce": [[1, 2], {"var": ""}, 0]}""", null)
+
+        assertEquals(
+            Json.parseToJsonElement("""{"current": 2, "accumulator": {"current": 1, "accumulator": 0}}"""),
+            result,
+        )
+    }
 }

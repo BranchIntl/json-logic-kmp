@@ -15,8 +15,8 @@ import co.branch.jsonlogic.evaluator.JsonLogicExpression
  * accumulator — evaluated up front, whether or not the fold runs — is evaluated against that outer
  * data.
  *
- * The same map is handed to every iteration and updated in place, so a reducer that returns its own
- * data returns a map that holds itself under `accumulator`.
+ * Each iteration gets a new map, as in the reference implementation, so a reducer that returns its
+ * own data nests the previous step's map under `accumulator` rather than a map that holds itself.
  *
  * A first argument that is not list-like yields the initial accumulator.
  */
@@ -41,18 +41,16 @@ class ReduceExpression private constructor() : JsonLogicExpression {
             return accumulator
         }
 
-        // `current` is seeded first only to claim the first position: the context's key order shows up
-        // wherever the map is rendered, and the hash order of these two keys in the engine this
-        // library ports puts `current` there. Its seeded value is replaced below before any reducer
-        // sees the map.
-        val context = mutableMapOf<String, Any?>("current" to null, "accumulator" to accumulator)
+        var result = accumulator
 
         for (item in ArrayLike.of(maybeArray)) {
-            context["current"] = item
-            context["accumulator"] = evaluator.evaluate(arguments.elements[1], context, "$jsonPath[1]")
+            // `current` comes first: the context's key order shows up wherever the map is rendered, and
+            // the hash order of these two keys in the engine this library ports puts it there.
+            val context = mapOf("current" to item, "accumulator" to result)
+            result = evaluator.evaluate(arguments.elements[1], context, "$jsonPath[1]")
         }
 
-        return context["accumulator"]
+        return result
     }
 
     companion object {

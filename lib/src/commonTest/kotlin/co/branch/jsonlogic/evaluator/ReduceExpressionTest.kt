@@ -3,8 +3,6 @@ package co.branch.jsonlogic.evaluator
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import kotlin.test.assertIs
-import kotlin.test.assertTrue
 
 /** Pins `reduce`: the context object it hands the reducer, and where the initial accumulator comes from. */
 class ReduceExpressionTest {
@@ -46,29 +44,22 @@ class ReduceExpressionTest {
     }
 
     @Test
-    fun theContextIsOneMapUpdatedInPlace() {
+    fun eachIterationGetsANewContext() {
         val result = evaluateArrayOp("""{"reduce": [[1, 2], {"var": ""}, 0]}""")
 
-        assertIs<Map<*, *>>(result)
-        assertEquals(2.0, result["current"])
-        assertTrue(result["accumulator"] === result, "the final accumulator should be the context map itself")
+        assertEquals(mapOf("current" to 2.0, "accumulator" to mapOf("current" to 1.0, "accumulator" to 0.0)), result)
     }
 
     @Test
     fun theContextKeepsCurrentBeforeAccumulator() {
-        // `in` renders a non-string first argument, which is what exposes the context's key order —
-        // including after a second iteration has rewritten both keys.
+        // `in` renders a non-string first argument, which is what exposes the context's key order.
         assertEquals(
             true,
-            evaluateArrayOp("""{"in": [{"reduce": [[1], {"var": ""}, 0]}, "{current=1, accumulator=(this Map)}"]}"""),
-        )
-        assertEquals(
-            true,
-            evaluateArrayOp("""{"in": [{"reduce": [[1, 2], {"var": ""}, 0]}, "{current=2, accumulator=(this Map)}"]}"""),
+            evaluateArrayOp("""{"in": [{"reduce": [[1], {"var": ""}, 0]}, "{current=1, accumulator=0}"]}"""),
         )
         assertEquals(
             false,
-            evaluateArrayOp("""{"in": [{"reduce": [[1], {"var": ""}, 0]}, "{accumulator=(this Map), current=1}"]}"""),
+            evaluateArrayOp("""{"in": [{"reduce": [[1], {"var": ""}, 0]}, "{accumulator=0, current=1}"]}"""),
         )
     }
 

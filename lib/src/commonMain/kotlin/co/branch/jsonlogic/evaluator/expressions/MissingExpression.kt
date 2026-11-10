@@ -12,7 +12,8 @@ import co.branch.jsonlogic.evaluator.MapLike
  * 2 of the 3 keys are present, and otherwise reports every absent one.
  *
  * Keys are matched against the data's flattened paths, so `a.b` is provided by `{"a": {"b": 1}}`.
- * Only nested maps are flattened: a key can never reach into a list.
+ * Only nested maps are flattened: a key can never reach into a list. A key whose value is null or
+ * the empty string counts as missing, as in the reference implementation.
  */
 class MissingExpression private constructor(private val isSome: Boolean) : PreEvaluatedArgumentsExpression {
 
@@ -57,7 +58,8 @@ class MissingExpression private constructor(private val isSome: Boolean) : PreEv
 
         /**
          * Given a map structure such as `{a: {b: 1}, c: 2}`, returns the set `["a.b", "c"]`. A
-         * nested map contributes only its own leaves, so an empty one contributes no key at all.
+         * nested map contributes only its own leaves, so an empty one contributes no key at all, and
+         * a leaf holding null or the empty string is left out.
          */
         private fun flatKeys(map: Map<Any?, Any?>, prefix: String = ""): Set<String> {
             val keys = LinkedHashSet<String>()
@@ -65,7 +67,7 @@ class MissingExpression private constructor(private val isSome: Boolean) : PreEv
             for ((key, value) in map) {
                 if (MapLike.isEligible(value)) {
                     keys.addAll(flatKeys(MapLike.of(value), "$prefix$key."))
-                } else {
+                } else if (value != null && value != "") {
                     keys.add("$prefix$key")
                 }
             }

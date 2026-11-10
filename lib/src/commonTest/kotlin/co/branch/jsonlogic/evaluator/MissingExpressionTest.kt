@@ -40,6 +40,28 @@ class MissingExpressionTest {
     }
 
     @Test
+    fun aKeyHoldingNullOrTheEmptyStringIsMissing() {
+        val data = mapOf("a" to null, "b" to "", "c" to 0, "d" to false, "e" to emptyList<Any?>())
+
+        assertEquals(listOf("a", "b"), evaluate("""{"missing": ["a", "b", "c", "d", "e"]}""", data))
+    }
+
+    @Test
+    fun aNestedLeafHoldingNullOrTheEmptyStringIsMissing() {
+        val data = mapOf("a" to mapOf("b" to null, "c" to "", "d" to "x"))
+
+        assertEquals(listOf("a.b", "a.c"), evaluate("""{"missing": ["a.b", "a.c", "a.d"]}""", data))
+    }
+
+    @Test
+    fun missingSomeCountsANullOrEmptyKeyAsMissing() {
+        val data = mapOf("a" to null, "b" to "", "c" to 1)
+
+        assertEquals(listOf("a", "b"), evaluate("""{"missing_some": [2, ["a", "b", "c"]]}""", data))
+        assertEquals(emptyList<Any?>(), evaluate("""{"missing_some": [1, ["a", "b", "c"]]}""", data))
+    }
+
+    @Test
     fun flatteningDoesNotReachIntoLists() {
         assertEquals(listOf("a.0"), evaluate("""{"missing": ["a.0"]}""", mapOf("a" to listOf(1, 2))))
         assertEquals(emptyList<Any?>(), evaluate("""{"missing": ["a"]}""", mapOf("a" to listOf(1, 2))))

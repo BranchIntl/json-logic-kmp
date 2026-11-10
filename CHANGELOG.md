@@ -8,12 +8,14 @@ All notable changes to this project are documented in this file.
 
 - `missing` and `missing_some` count a key whose value is `null` or the empty string as missing,
   matching the [reference implementation](https://github.com/jwadhams/json-logic-js). They counted
-  any key the data held as present, whatever its value, so `{"missing": ["a"]}` against
+  a key holding `null` or `""` as present, so `{"missing": ["a"]}` against
   `{"a": null}` was `[]` and is now `["a"]`. A rule using either operator can return a different
   result after upgrading; re-check stored results or pinned assertions that depend on it.
 - `reduce` hands its reducer a new context map on each step, as the reference does, instead of one
   map updated in place. A reducer that returns its own data (`{"var": ""}`) now returns the previous
-  step's map nested under `accumulator`, where it returned a map holding itself.
+  step's map nested under `accumulator`, where it returned a map holding itself. `cat`, `substr`,
+  `in` and `log` render that result by recursion, so on a list of a few thousand elements they now
+  overflow the stack where they used to name the cycle and stop.
 
 ### Fixed
 
@@ -21,7 +23,8 @@ All notable changes to this project are documented in this file.
   own data: `{"reduce": [[1, 2], {"var": ""}, 0]}` returns
   `{"current": 2, "accumulator": {"current": 1, "accumulator": 0}}`. The overflow was a
   `StackOverflowError`, not a `JsonLogicException`, so a caller catching the library's exceptions
-  did not catch it.
+  did not catch it. The result still nests once per element, so a list of a few thousand elements
+  overflows the conversion the same way.
 
 ## [0.3.0] - 2026-09-07
 

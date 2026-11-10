@@ -44,8 +44,8 @@ class ReduceExpression private constructor() : JsonLogicExpression {
         var result = accumulator
 
         for (item in ArrayLike.of(maybeArray)) {
-            // `current` comes first: the context's key order shows up wherever the map is rendered, and
-            // the hash order of these two keys in the engine this library ports puts it there.
+            // `current` comes first, as in the reference's context object: the key order shows up
+            // wherever the map is rendered.
             val context = mapOf("current" to item, "accumulator" to result)
             result = evaluator.evaluate(arguments.elements[1], context, "$jsonPath[1]")
         }

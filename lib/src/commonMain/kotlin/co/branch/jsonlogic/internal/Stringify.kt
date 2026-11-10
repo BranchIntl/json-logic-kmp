@@ -36,12 +36,11 @@ internal fun ecmaStringify(value: Any?): String = stringify(value, ::ecmaDoubleT
  * Renders [value] with [renderNumber] deciding the form a [Double] takes, naming rather than entering
  * any container in [enclosing] — the ones already being rendered around it.
  *
- * A value here can hold a cycle, so the containers have to be tracked: `reduce` mutates a single
- * context map in place, and a reducer returning a list built around its own data leaves that list and
- * that map holding each other. The names are java.util's, but the reach is not — java.util compares an
- * entry only against the container directly holding it, which a cycle closing through two of them
- * slips past. Only an enclosing container counts, so the same value appearing twice side by side is
- * rendered twice rather than mistaken for a cycle.
+ * A value here can hold a cycle, so the containers have to be tracked: no built-in operation builds
+ * one, but a custom operation can return a container that holds itself. The names are java.util's,
+ * but the reach is not — java.util compares an entry only against the container directly holding it,
+ * which a cycle closing through two of them slips past. Only an enclosing container counts, so the
+ * same value appearing twice side by side is rendered twice rather than mistaken for a cycle.
  */
 private fun stringify(value: Any?, renderNumber: (Double) -> String, enclosing: List<Any>): String = when (value) {
     null -> "null"

@@ -270,7 +270,11 @@ that case behaves.
   `JsonLogicParser.DEFAULT_MAX_DEPTH` (128 objects and arrays — `{"+": [1, 2]}` is 2 levels, and each
   operator around it adds 2). `parse(rule, maxDepth)` moves the bound. A `JsonLogicNode` you assemble
   yourself and hand to `apply` has been through no such check, and neither has the *data* a rule runs
-  against — converting that into the engine's value domain walks the whole tree recursively.
+  against — converting that into the engine's value domain walks the whole tree recursively. Nor has
+  a result: a `reduce` whose reducer returns its own data nests once per element, so its result is as
+  deep as the list is long. Converting it back to JSON, or rendering it with `cat`, `substr`, `in` or
+  `log`, recurses that deep and overflows the stack for a list of a few thousand elements, which a
+  rule can hold without nesting past the bound.
 - **A value that contains itself is named, not entered.** No built-in operation builds one, but a
   custom operation can return one. Return values without cycles from custom operations: converting
   a cyclic result back into a `JsonElement` overflows the stack. `cat`, `substr`, `in` and `log` render a container reached
@@ -303,7 +307,8 @@ is not one of them: it matches the reference, as described above.
   and `max` answer `null` when an operand is `null`, a boolean, a list, or a string that does not
   read as a number, and when they get no operands. The reference converts such operands to numbers
   and can answer NaN: `{"-": [5, null]}` is `null` (reference `5`), `{"+": ["1a", 2]}` is `null`
-  (reference `3`), `{"+": []}` is `null` (reference `0`), and `{"%": [7]}` is `7` (reference NaN).
+  (reference `3`), `{"+": []}` is `null` (reference `0`), `{"/": [1]}` is `null` (reference NaN),
+  and `{"%": [7]}` is `7` (reference NaN).
 - **Ordering comparisons need numbers.** `<`, `<=`, `>` and `>=` are `false` when an argument is
   neither a number nor a numeric string, and compare two strings as numbers: `{"<": [null, 2]}` is
   `false` (reference `true`), `{"<": ["a", "b"]}` is `false` (reference `true`), and
@@ -314,8 +319,8 @@ is not one of them: it matches the reference, as described above.
   `{"==": [false, "0"]}` is `false` (reference `true`). A list or a map equals only another falsy
   value, so `{"==": [1, [1]]}` is `false` (reference `true`) and `{"==": [[], []]}` is `true`
   (reference `false`). A string reads as a number by Java's grammar, here and wherever else a string
-  is read as one: `{"==": [" 1", 1]}` and `{"==": ["0x10", 16]}` are `false`, and
-  `{"==": ["1d", 1]}` is `true`, the opposite of the reference in each case.
+  is read as one: `{"==": ["0x10", 16]}` is `false`, and `{"==": ["1d", 1]}` and
+  `{"==": ["1f", 1]}` are `true`, the opposite of the reference in each case.
 - **Equality takes exactly two arguments.** `==`, `!=`, `===` and `!==` with one or three arguments
   throw; the reference compares the first two.
 - **`===`, `!==` and `in` compare lists and maps by content.** `{"===": [[1], [1]]}` and
@@ -351,6 +356,8 @@ is not one of them: it matches the reference, as described above.
   - A path through `null` or through a value that is not a list or a map answers `null`, not the
     default: `{"var": ["a.b", "d"]}` with `{"a": null}` is `null` (reference `"d"`).
   - The default is evaluated without the data, so `{"var": ["a", {"var": "b"}]}` cannot read `b`.
+  - With no data at all, an empty or null key answers the default: `{"var": ["", 7]}` with `null`
+    data is `7` (reference `null`).
   - A number key indexes lists only, truncated, so `{"var": 1}` with `{"1": "one"}` is `null`
     (reference `"one"`).
   - A path segment that is not a whole number throws against a list (`{"var": "a.x"}` with

@@ -271,10 +271,14 @@ that case behaves.
   operator around it adds 2). `parse(rule, maxDepth)` moves the bound. A `JsonLogicNode` you assemble
   yourself and hand to `apply` has been through no such check, and neither has the *data* a rule runs
   against — converting that into the engine's value domain walks the whole tree recursively. Nor has
-  a result: a `reduce` whose reducer returns its own data nests once per element, so its result is as
-  deep as the list is long. Converting it back to JSON, or rendering it with `cat`, `substr`, `in` or
-  `log`, recurses that deep and overflows the stack for a list of a few thousand elements, which a
-  rule can hold without nesting past the bound.
+  a result: a `reduce` whose reducer wraps the accumulator (returns its own data, or
+  `[{"var": "accumulator"}]`) nests once per element, so its result is as deep as the list is long.
+  Converting it back to JSON, rendering it with `cat`, `substr`, `in` or `log`, or comparing it by
+  content with `===`, `!==` or `in` against a list, recurses that deep. On the JVM that overflows the
+  stack for a list of a few hundred elements on a 512 KB or 1 MB thread stack, and of 10,000 to
+  20,000 on an 8 MB one; a rule can hold such a list, or read it from data, without nesting past the
+  bound. The overflow is a `StackOverflowError`, not a `JsonLogicException`, and Native and Wasm
+  cannot catch it.
 - **A value that contains itself is named, not entered.** No built-in operation builds one, but a
   custom operation can return one. Return values without cycles from custom operations: converting
   a cyclic result back into a `JsonElement` overflows the stack. `cat`, `substr`, `in` and `log` render a container reached
@@ -304,11 +308,15 @@ is not one of them: it matches the reference, as described above.
   `l` = `["a", "b"]` is `"ab"` (reference `"a,b"`), and `{"merge": [[[1]]]}` is `[1]` (reference
   `[[1]]`).
 - **Arithmetic answers `null` for an operand that is not a number.** `+`, `-`, `*`, `/`, `%`, `min`
-  and `max` answer `null` when an operand is `null`, a boolean, a list, or a string that does not
-  read as a number, and when they get no operands. The reference converts such operands to numbers
-  and can answer NaN: `{"-": [5, null]}` is `null` (reference `5`), `{"+": ["1a", 2]}` is `null`
-  (reference `3`), `{"+": []}` is `null` (reference `0`), `{"/": [1]}` is `null` (reference NaN),
-  and `{"%": [7]}` is `7` (reference NaN).
+  and `max` answer `null` when an operand is `null`, a boolean, or a string that does not read as a
+  number, and when they get no operands. A list operand gives `null` for `-`, `/`, `%`, `min` and
+  `max`, while `+` and `*` read its first element and give `null` for an empty one. The reference
+  converts such operands to numbers and can answer NaN: `{"-": [5, null]}` is `null` (reference
+  `5`), `{"+": ["1a", 2]}` is `null` (reference `3`), `{"+": []}` is `null` (reference `0`),
+  `{"/": [1]}` is `null` (reference NaN), `{"-": [[5], 2]}` is `null` (reference `3`),
+  `{"+": [[], 3]}` is `null` (reference NaN), and `{"%": [7]}` is `7` (reference NaN). A single
+  operand always comes back a number, so `{"*": ["2"]}` is `2` where the reference answers the string
+  `"2"`.
 - **Ordering comparisons need numbers.** `<`, `<=`, `>` and `>=` are `false` when an argument is
   neither a number nor a numeric string, and compare two strings as numbers: `{"<": [null, 2]}` is
   `false` (reference `true`), `{"<": ["a", "b"]}` is `false` (reference `true`), and
@@ -316,9 +324,9 @@ is not one of them: it matches the reference, as described above.
   range, so `{">": [3, 2, 5]}` is `false` (the reference ignores the third and answers `true`).
   Fewer than two arguments throw (reference `false`).
 - **`==` and `!=` convert differently.** A boolean against a string compares truthiness, so
-  `{"==": [false, "0"]}` is `false` (reference `true`). A list or a map equals only another falsy
-  value, so `{"==": [1, [1]]}` is `false` (reference `true`) and `{"==": [[], []]}` is `true`
-  (reference `false`). A string reads as a number by Java's grammar, here and wherever else a string
+  `{"==": [false, "0"]}` is `false` (reference `true`). An empty list equals `false`, `0`, `""` and
+  another empty list, and a non-empty list or any map equals nothing, so `{"==": [1, [1]]}` is
+  `false` (reference `true`) and `{"==": [[], []]}` is `true` (reference `false`). A string reads as a number by Java's grammar, here and wherever else a string
   is read as one: `{"==": ["0x10", 16]}` is `false`, and `{"==": ["1d", 1]}` and
   `{"==": ["1f", 1]}` are `true`, the opposite of the reference in each case.
 - **Equality takes exactly two arguments.** `==`, `!=`, `===` and `!==` with one or three arguments
@@ -331,15 +339,19 @@ is not one of them: it matches the reference, as described above.
 - **`in` against a string.** The empty string is found in the empty string (`{"in": ["", ""]}` is
   `true`, reference `false`), and a list needle is rendered as above, so `{"in": [["a"], "a"]}` is
   `false` (reference `true`).
-- **`substr` arguments.** An offset or length that is a string or `null`, a missing offset, or a
-  string in place of the argument list throws, where the reference converts it:
-  `{"substr": ["jsonlogic", "2"]}` is `"onlogic"` there.
+- **`substr` arguments.** An offset or length that is a string or `null`, a missing offset, a fourth
+  argument, or a string in place of the argument list throws, where the reference converts or
+  ignores it: `{"substr": ["jsonlogic", "2"]}` is `"onlogic"` and `{"substr": ["abc", 1, 1, 9]}` is
+  `"b"` there.
 - **`missing` and `missing_some`.**
   - A key holding a map counts as missing, even a non-empty one: `{"missing": ["a"]}` with
     `{"a": {"b": 1}}` is `["a"]` (reference `[]`).
   - A key never reaches into a list, so `"a.0"` is missing with `{"a": [1]}` (reference present).
-  - Repeated keys are reported once, so `{"missing_some": [1, ["a", "a"]]}` with `{}` is `[]`
-    (reference `["a", "a"]`).
+  - `missing` reports a repeated key once (`{"missing": ["a", "a"]}` with `{}` is `["a"]`, reference
+    `["a", "a"]`), and `missing_some` counts each repeat toward its threshold as present, so
+    `{"missing_some": [2, ["a", "a", "b"]]}` with `{"b": 1}` is `[]` (reference `["a", "a"]`).
+  - The empty key is a key like any other, so `{"missing": [""]}` with `{"a": 1}` is `[""]`; the
+    reference reads it as the whole data and answers `[]`.
   - Data that is not a map reports every key, a key that is not a string is never found, and a dotted
     key also matches a key with that literal dot in it.
   - A list as the first of several arguments is a key, not the key list.

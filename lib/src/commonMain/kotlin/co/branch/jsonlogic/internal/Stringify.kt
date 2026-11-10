@@ -20,7 +20,7 @@ package co.branch.jsonlogic.internal
  *
  * Used by `log`, whose output is diagnostic text rather than a value any rule can observe.
  */
-internal fun javaStringify(value: Any?): String = stringify(value, ::canonicalDoubleToString, emptyList())
+internal fun javaStringify(value: Any?): String = stringify(value, ::canonicalDoubleToString, mutableListOf())
 
 /**
  * Renders [value] the way ECMAScript's `String(value)` would: `null` becomes the literal `"null"`
@@ -30,7 +30,7 @@ internal fun javaStringify(value: Any?): String = stringify(value, ::canonicalDo
  * renders a null argument as the empty string instead of calling this, matching the reference's use
  * of `Array.prototype.join`.
  */
-internal fun ecmaStringify(value: Any?): String = stringify(value, ::ecmaDoubleToString, emptyList())
+internal fun ecmaStringify(value: Any?): String = stringify(value, ::ecmaDoubleToString, mutableListOf())
 
 /**
  * Renders [value] with [renderNumber] deciding the form a [Double] takes, naming rather than entering
@@ -42,7 +42,11 @@ internal fun ecmaStringify(value: Any?): String = stringify(value, ::ecmaDoubleT
  * which a cycle closing through two of them slips past. Only an enclosing container counts, so the
  * same value appearing twice side by side is rendered twice rather than mistaken for a cycle.
  */
-private fun stringify(value: Any?, renderNumber: (Double) -> String, enclosing: List<Any>): String = when (value) {
+private fun stringify(
+    value: Any?,
+    renderNumber: (Double) -> String,
+    enclosing: MutableList<Any>,
+): String = when (value) {
     null -> "null"
     is Double -> renderNumber(value)
     is Boolean -> value.toString()
@@ -52,31 +56,46 @@ private fun stringify(value: Any?, renderNumber: (Double) -> String, enclosing: 
     else -> value.toString()
 }
 
-private fun stringifyCollection(value: Collection<*>, renderNumber: (Double) -> String, enclosing: List<Any>): String {
+private fun stringifyCollection(
+    value: Collection<*>,
+    renderNumber: (Double) -> String,
+    enclosing: MutableList<Any>,
+): String {
     if (enclosing.any { it === value }) {
         return "(this Collection)"
     }
 
-    val inside = within(enclosing, value)
-
-    return value.joinToString(prefix = "[", postfix = "]", separator = ", ") { stringify(it, renderNumber, inside) }
+    return within(enclosing, value) {
+        value.joinToString(prefix = "[", postfix = "]", separator = ", ") { stringify(it, renderNumber, enclosing) }
+    }
 }
 
-private fun stringifyMap(value: Map<*, *>, renderNumber: (Double) -> String, enclosing: List<Any>): String {
+private fun stringifyMap(
+    value: Map<*, *>,
+    renderNumber: (Double) -> String,
+    enclosing: MutableList<Any>,
+): String {
     if (enclosing.any { it === value }) {
         return "(this Map)"
     }
 
-    val inside = within(enclosing, value)
-
-    return value.entries.joinToString(prefix = "{", postfix = "}", separator = ", ") {
-        "${stringify(it.key, renderNumber, inside)}=${stringify(it.value, renderNumber, inside)}"
+    return within(enclosing, value) {
+        value.entries.joinToString(prefix = "{", postfix = "}", separator = ", ") {
+            "${stringify(it.key, renderNumber, enclosing)}=${stringify(it.value, renderNumber, enclosing)}"
+        }
     }
 }
 
 /**
- * [enclosing] with [container] appended. Taking the container as [Any] is what makes this an append:
- * at the call sites it is a `Collection<*>` or a `Map<*, *>`, and adding a collection to a list splices
- * its elements in rather than adding the collection itself.
+ * Renders [block] with [container] pushed onto [enclosing], and pops it again however [block] ends.
+ * One list shared by the whole walk keeps memory linear in the depth, where a copy per level grows
+ * with its square.
  */
-private fun within(enclosing: List<Any>, container: Any): List<Any> = enclosing + container
+private inline fun within(enclosing: MutableList<Any>, container: Any, block: () -> String): String {
+    enclosing.add(container)
+    try {
+        return block()
+    } finally {
+        enclosing.removeAt(enclosing.lastIndex)
+    }
+}

@@ -13,12 +13,6 @@ on:
   # Redeploys the current main without an empty commit, needed once after Pages is enabled.
   workflow_dispatch:
 
-# pages:write and id-token:write are what deploy-pages needs to mint its OIDC token.
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
 # Never cancelled mid-flight: a half-cancelled deploy can leave the site indeterminate.
 concurrency:
   group: pages
@@ -27,6 +21,10 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # pages:read is what configure-pages needs to look the Pages site up.
+    permissions:
+      contents: read
+      pages: read
     # Named once, so the step that checks the directory and the step that uploads it cannot come
     # to describe two different directories.
     env:
@@ -56,6 +54,10 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    # pages:write and id-token:write are what deploy-pages needs to mint its OIDC token.
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

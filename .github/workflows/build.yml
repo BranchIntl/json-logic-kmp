@@ -13,6 +13,9 @@ on:
       - PUBLISHING.md
       - AGENTS.md
 
+permissions:
+  contents: read
+
 concurrency:
   group: build-${{ github.head_ref || github.ref }}
   cancel-in-progress: true

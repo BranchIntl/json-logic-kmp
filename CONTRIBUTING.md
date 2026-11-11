@@ -88,4 +88,7 @@ gh actions-lock            # narrows partial refs such as @v7 to an exact tag, u
 gh actions-lock --verify   # the check CI runs
 ```
 
-Dependabot bumps actions monthly and regenerates the lock in the same pull request.
+Routine action updates need none of that. `.github/dependabot.yml` has Dependabot open a pull
+request per outdated action once a month, with the tag bump and the regenerated lock entry
+together. Its 30-day cooldown skips any release younger than that, so a compromised release has
+time to be caught before it is offered here.

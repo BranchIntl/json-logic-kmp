@@ -21,36 +21,36 @@ jobs:
   jvm-android:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-java@v5
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-java@v5.7.0
         with:
           distribution: temurin
           java-version: 21
-      - uses: gradle/actions/setup-gradle@v5
+      - uses: gradle/actions/setup-gradle@v5.0.2
       - name: JVM and Android host tests
         run: ./gradlew :lib:jvmTest :lib:testAndroidHostTest :lib:assemble :lib:apiCheck
 
   wasm:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-java@v5
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-java@v5.7.0
         with:
           distribution: temurin
           java-version: 21
-      - uses: gradle/actions/setup-gradle@v5
+      - uses: gradle/actions/setup-gradle@v5.0.2
       - name: Wasm tests
         run: ./gradlew :lib:wasmJsNodeTest
 
   ios:
     runs-on: macos-15
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-java@v5
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-java@v5.7.0
         with:
           distribution: temurin
           java-version: 21
-      - uses: gradle/actions/setup-gradle@v5
+      - uses: gradle/actions/setup-gradle@v5.0.2
       - name: iOS simulator tests
         run: ./gradlew :lib:iosSimulatorArm64Test :lib:klibApiCheck
 
@@ -60,11 +60,11 @@ jobs:
   playground:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-java@v5
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-java@v5.7.0
         with:
           distribution: temurin
           java-version: 21
-      - uses: gradle/actions/setup-gradle@v5
+      - uses: gradle/actions/setup-gradle@v5.0.2
       - name: Playground tests and web bundle
         run: ./gradlew :playground:jsBrowserTest :playground:jsBrowserDistribution

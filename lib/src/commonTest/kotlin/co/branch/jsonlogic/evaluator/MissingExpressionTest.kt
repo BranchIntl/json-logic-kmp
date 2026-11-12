@@ -4,7 +4,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-/** Pins `missing` and `missing_some`, including how they flatten the data's keys. */
+/** Pins `missing` and `missing_some`, including how they look each key up the way `var` does. */
 class MissingExpressionTest {
 
     private val apple = mapOf("a" to "apple", "c" to "carrot")
@@ -23,33 +23,124 @@ class MissingExpressionTest {
     }
 
     @Test
-    fun repeatedKeysAreReportedOnceInTheOrderAsked() {
-        assertEquals(listOf("b", "a"), evaluate("""{"missing": ["b", "a", "b"]}""", emptyMap<String, Any?>()))
+    fun repeatedKeysAreReportedOncePerRepeatInTheOrderAsked() {
+        assertEquals(listOf("b", "a", "b"), evaluate("""{"missing": ["b", "a", "b"]}""", emptyMap<String, Any?>()))
     }
 
     @Test
-    fun keysAreMatchedAgainstFlattenedPaths() {
+    fun dottedKeysWalkNestedMaps() {
         assertEquals(emptyList<Any?>(), evaluate("""{"missing": ["a.b"]}""", mapOf("a" to mapOf("b" to 1))))
         assertEquals(listOf("a.c"), evaluate("""{"missing": ["a.b", "a.c"]}""", mapOf("a" to mapOf("b" to 1))))
-        assertEquals(listOf("a"), evaluate("""{"missing": ["a"]}""", mapOf("a" to mapOf("b" to 1))))
+        assertEquals(listOf("a.b.c"), evaluate("""{"missing": ["a.b.c"]}""", mapOf("a" to mapOf("b" to 1))))
+        assertEquals(listOf("a.b"), evaluate("""{"missing": ["a.b"]}""", mapOf("a" to 1)))
     }
 
     @Test
-    fun anEmptyNestedMapProvidesNoKeyAtAll() {
-        assertEquals(listOf("a"), evaluate("""{"missing": ["a"]}""", mapOf("a" to emptyMap<String, Any?>())))
+    fun trailingDotsAreDroppedAndIndexSegmentsReadAsNumbersLikeVar() {
+        assertEquals(emptyList<Any?>(), evaluate("""{"missing": ["a.", "."]}""", mapOf("a" to 1)))
+        assertEquals(emptyList<Any?>(), evaluate("""{"missing": ["l.01"]}""", mapOf("l" to listOf(5, 6))))
     }
 
     @Test
-    fun flatteningDoesNotReachIntoLists() {
-        assertEquals(listOf("a.0"), evaluate("""{"missing": ["a.0"]}""", mapOf("a" to listOf(1, 2))))
-        assertEquals(emptyList<Any?>(), evaluate("""{"missing": ["a"]}""", mapOf("a" to listOf(1, 2))))
+    fun aNullKeyIsTheWholeData() {
+        assertEquals(emptyList<Any?>(), evaluate("""{"missing": [null]}""", mapOf("a" to 1)))
+        assertEquals(listOf(null), evaluate("""{"missing": [null]}""", null))
     }
 
     @Test
-    fun withoutMapDataEveryKeyIsMissing() {
+    fun aKeyHoldingAMapIsPresentEvenAnEmptyOne() {
+        assertEquals(emptyList<Any?>(), evaluate("""{"missing": ["response"]}""", mapOf("response" to mapOf("status" to "ok"))))
+        assertEquals(emptyList<Any?>(), evaluate("""{"missing": ["a"]}""", mapOf("a" to emptyMap<String, Any?>())))
+    }
+
+    @Test
+    fun aKeyWithALiteralDotIsSplitLikeVar() {
+        assertEquals(listOf("a.b"), evaluate("""{"missing": ["a.b"]}""", mapOf("a.b" to 1)))
+    }
+
+    @Test
+    fun theEmptyKeyIsTheWholeData() {
+        assertEquals(emptyList<Any?>(), evaluate("""{"missing": [""]}""", mapOf("a" to 1)))
+        assertEquals(listOf(""), evaluate("""{"missing": [""]}""", null))
+    }
+
+    @Test
+    fun aKeyHoldingNullOrTheEmptyStringIsMissing() {
+        val data = mapOf("a" to null, "b" to "", "c" to 0, "d" to false, "e" to emptyList<Any?>())
+
+        assertEquals(listOf("a", "b"), evaluate("""{"missing": ["a", "b", "c", "d", "e"]}""", data))
+    }
+
+    @Test
+    fun aNestedLeafHoldingNullOrTheEmptyStringIsMissing() {
+        val data = mapOf("a" to mapOf("b" to null, "c" to "", "d" to "x"))
+
+        assertEquals(listOf("a.b", "a.c"), evaluate("""{"missing": ["a.b", "a.c", "a.d"]}""", data))
+    }
+
+    @Test
+    fun missingSomeCountsANullOrEmptyKeyAsMissing() {
+        val data = mapOf("a" to null, "b" to "", "c" to 1)
+
+        assertEquals(listOf("a", "b"), evaluate("""{"missing_some": [2, ["a", "b", "c"]]}""", data))
+        assertEquals(emptyList<Any?>(), evaluate("""{"missing_some": [1, ["a", "b", "c"]]}""", data))
+    }
+
+    @Test
+    fun anIndexSegmentReachesIntoAList() {
+        val data = mapOf("items" to listOf(1, null))
+
+        assertEquals(emptyList<Any?>(), evaluate("""{"missing": ["items", "items.0"]}""", data))
+        assertEquals(emptyList<Any?>(), evaluate("""{"missing": ["1"]}""", listOf("x", "y")))
+        assertEquals(listOf("items.1", "items.2", "items.-1"), evaluate("""{"missing": ["items.1", "items.2", "items.-1"]}""", data))
+    }
+
+    @Test
+    fun aKeyVarWouldThrowOnIsMissingInstead() {
+        val data = mapOf("a" to listOf(1, 2), "true" to 1)
+
+        assertEquals(listOf("a.x"), evaluate("""{"missing": ["a.x"]}""", data))
+        assertEquals(listOf(true, listOf("a")), evaluate("""{"missing": [true, ["a"]]}""", data))
+        assertEquals(listOf(listOf("x", "d")), evaluate("""{"missing": ["true", ["x", "d"]]}""", data))
+        assertEquals(emptyList<Any?>(), evaluate("""{"missing_some": [1, ["a.x", "true"]]}""", data))
+    }
+
+    @Test
+    fun aLoneListArgumentIsTheKeyList() {
+        assertEquals(listOf("x"), evaluate("""{"missing": [["x", "true"]]}""", mapOf("true" to 1)))
+    }
+
+    @Test
+    fun missingSomeReadsAListKeyAsAKey() {
+        assertEquals(listOf(listOf("a", "b")), evaluate("""{"missing_some": [1, [["a", "b"]]]}""", emptyMap<String, Any?>()))
+    }
+
+    @Test
+    fun aCyclicDataValueIsWalkedOnlyAlongTheKey() {
+        val data = mutableMapOf<String, Any?>()
+        data["self"] = data
+
+        assertEquals(listOf("self.self.x"), evaluate("""{"missing": ["self.self", "self.self.x"]}""", data))
+    }
+
+    @Test
+    fun aNumberKeyIndexesListDataOnly() {
+        assertEquals(listOf(2.0), evaluate("""{"missing": [0, 2]}""", listOf("x", "y")))
+        assertEquals(emptyList<Any?>(), evaluate("""{"missing": [1.5]}""", listOf(0, 1)))
+        assertEquals(listOf(0.0), evaluate("""{"missing": [0]}""", mapOf("0" to 1)))
+    }
+
+    @Test
+    fun withoutMapOrListDataEveryPathKeyIsMissing() {
         assertEquals(listOf("a", "b"), evaluate("""{"missing": ["a", "b"]}""", null))
-        assertEquals(listOf("a", "b"), evaluate("""{"missing": ["a", "b"]}""", "not a map"))
-        assertEquals(listOf("a", "b"), evaluate("""{"missing": ["a", "b"]}""", listOf("a", "b")))
+        assertEquals(listOf("0", "length"), evaluate("""{"missing": ["0", "length"]}""", "not a map"))
+    }
+
+    @Test
+    fun inheritedPropertiesAndStringCharactersAreNotFound() {
+        val data = mapOf("l" to listOf(1), "s" to "abc")
+
+        assertEquals(listOf("l.length", "toString", "s.0"), evaluate("""{"missing": ["l.length", "toString", "s.0"]}""", data))
     }
 
     @Test
@@ -68,7 +159,12 @@ class MissingExpressionTest {
     }
 
     @Test
-    fun missingSomeWithoutMapDataReportsEveryKey() {
+    fun missingSomeCountsEachRepeatAsMissing() {
+        assertEquals(listOf("a", "a"), evaluate("""{"missing_some": [2, ["a", "a", "b"]]}""", mapOf("b" to 1)))
+    }
+
+    @Test
+    fun missingSomeWithNullDataReportsEveryKey() {
         assertEquals(listOf("a", "b", "c"), evaluate("""{"missing_some": [2, ["a", "b", "c"]]}""", null))
     }
 

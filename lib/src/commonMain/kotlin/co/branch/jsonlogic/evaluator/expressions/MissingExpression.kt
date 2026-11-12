@@ -3,16 +3,19 @@ package co.branch.jsonlogic.evaluator.expressions
 import co.branch.jsonlogic.evaluator.ArrayLike
 import co.branch.jsonlogic.evaluator.JsonLogicEvaluationException
 import co.branch.jsonlogic.evaluator.MapLike
+import co.branch.jsonlogic.internal.javaSplitOnDot
 
 /**
  * `missing` and `missing_some`: given key names, reports which of them the data does not provide.
  *
- * `{"missing": ["a", "b"]}` returns the subset of `a` and `b` that is absent, in the order asked for
- * and without repeats. `{"missing_some": [2, ["a", "b", "c"]]}` returns nothing at all once at least
- * 2 of the 3 keys are present, and otherwise reports every absent one.
+ * `{"missing": ["a", "b"]}` returns the keys among `a` and `b` that are missing, in the order asked
+ * for, a repeated key once per repeat. `{"missing_some": [2, ["a", "b", "c"]]}` returns nothing at all
+ * once at least 2 of the 3 keys are present, and otherwise reports every missing one.
  *
- * Keys are matched against the data's flattened paths, so `a.b` is provided by `{"a": {"b": 1}}`.
- * Only nested maps are flattened: a key can never reach into a list.
+ * Each key is looked up the way `var` looks it up, and is missing when that gives null or the empty
+ * string, as in the reference implementation. So `a.b` is provided by `{"a": {"b": 1}}`, `a` by
+ * `{"a": {"b": 1}}` too, and `a.0` by `{"a": [1]}`. Where `var` throws (a segment that is not an index
+ * over a list, or a key that is neither a string, a number nor null), the key is missing instead.
  */
 class MissingExpression private constructor(private val isSome: Boolean) : PreEvaluatedArgumentsExpression {
 
@@ -27,28 +30,14 @@ class MissingExpression private constructor(private val isSome: Boolean) : PreEv
             )
         }
 
-        if (!MapLike.isEligible(data)) {
-            if (isSome) {
-                if ((arguments[0] as Double).toInt() <= 0) {
-                    return emptyList<Any?>()
-                }
-                return arguments[1]
-            }
-            return arguments
-        }
-
-        val map = MapLike.of(data)
         val options: List<Any?> = if (isSome) ArrayLike.of(arguments[1]) else arguments
-        val providedKeys = flatKeys(map)
-        val requiredKeys = LinkedHashSet<Any?>(options)
+        val missing = options.filter { key -> lookUp(key, data).let { it == null || it == "" } }
 
-        requiredKeys.removeAll(providedKeys) // Keys that I need but do not have
-
-        if (isSome && options.size - requiredKeys.size >= (arguments[0] as Double).toInt()) {
+        if (isSome && options.size - missing.size >= (arguments[0] as Double).toInt()) {
             return emptyList<Any?>()
         }
 
-        return requiredKeys.toList()
+        return missing
     }
 
     companion object {
@@ -56,21 +45,22 @@ class MissingExpression private constructor(private val isSome: Boolean) : PreEv
         val SOME = MissingExpression(true)
 
         /**
-         * Given a map structure such as `{a: {b: 1}, c: 2}`, returns the set `["a.b", "c"]`. A
-         * nested map contributes only its own leaves, so an empty one contributes no key at all.
+         * Resolves [key] against [data] as `JsonLogicEvaluator`'s `var` does, but answers null where
+         * `var` would throw or fall back to its default. Walks only the key's own segments, never
+         * the rest of [data]. Mirrors `JsonLogicEvaluator.evaluate(JsonLogicVariable, ...)` and its
+         * `evaluatePartialVariable`; change both together.
          */
-        private fun flatKeys(map: Map<Any?, Any?>, prefix: String = ""): Set<String> {
-            val keys = LinkedHashSet<String>()
-
-            for ((key, value) in map) {
-                if (MapLike.isEligible(value)) {
-                    keys.addAll(flatKeys(MapLike.of(value), "$prefix$key."))
-                } else {
-                    keys.add("$prefix$key")
+        private fun lookUp(key: Any?, data: Any?): Any? = when {
+            key == null || key == "" -> data
+            key is Number -> if (ArrayLike.isEligible(data)) ArrayLike.of(data).getOrNull(key.toInt()) else null
+            key is String -> javaSplitOnDot(key).fold(data) { node, segment ->
+                when {
+                    ArrayLike.isEligible(node) -> segment.toIntOrNull()?.let { ArrayLike.of(node).getOrNull(it) }
+                    MapLike.isEligible(node) -> MapLike.of(node)[segment]
+                    else -> null
                 }
             }
-
-            return keys
+            else -> null
         }
     }
 }

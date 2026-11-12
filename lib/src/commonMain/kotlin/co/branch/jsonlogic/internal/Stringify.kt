@@ -20,7 +20,7 @@ package co.branch.jsonlogic.internal
  *
  * Used by `log`, whose output is diagnostic text rather than a value any rule can observe.
  */
-internal fun javaStringify(value: Any?): String = stringify(value, ::canonicalDoubleToString, emptyList())
+internal fun javaStringify(value: Any?): String = stringify(value, ::canonicalDoubleToString, mutableListOf())
 
 /**
  * Renders [value] the way ECMAScript's `String(value)` would: `null` becomes the literal `"null"`
@@ -30,20 +30,23 @@ internal fun javaStringify(value: Any?): String = stringify(value, ::canonicalDo
  * renders a null argument as the empty string instead of calling this, matching the reference's use
  * of `Array.prototype.join`.
  */
-internal fun ecmaStringify(value: Any?): String = stringify(value, ::ecmaDoubleToString, emptyList())
+internal fun ecmaStringify(value: Any?): String = stringify(value, ::ecmaDoubleToString, mutableListOf())
 
 /**
  * Renders [value] with [renderNumber] deciding the form a [Double] takes, naming rather than entering
  * any container in [enclosing] — the ones already being rendered around it.
  *
- * A value here can hold a cycle, so the containers have to be tracked: `reduce` mutates a single
- * context map in place, and a reducer returning a list built around its own data leaves that list and
- * that map holding each other. The names are java.util's, but the reach is not — java.util compares an
- * entry only against the container directly holding it, which a cycle closing through two of them
- * slips past. Only an enclosing container counts, so the same value appearing twice side by side is
- * rendered twice rather than mistaken for a cycle.
+ * A value here can hold a cycle, so the containers have to be tracked: no built-in operation builds
+ * one, but a custom operation can return a container that holds itself. The names are java.util's,
+ * but the reach is not — java.util compares an entry only against the container directly holding it,
+ * which a cycle closing through two of them slips past. Only an enclosing container counts, so the
+ * same value appearing twice side by side is rendered twice rather than mistaken for a cycle.
  */
-private fun stringify(value: Any?, renderNumber: (Double) -> String, enclosing: List<Any>): String = when (value) {
+private fun stringify(
+    value: Any?,
+    renderNumber: (Double) -> String,
+    enclosing: MutableList<Any>,
+): String = when (value) {
     null -> "null"
     is Double -> renderNumber(value)
     is Boolean -> value.toString()
@@ -53,31 +56,46 @@ private fun stringify(value: Any?, renderNumber: (Double) -> String, enclosing: 
     else -> value.toString()
 }
 
-private fun stringifyCollection(value: Collection<*>, renderNumber: (Double) -> String, enclosing: List<Any>): String {
+private fun stringifyCollection(
+    value: Collection<*>,
+    renderNumber: (Double) -> String,
+    enclosing: MutableList<Any>,
+): String {
     if (enclosing.any { it === value }) {
         return "(this Collection)"
     }
 
-    val inside = within(enclosing, value)
-
-    return value.joinToString(prefix = "[", postfix = "]", separator = ", ") { stringify(it, renderNumber, inside) }
+    return within(enclosing, value) {
+        value.joinToString(prefix = "[", postfix = "]", separator = ", ") { stringify(it, renderNumber, enclosing) }
+    }
 }
 
-private fun stringifyMap(value: Map<*, *>, renderNumber: (Double) -> String, enclosing: List<Any>): String {
+private fun stringifyMap(
+    value: Map<*, *>,
+    renderNumber: (Double) -> String,
+    enclosing: MutableList<Any>,
+): String {
     if (enclosing.any { it === value }) {
         return "(this Map)"
     }
 
-    val inside = within(enclosing, value)
-
-    return value.entries.joinToString(prefix = "{", postfix = "}", separator = ", ") {
-        "${stringify(it.key, renderNumber, inside)}=${stringify(it.value, renderNumber, inside)}"
+    return within(enclosing, value) {
+        value.entries.joinToString(prefix = "{", postfix = "}", separator = ", ") {
+            "${stringify(it.key, renderNumber, enclosing)}=${stringify(it.value, renderNumber, enclosing)}"
+        }
     }
 }
 
 /**
- * [enclosing] with [container] appended. Taking the container as [Any] is what makes this an append:
- * at the call sites it is a `Collection<*>` or a `Map<*, *>`, and adding a collection to a list splices
- * its elements in rather than adding the collection itself.
+ * Renders [block] with [container] pushed onto [enclosing], and pops it again however [block] ends.
+ * One list shared by the whole walk keeps memory linear in the depth, where a copy per level grows
+ * with its square.
  */
-private fun within(enclosing: List<Any>, container: Any): List<Any> = enclosing + container
+private inline fun within(enclosing: MutableList<Any>, container: Any, block: () -> String): String {
+    enclosing.add(container)
+    try {
+        return block()
+    } finally {
+        enclosing.removeAt(enclosing.lastIndex)
+    }
+}

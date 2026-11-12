@@ -4,6 +4,41 @@ All notable changes to this project are documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+- `missing` and `missing_some` look each key up the way `var` does and count it missing when the
+  value is `null` or the empty string, matching the
+  [reference implementation](https://github.com/jwadhams/json-logic-js). They matched keys against
+  the data's flattened map paths instead, so with `{"a": null}` `{"missing": ["a"]}` was `[]` and is
+  now `["a"]`. Also changed: a key holding a map is present (`{"missing": ["a"]}` with
+  `{"a": {"b": 1}}` was `["a"]`, now `[]`); an index segment reaches into a list (`"items.0"` with
+  `{"items": [1]}` is present); a key with a literal dot is split like `var` (`"a.b"` with
+  `{"a.b": 1}` was present, now missing); the empty or null key is the whole data; a number key indexes list
+  data, and data that is not a map no longer reports every key
+  (`{"missing": ["0"]}` with `["x"]` was `["0"]`, now `[]`); a repeated key is reported once per repeat, and `missing_some` counts each repeat as missing.
+  A key `var` would throw on (`"a.x"` over a list, a boolean key) stays missing rather than throwing.
+  Like `var`, and unlike the reference, a trailing dot is dropped and a segment such as `01` reads
+  as an index, so `"a."` with `{"a": 1}` and `"l.01"` with `{"l": [5, 6]}` were missing and are now
+  present; the README lists these with the other differences.
+  `missing` no longer walks the whole data, only each key's path. A rule using either operator can
+  return a different result after upgrading; re-check stored results or pinned assertions that
+  depend on it.
+- `reduce` hands its reducer a new context map on each step, as the reference does, instead of one
+  map updated in place. A reducer that returns its own data (`{"var": ""}`) now returns the previous
+  step's map nested under `accumulator`, where it returned a map holding itself. `cat`, `substr`,
+  `in` and `log` render that result by recursion, so a long enough list can now overflow the stack
+  where they used to name the cycle and stop; on a small thread stack that can be under a hundred
+  elements.
+
+### Fixed
+
+- `apply` no longer overflows the stack converting the result of a `reduce` whose reducer returns its
+  own data: `{"reduce": [[1, 2], {"var": ""}, 0]}` returns
+  `{"current": 2, "accumulator": {"current": 1, "accumulator": 0}}`. The overflow was a
+  `StackOverflowError`, not a `JsonLogicException`, so a caller catching the library's exceptions
+  did not catch it. The result still nests once per element, so a long enough list overflows the
+  conversion the same way; on a small thread stack that can be a few hundred elements.
+
 ## [0.3.0] - 2026-09-07
 
 ### Changed

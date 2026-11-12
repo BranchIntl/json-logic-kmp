@@ -13,9 +13,9 @@ All notable changes to this project are documented in this file.
   now `["a"]`. Also changed: a key holding a map is present (`{"missing": ["a"]}` with
   `{"a": {"b": 1}}` was `["a"]`, now `[]`); an index segment reaches into a list (`"items.0"` with
   `{"items": [1]}` is present); a key with a literal dot is split like `var` (`"a.b"` with
-  `{"a.b": 1}` was present, now missing); the empty key is the whole data; a number key indexes list
+  `{"a.b": 1}` was present, now missing); the empty or null key is the whole data; a number key indexes list
   data; a repeated key is reported once per repeat, and `missing_some` counts each repeat as missing.
-  A key `var` would throw on (`"a.x"` over a list, a boolean key) is reported missing, not thrown.
+  A key `var` would throw on (`"a.x"` over a list, a boolean key) stays missing rather than throwing.
   Like `var`, and unlike the reference, a trailing dot is dropped and a segment such as `01` reads
   as an index, so `"a."` with `{"a": 1}` and `"l.01"` with `{"l": [5, 6]}` were missing and are now
   present; the README lists these with the other differences.

@@ -101,12 +101,15 @@ class MissingExpressionTest {
 
         assertEquals(listOf("a.x"), evaluate("""{"missing": ["a.x"]}""", data))
         assertEquals(listOf(true, listOf("a")), evaluate("""{"missing": [true, ["a"]]}""", data))
+        assertEquals(listOf(listOf("x", "d")), evaluate("""{"missing": ["true", ["x", "d"]]}""", data))
+        assertEquals(listOf("x"), evaluate("""{"missing": [["x", "true"]]}""", data))
         assertEquals(emptyList<Any?>(), evaluate("""{"missing_some": [1, ["a.x", "true"]]}""", data))
     }
 
     @Test
     fun aNumberKeyIndexesListDataOnly() {
         assertEquals(listOf(2.0), evaluate("""{"missing": [0, 2]}""", listOf("x", "y")))
+        assertEquals(emptyList<Any?>(), evaluate("""{"missing": [1.5]}""", listOf(0, 1)))
         assertEquals(listOf(0.0), evaluate("""{"missing": [0]}""", mapOf("0" to 1)))
     }
 
@@ -114,6 +117,13 @@ class MissingExpressionTest {
     fun withoutMapOrListDataEveryPathKeyIsMissing() {
         assertEquals(listOf("a", "b"), evaluate("""{"missing": ["a", "b"]}""", null))
         assertEquals(listOf("0", "length"), evaluate("""{"missing": ["0", "length"]}""", "not a map"))
+    }
+
+    @Test
+    fun onlyAMapsOwnKeysAndAListsIndexesAreFound() {
+        val data = mapOf("l" to listOf(1), "s" to "abc")
+
+        assertEquals(listOf("l.length", "toString", "s.0"), evaluate("""{"missing": ["l.length", "toString", "s.0"]}""", data))
     }
 
     @Test

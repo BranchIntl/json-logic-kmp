@@ -356,9 +356,10 @@ is not one of them: it matches the reference, as described above.
 - **`missing` and `missing_some`.** Each key is looked up the way `var` looks it up here, and a key
   `var` would throw on is reported missing instead:
   - A key never reads into a string, so `"s.0"` is missing with `{"s": "abc"}` (reference present).
-  - A boolean or list key is missing: `{"missing": [true]}` with `{"true": 1}` is `[true]`, and
-    `{"missing": [["x", "d"]]}` with `{}` is `[["x", "d"]]` (reference `[]` for both: it reads a
-    list key as `[key, default]`, and the default counts as present).
+  - A key that is not a string, a number or null (a boolean, list or map) is missing:
+    `{"missing": [true]}` with `{"true": 1}` is `[true]`, and `{"missing": ["a", ["x", "d"]]}` with
+    `{"a": 1}` is `[["x", "d"]]` (reference `[]` for both: it reads a list key as `[key, default]`,
+    and the default counts as present; a computed map key it runs as a rule).
   - A number key only indexes list data, truncated: `{"missing": [0]}` with `{"0": 1}` is `[0]`
     (reference `[]`), and `{"missing": [1.5]}` with `[0, 1]` is `[]` (reference `[1.5]`).
   - Trailing dots are dropped and an index segment is read as a number: `{"missing": ["a."]}` and

@@ -4,7 +4,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-/** Pins `missing` and `missing_some`, including how they flatten the data's keys. */
+/** Pins `missing` and `missing_some`, including how they look each key up the way `var` does. */
 class MissingExpressionTest {
 
     private val apple = mapOf("a" to "apple", "c" to "carrot")
@@ -23,20 +23,32 @@ class MissingExpressionTest {
     }
 
     @Test
-    fun repeatedKeysAreReportedOnceInTheOrderAsked() {
-        assertEquals(listOf("b", "a"), evaluate("""{"missing": ["b", "a", "b"]}""", emptyMap<String, Any?>()))
+    fun repeatedKeysAreReportedOncePerRepeatInTheOrderAsked() {
+        assertEquals(listOf("b", "a", "b"), evaluate("""{"missing": ["b", "a", "b"]}""", emptyMap<String, Any?>()))
     }
 
     @Test
-    fun keysAreMatchedAgainstFlattenedPaths() {
+    fun dottedKeysWalkNestedMaps() {
         assertEquals(emptyList<Any?>(), evaluate("""{"missing": ["a.b"]}""", mapOf("a" to mapOf("b" to 1))))
         assertEquals(listOf("a.c"), evaluate("""{"missing": ["a.b", "a.c"]}""", mapOf("a" to mapOf("b" to 1))))
-        assertEquals(listOf("a"), evaluate("""{"missing": ["a"]}""", mapOf("a" to mapOf("b" to 1))))
+        assertEquals(listOf("a.b.c"), evaluate("""{"missing": ["a.b.c"]}""", mapOf("a" to mapOf("b" to 1))))
     }
 
     @Test
-    fun anEmptyNestedMapProvidesNoKeyAtAll() {
-        assertEquals(listOf("a"), evaluate("""{"missing": ["a"]}""", mapOf("a" to emptyMap<String, Any?>())))
+    fun aKeyHoldingAMapIsPresentEvenAnEmptyOne() {
+        assertEquals(emptyList<Any?>(), evaluate("""{"missing": ["response"]}""", mapOf("response" to mapOf("status" to "ok"))))
+        assertEquals(emptyList<Any?>(), evaluate("""{"missing": ["a"]}""", mapOf("a" to emptyMap<String, Any?>())))
+    }
+
+    @Test
+    fun aKeyWithALiteralDotIsSplitLikeVar() {
+        assertEquals(listOf("a.b"), evaluate("""{"missing": ["a.b"]}""", mapOf("a.b" to 1)))
+    }
+
+    @Test
+    fun theEmptyKeyIsTheWholeData() {
+        assertEquals(emptyList<Any?>(), evaluate("""{"missing": [""]}""", mapOf("a" to 1)))
+        assertEquals(listOf(""), evaluate("""{"missing": [""]}""", null))
     }
 
     @Test
@@ -62,16 +74,32 @@ class MissingExpressionTest {
     }
 
     @Test
-    fun flatteningDoesNotReachIntoLists() {
-        assertEquals(listOf("a.0"), evaluate("""{"missing": ["a.0"]}""", mapOf("a" to listOf(1, 2))))
-        assertEquals(emptyList<Any?>(), evaluate("""{"missing": ["a"]}""", mapOf("a" to listOf(1, 2))))
+    fun anIndexSegmentReachesIntoAList() {
+        val data = mapOf("items" to listOf(1, null))
+
+        assertEquals(emptyList<Any?>(), evaluate("""{"missing": ["items", "items.0"]}""", data))
+        assertEquals(listOf("items.1", "items.2", "items.-1"), evaluate("""{"missing": ["items.1", "items.2", "items.-1"]}""", data))
     }
 
     @Test
-    fun withoutMapDataEveryKeyIsMissing() {
+    fun aKeyVarWouldThrowOnIsMissingInstead() {
+        val data = mapOf("a" to listOf(1, 2), "true" to 1)
+
+        assertEquals(listOf("a.x"), evaluate("""{"missing": ["a.x"]}""", data))
+        assertEquals(listOf(true, listOf("a")), evaluate("""{"missing": [true, ["a"]]}""", data))
+    }
+
+    @Test
+    fun aNumberKeyIndexesListDataOnly() {
+        assertEquals(listOf(2.0), evaluate("""{"missing": [0, 2]}""", listOf("x", "y")))
+        assertEquals(emptyList<Any?>(), evaluate("""{"missing": ["1"]}""", listOf("x", "y")))
+        assertEquals(listOf(0.0), evaluate("""{"missing": [0]}""", mapOf("0" to 1)))
+    }
+
+    @Test
+    fun withoutMapOrListDataEveryKeyIsMissing() {
         assertEquals(listOf("a", "b"), evaluate("""{"missing": ["a", "b"]}""", null))
-        assertEquals(listOf("a", "b"), evaluate("""{"missing": ["a", "b"]}""", "not a map"))
-        assertEquals(listOf("a", "b"), evaluate("""{"missing": ["a", "b"]}""", listOf("a", "b")))
+        assertEquals(listOf("0", "length"), evaluate("""{"missing": ["0", "length"]}""", "not a map"))
     }
 
     @Test
@@ -87,6 +115,11 @@ class MissingExpressionTest {
     fun missingSomeReportsEveryAbsentKeyBelowTheThreshold() {
         assertEquals(listOf("b", "c"), evaluate("""{"missing_some": [2, ["a", "b", "c"]]}""", mapOf("a" to "apple")))
         assertEquals(listOf("a", "b"), evaluate("""{"missing_some": [1, ["a", "b"]]}""", mapOf("d" to 1)))
+    }
+
+    @Test
+    fun missingSomeCountsEachRepeatAsMissing() {
+        assertEquals(listOf("a", "a"), evaluate("""{"missing_some": [2, ["a", "a", "b"]]}""", mapOf("b" to 1)))
     }
 
     @Test

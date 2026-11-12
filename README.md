@@ -260,7 +260,7 @@ that case behaves.
 - **Preserved upstream quirks:** `all`'s error jsonPath always reports `[1]` for the failing element,
   regardless of its actual index; `substr` and `missing_some` type-check their numeric arguments as
   `Double` internally; a `var`'s default-value expression is evaluated twice when its key resolves to
-  null; `missing`'s dotted-key flattening descends only into nested objects, never into arrays.
+  null.
 - **One accepted behavioral difference.** Comparing the raw result of `missing` with `===` or `in` is
   structural here (`{"===": [{"missing": ["a", "b"]}, ["a", "b"]]}` is `true`). Upstream wraps that
   result in an internal type whose `equals` always returns `false`, making the same comparison `false`
@@ -275,19 +275,20 @@ that case behaves.
   a result: a `reduce` whose reducer wraps the accumulator (returns its own data, or
   `[{"var": "accumulator"}]`) nests once per element, so its result is as deep as the list is long.
   Converting it back to JSON, rendering it with `cat`, `substr`, `in` or `log`, comparing it by
-  content with `===`, `!==` or `in` against a list, or running `missing` against it, recurses that
-  deep. How long a list overflows the stack depends on the thread's stack size, the operation and the
-  JIT's state, and on a small thread stack it can be under a hundred elements. A rule can hold such a
+  content with `===`, `!==` or `in` against a list, recurses that deep. How long a list overflows the
+  stack depends on the thread's stack size, the operation and the JIT's state, and on a small thread
+  stack it can be under a hundred elements. A rule can hold such a
   list, or read it from data, without nesting past the bound. The overflow is a `StackOverflowError`,
   not a `JsonLogicException`, and Native and Wasm cannot catch it.
 - **A value that contains itself is named, not entered.** No built-in operation builds one, but a
   custom operation can return one. Return values without cycles from custom operations: converting
-  a cyclic result back into a `JsonElement`, comparing it by content with `===`, `!==` or `in`
-  against a list, or running `missing` against it overflows the stack. `cat`, `substr`, `in` against
-  a string and `log` render a container reached from inside itself as `(this Map)` or
-  `(this Collection)`, at whatever depth it recurs. The names are
-  `java.util`'s, but the reach is not: `java.util` compares an entry only against the container
-  directly holding it, and overflows the stack on a cycle closing through two of them.
+  a cyclic result back into a `JsonElement`, or comparing it by content with `===`, `!==` or `in`
+  against a list, overflows the stack. `cat`, `substr`, `in` against a string and `log` render a
+  container reached from inside itself as `(this Map)` or `(this Collection)`, at whatever depth it
+  recurs. `log` is not a safe sink, though: it returns its argument, so `{"log": [<cyclic value>]}`
+  as the whole rule still overflows converting that result. The names are `java.util`'s, but the
+  reach is not: `java.util` compares an entry only against the container directly holding it, and
+  overflows the stack on a cycle closing through two of them.
 - **`truthy` on a Kotlin/Java array differs from upstream.** Values parsed from rules or `JsonElement`
   data are never arrays (only `List`, `Map`, `String`, `Number`, `Boolean`, and `null` ever reach an
   expression that way), so `truthy` has no case for one and it falls through to the default branch,
@@ -352,19 +353,12 @@ is not one of them: it matches the reference, as described above.
   argument, or a string in place of the argument list throws, where the reference converts or
   ignores it: `{"substr": ["jsonlogic", "2"]}` is `"onlogic"` and `{"substr": ["abc", 1, 1, 9]}` is
   `"b"` there.
-- **`missing` and `missing_some`.**
-  - A key holding a map counts as missing, even a non-empty one: `{"missing": ["a"]}` with
-    `{"a": {"b": 1}}` is `["a"]` (reference `[]`).
-  - A key never reaches into a list or a string, so `"a.0"` is missing with `{"a": [1]}` and `"s.0"`
-    with `{"s": "abc"}` (reference present for both).
-  - With map data, `missing` reports a repeated key once (`{"missing": ["a", "a"]}` with `{}` is
-    `["a"]`, reference
-    `["a", "a"]`), and `missing_some` counts each repeat toward its threshold as present, so
-    `{"missing_some": [2, ["a", "a", "b"]]}` with `{"b": 1}` is `[]` (reference `["a", "a"]`).
-  - The empty key is a key like any other, so `{"missing": [""]}` with `{"a": 1}` is `[""]`; the
-    reference reads it as the whole data and answers `[]`.
-  - Data that is not a map reports every key, a key that is not a string is never found, and a dotted
-    key also matches a key with that literal dot in it.
+- **`missing` and `missing_some`.** Each key is looked up the way `var` looks it up here, and a key
+  `var` would throw on is reported missing instead:
+  - A key never reads into a string, so `"s.0"` is missing with `{"s": "abc"}` (reference present).
+  - A boolean or list key is missing: `{"missing": [true]}` with `{"true": 1}` is `[true]`
+    (reference `[]`).
+  - A number key only indexes list data: `{"missing": [0]}` with `{"0": 1}` is `[0]` (reference `[]`).
   - A list as the first of several arguments is a key, not the key list.
   - `missing_some`'s threshold must be a number and is truncated (1.5 counts as 1), and its keys must
     be a list; anything else throws.

@@ -6,11 +6,19 @@ All notable changes to this project are documented in this file.
 
 ### Changed
 
-- `missing` and `missing_some` count a key whose value is `null` or the empty string as missing,
-  matching the [reference implementation](https://github.com/jwadhams/json-logic-js). They counted
-  a key holding `null` or `""` as present, so `{"missing": ["a"]}` against
-  `{"a": null}` was `[]` and is now `["a"]`. A rule using either operator can return a different
-  result after upgrading; re-check stored results or pinned assertions that depend on it.
+- `missing` and `missing_some` look each key up the way `var` does and count it missing when the
+  value is `null` or the empty string, matching the
+  [reference implementation](https://github.com/jwadhams/json-logic-js). They matched keys against
+  the data's flattened map paths instead, so with `{"a": null}` `{"missing": ["a"]}` was `[]` and is
+  now `["a"]`. Also changed: a key holding a map is present (`{"missing": ["a"]}` with
+  `{"a": {"b": 1}}` was `["a"]`, now `[]`); an index segment reaches into a list (`"items.0"` with
+  `{"items": [1]}` is present); a key with a literal dot is split like `var` (`"a.b"` with
+  `{"a.b": 1}` was present, now missing); the empty key is the whole data; a number key indexes list
+  data; a repeated key is reported once per repeat, and `missing_some` counts each repeat as missing.
+  A key `var` would throw on (`"a.x"` over a list, a boolean key) is reported missing, not thrown.
+  `missing` no longer walks the whole data, only each key's path. A rule using either operator can
+  return a different result after upgrading; re-check stored results or pinned assertions that
+  depend on it.
 - `reduce` hands its reducer a new context map on each step, as the reference does, instead of one
   map updated in place. A reducer that returns its own data (`{"var": ""}`) now returns the previous
   step's map nested under `accumulator`, where it returned a map holding itself. `cat`, `substr`,

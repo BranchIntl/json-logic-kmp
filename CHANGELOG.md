@@ -4,6 +4,8 @@ All notable changes to this project are documented in this file.
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-12
+
 ### Changed
 
 - `missing` and `missing_some` look each key up the way `var` does and count it missing when the

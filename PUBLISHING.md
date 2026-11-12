@@ -2,8 +2,10 @@
 
 Releases are published to GitHub Packages as `co.branch.jsonlogic:json-logic-kmp`, by
 `.github/workflows/publish.yml`. That workflow fires only on `workflow_dispatch`. A dispatch can be
-run against any ref, so it is also guarded to `main`: dispatching it from a feature branch is a
-no-op rather than a publish.
+run against any ref, so its jobs are also guarded to `main`: dispatching it against a feature branch
+is a no-op rather than a publish. The guard prevents accidents, not deliberate publishes: a run uses
+the workflow file from the ref it was dispatched against, so a branch that edits or drops the guard
+in its own copy of `publish.yml` can publish from that branch.
 
 One run produces six Maven publications. It runs on macOS so that the iOS publications, which
 cannot be built anywhere else, go out alongside the rest in the same run:
@@ -29,8 +31,9 @@ metadata resolves the per-target artifact behind it. See
    is what gives the next change somewhere to land without deciding a version number for it.
 2. From the `main` branch, dispatch the **Publish** workflow (`.github/workflows/publish.yml`) —
    either from the Actions tab or with `gh workflow run publish.yml --ref main`.
-3. The workflow builds and tests every macOS-buildable lane, then publishes all publications to
-   GitHub Packages. It only runs against `main`; dispatching it against any other ref is a no-op.
+3. The workflow's `build` job builds and tests every macOS-buildable lane. Only once it passes does
+   the `publish` job, the one job that can write to GitHub Packages, build the publications again
+   on a fresh runner and publish them. Both jobs are guarded to `main`, as above.
 4. Tag the commit the run published, and cut a GitHub Release from that tag. The workflow builds
    whatever `main` pointed at when it was dispatched, which is not necessarily where local `main`
    sits once it finishes, so take the revision from the run rather than from `HEAD`:

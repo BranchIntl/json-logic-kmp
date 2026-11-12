@@ -22,6 +22,10 @@ files do not say: the things that have cost someone an afternoon and are written
   its own — or `ANDROID_HOME` exported — before any Android task will run.
 - Never run the iOS simulator test lane in two worktrees at once: `simctl` flakes when two runs
   reach for a simulator together.
+- A `resolution(...)` added or changed in the root build is not picked up while `build/js` exists:
+  `rootPackageJson` stays up to date, and `kotlinUpgradeYarnLock` re-copies the old
+  `kotlin-js-store/yarn.lock` without saying so. Delete `build/js` first. A changed `versions.*`
+  tool version is picked up either way.
 
 ## Repo invariants
 

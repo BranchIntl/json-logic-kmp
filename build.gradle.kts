@@ -27,3 +27,23 @@ apiValidation {
         enabled = true
     }
 }
+
+// The Kotlin plugin pins its npm tooling to exact versions. These overrides move those tools, and
+// the transitive packages they request, past published security advisories.
+plugins.withType<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin> {
+    the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension>().versions.apply {
+        webpack.version = "5.108.1"
+        webpackDevServer.version = "5.2.7"
+    }
+}
+
+plugins.withType<org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlugin> {
+    the<org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension>().apply {
+        resolution("serialize-javascript", "^7.1.3")
+        resolution("uuid", "^11.1.1")
+        resolution("**/mocha/diff", "^8.0.3")
+        resolution("**/mocha/glob", "^14.0.2")
+        resolution("**/mocha/minimatch", "^11.0.1")
+        resolution("**/karma-webpack/minimatch", "^11.0.1")
+    }
+}

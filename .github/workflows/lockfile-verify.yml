@@ -1,0 +1,28 @@
+name: Actions Lockfile Verify
+
+on:
+  pull_request:
+
+concurrency:
+  group: lockfile-verify-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lockfile:
+    name: Lockfile matches the workflows
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Verify actions.lock
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # Pinned so a new release of the verifier cannot change this check without a PR. Upgrading
+          # means bumping this tag and regenerating the lock locally with the same version.
+          GH_ACTIONS_LOCK_VERSION: v0.2.0
+        run: |
+          gh extension install github/gh-actions-lock --pin "${GH_ACTIONS_LOCK_VERSION}"
+          gh actions-lock --verify

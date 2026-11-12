@@ -356,9 +356,16 @@ is not one of them: it matches the reference, as described above.
 - **`missing` and `missing_some`.** Each key is looked up the way `var` looks it up here, and a key
   `var` would throw on is reported missing instead:
   - A key never reads into a string, so `"s.0"` is missing with `{"s": "abc"}` (reference present).
-  - A boolean or list key is missing: `{"missing": [true]}` with `{"true": 1}` is `[true]`
-    (reference `[]`).
-  - A number key only indexes list data: `{"missing": [0]}` with `{"0": 1}` is `[0]` (reference `[]`).
+  - A boolean or list key is missing: `{"missing": [true]}` with `{"true": 1}` is `[true]`, and
+    `{"missing": [["x", "d"]]}` with `{}` is `[["x", "d"]]` (reference `[]` for both: it reads a
+    list key as `[key, default]`, and the default counts as present).
+  - A number key only indexes list data, truncated: `{"missing": [0]}` with `{"0": 1}` is `[0]`
+    (reference `[]`), and `{"missing": [1.5]}` with `[0, 1]` is `[]` (reference `[1.5]`).
+  - Trailing dots are dropped and an index segment is read as a number: `{"missing": ["a."]}` and
+    `{"missing": ["."]}` with `{"a": 1}` are `[]`, and `{"missing": ["l.01"]}` with `{"l": [5, 6]}`
+    is `[]` (reference reports the key in all three).
+  - Only a map's own keys are found: `"l.length"` with `{"l": [1]}` and `"toString"` with `{}` are
+    missing (reference present).
   - A list as the first of several arguments is a key, not the key list.
   - `missing_some`'s threshold must be a number and is truncated (1.5 counts as 1), and its keys must
     be a list; anything else throws.

@@ -16,6 +16,9 @@ All notable changes to this project are documented in this file.
   `{"a.b": 1}` was present, now missing); the empty key is the whole data; a number key indexes list
   data; a repeated key is reported once per repeat, and `missing_some` counts each repeat as missing.
   A key `var` would throw on (`"a.x"` over a list, a boolean key) is reported missing, not thrown.
+  Like `var`, and unlike the reference, a trailing dot is dropped and a segment such as `01` reads
+  as an index, so `"a."` with `{"a": 1}` and `"l.01"` with `{"l": [5, 6]}` were missing and are now
+  present; the README lists these with the other differences.
   `missing` no longer walks the whole data, only each key's path. A rule using either operator can
   return a different result after upgrading; re-check stored results or pinned assertions that
   depend on it.

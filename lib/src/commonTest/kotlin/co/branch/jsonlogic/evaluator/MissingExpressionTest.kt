@@ -32,6 +32,19 @@ class MissingExpressionTest {
         assertEquals(emptyList<Any?>(), evaluate("""{"missing": ["a.b"]}""", mapOf("a" to mapOf("b" to 1))))
         assertEquals(listOf("a.c"), evaluate("""{"missing": ["a.b", "a.c"]}""", mapOf("a" to mapOf("b" to 1))))
         assertEquals(listOf("a.b.c"), evaluate("""{"missing": ["a.b.c"]}""", mapOf("a" to mapOf("b" to 1))))
+        assertEquals(listOf("a.b"), evaluate("""{"missing": ["a.b"]}""", mapOf("a" to 1)))
+    }
+
+    @Test
+    fun trailingDotsAreDroppedAndIndexSegmentsReadAsNumbersLikeVar() {
+        assertEquals(emptyList<Any?>(), evaluate("""{"missing": ["a.", "."]}""", mapOf("a" to 1)))
+        assertEquals(emptyList<Any?>(), evaluate("""{"missing": ["l.01"]}""", mapOf("l" to listOf(5, 6))))
+    }
+
+    @Test
+    fun aNullKeyIsTheWholeData() {
+        assertEquals(emptyList<Any?>(), evaluate("""{"missing": [null]}""", mapOf("a" to 1)))
+        assertEquals(listOf(null), evaluate("""{"missing": [null]}""", null))
     }
 
     @Test
@@ -78,6 +91,7 @@ class MissingExpressionTest {
         val data = mapOf("items" to listOf(1, null))
 
         assertEquals(emptyList<Any?>(), evaluate("""{"missing": ["items", "items.0"]}""", data))
+        assertEquals(emptyList<Any?>(), evaluate("""{"missing": ["1"]}""", listOf("x", "y")))
         assertEquals(listOf("items.1", "items.2", "items.-1"), evaluate("""{"missing": ["items.1", "items.2", "items.-1"]}""", data))
     }
 
@@ -87,17 +101,17 @@ class MissingExpressionTest {
 
         assertEquals(listOf("a.x"), evaluate("""{"missing": ["a.x"]}""", data))
         assertEquals(listOf(true, listOf("a")), evaluate("""{"missing": [true, ["a"]]}""", data))
+        assertEquals(emptyList<Any?>(), evaluate("""{"missing_some": [1, ["a.x", "true"]]}""", data))
     }
 
     @Test
     fun aNumberKeyIndexesListDataOnly() {
         assertEquals(listOf(2.0), evaluate("""{"missing": [0, 2]}""", listOf("x", "y")))
-        assertEquals(emptyList<Any?>(), evaluate("""{"missing": ["1"]}""", listOf("x", "y")))
         assertEquals(listOf(0.0), evaluate("""{"missing": [0]}""", mapOf("0" to 1)))
     }
 
     @Test
-    fun withoutMapOrListDataEveryKeyIsMissing() {
+    fun withoutMapOrListDataEveryPathKeyIsMissing() {
         assertEquals(listOf("a", "b"), evaluate("""{"missing": ["a", "b"]}""", null))
         assertEquals(listOf("0", "length"), evaluate("""{"missing": ["0", "length"]}""", "not a map"))
     }

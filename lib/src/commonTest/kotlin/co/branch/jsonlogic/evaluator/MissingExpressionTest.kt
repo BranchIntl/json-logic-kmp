@@ -102,8 +102,25 @@ class MissingExpressionTest {
         assertEquals(listOf("a.x"), evaluate("""{"missing": ["a.x"]}""", data))
         assertEquals(listOf(true, listOf("a")), evaluate("""{"missing": [true, ["a"]]}""", data))
         assertEquals(listOf(listOf("x", "d")), evaluate("""{"missing": ["true", ["x", "d"]]}""", data))
-        assertEquals(listOf("x"), evaluate("""{"missing": [["x", "true"]]}""", data))
         assertEquals(emptyList<Any?>(), evaluate("""{"missing_some": [1, ["a.x", "true"]]}""", data))
+    }
+
+    @Test
+    fun aLoneListArgumentIsTheKeyList() {
+        assertEquals(listOf("x"), evaluate("""{"missing": [["x", "true"]]}""", mapOf("true" to 1)))
+    }
+
+    @Test
+    fun missingSomeReadsAListKeyAsAKey() {
+        assertEquals(listOf(listOf("a", "b")), evaluate("""{"missing_some": [1, [["a", "b"]]]}""", emptyMap<String, Any?>()))
+    }
+
+    @Test
+    fun aCyclicDataValueIsWalkedOnlyAlongTheKey() {
+        val data = mutableMapOf<String, Any?>()
+        data["self"] = data
+
+        assertEquals(listOf("self.self.x"), evaluate("""{"missing": ["self.self", "self.self.x"]}""", data))
     }
 
     @Test
@@ -120,7 +137,7 @@ class MissingExpressionTest {
     }
 
     @Test
-    fun onlyAMapsOwnKeysAndAListsIndexesAreFound() {
+    fun inheritedPropertiesAndStringCharactersAreNotFound() {
         val data = mapOf("l" to listOf(1), "s" to "abc")
 
         assertEquals(listOf("l.length", "toString", "s.0"), evaluate("""{"missing": ["l.length", "toString", "s.0"]}""", data))
@@ -147,7 +164,7 @@ class MissingExpressionTest {
     }
 
     @Test
-    fun missingSomeWithoutMapDataReportsEveryKey() {
+    fun missingSomeWithNullDataReportsEveryKey() {
         assertEquals(listOf("a", "b", "c"), evaluate("""{"missing_some": [2, ["a", "b", "c"]]}""", null))
     }
 

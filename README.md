@@ -359,7 +359,8 @@ is not one of them: it matches the reference, as described above.
   - A key that is not a string, a number or null (a boolean, list or map) is missing:
     `{"missing": [true]}` with `{"true": 1}` is `[true]`, and `{"missing": ["a", ["x", "d"]]}` with
     `{"a": 1}` is `[["x", "d"]]` (reference `[]` for both: it reads a list key as `[key, default]`,
-    and the default counts as present; a computed map key it runs as a rule).
+    and the default counts as present; a computed single-key map it runs as a rule, which throws
+    for a key that is not an operator, and any other map is missing in both).
   - A number key only indexes list data, truncated: `{"missing": [0]}` with `{"0": 1}` is `[0]`
     (reference `[]`), and `{"missing": [1.5]}` with `[0, 1]` is `[]` (reference `[1.5]`).
   - Trailing dots are dropped and an index segment is read as a number: `{"missing": ["a."]}` and
@@ -367,7 +368,9 @@ is not one of them: it matches the reference, as described above.
     is `[]` (reference reports the key in all three).
   - Only a map's own keys are found: `"l.length"` with `{"l": [1]}` and `"toString"` with `{}` are
     missing (reference present).
-  - A list as the first of several arguments is a key, not the key list.
+  - A list as the first of several arguments, or as the first of `missing_some`'s keys, is a key,
+    not the key list: `{"missing_some": [1, [["a", "b"]]]}` with `{}` is `[["a", "b"]]` (reference
+    `["a", "b"]`).
   - `missing_some`'s threshold must be a number and is truncated (1.5 counts as 1), and its keys must
     be a list; anything else throws.
 - **Array operations over a value that is not a list throw.** `filter` throws on any value that is

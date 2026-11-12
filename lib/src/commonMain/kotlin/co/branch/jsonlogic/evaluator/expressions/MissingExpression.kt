@@ -47,7 +47,8 @@ class MissingExpression private constructor(private val isSome: Boolean) : PreEv
         /**
          * Resolves [key] against [data] as `JsonLogicEvaluator`'s `var` does, but answers null where
          * `var` would throw or fall back to its default. Walks only the key's own segments, never
-         * the rest of [data].
+         * the rest of [data]. Mirrors `JsonLogicEvaluator.evaluate(JsonLogicVariable, ...)` and its
+         * `evaluatePartialVariable`; change both together.
          */
         private fun lookUp(key: Any?, data: Any?): Any? = when {
             key == null || key == "" -> data
